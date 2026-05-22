@@ -257,40 +257,50 @@ class MainActivity : AppCompatActivity() {
                 AndroidView(
                     factory = { ctx ->
                         val view = LayoutInflater.from(ctx).inflate(R.layout.map_layout, null, false)
-                        val fragmentManager = (ctx as AppCompatActivity).supportFragmentManager
-                        if (fragmentManager.findFragmentById(R.id.map_fragment_container) == null) {
-                            val fragment = TmapUISDK.getFragment()
-                            fragmentManager.beginTransaction()
-                                .replace(R.id.map_fragment_container, fragment)
-                                .commitNowAllowingStateLoss()
-                            
-                            // Fragment View가 완전히 생성된 후 TMAP SDK 초기화를 진행합니다 (가이드 권장 순서)
-                            val currentAppKey = ctx.getSharedPreferences("TmapPrefs", Context.MODE_PRIVATE).getString("APP_KEY", "") ?: ""
-                            
-                            TmapUISDK.Companion.initialize(ctx as AppCompatActivity, "", currentAppKey, "", "", object : TmapUISDK.InitializeListener {
-                                override fun onSuccess() {
-                                    Log.d("MainActivity", "TMAP SDK Initialized successfully")
-                                    TmapDataManager.authStatus.value = AuthStatus.SUCCESS
+                        
+                        view.addOnAttachStateChangeListener(object : android.view.View.OnAttachStateChangeListener {
+                            override fun onViewAttachedToWindow(v: android.view.View) {
+                                val fragmentManager = (ctx as AppCompatActivity).supportFragmentManager
+                                if (fragmentManager.findFragmentById(R.id.map_fragment_container) == null) {
+                                    val fragment = TmapUISDK.getFragment()
+                                    fragmentManager.beginTransaction()
+                                        .replace(R.id.map_fragment_container, fragment)
+                                        .commitNowAllowingStateLoss()
                                     
-                                    val serviceIntent = Intent(ctx, TmapService::class.java)
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        ctx.startForegroundService(serviceIntent)
-                                    } else {
-                                        ctx.startService(serviceIntent)
-                                    }
+                                    // Fragment View가 완전히 생성된 후 TMAP SDK 초기화를 진행합니다 (가이드 권장 순서)
+                                    val currentAppKey = ctx.getSharedPreferences("TmapPrefs", Context.MODE_PRIVATE).getString("APP_KEY", "") ?: ""
                                     
-                                    // 초기화 성공 후 안전운행모드 시작
-                                    fragment.startSafeDrive()
-                                }
+                                    TmapUISDK.Companion.initialize(ctx, "", currentAppKey, "", "", object : TmapUISDK.InitializeListener {
+                                        override fun onSuccess() {
+                                            Log.d("MainActivity", "TMAP SDK Initialized successfully")
+                                            TmapDataManager.authStatus.value = AuthStatus.SUCCESS
+                                            
+                                            val serviceIntent = Intent(ctx, TmapService::class.java)
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                ctx.startForegroundService(serviceIntent)
+                                            } else {
+                                                ctx.startService(serviceIntent)
+                                            }
+                                            
+                                            // 초기화 성공 후 안전운행모드 시작
+                                            fragment.startSafeDrive()
+                                        }
 
-                                override fun onFail(errorCode: Int, errorMsg: String?) {
-                                    Log.e("MainActivity", "TMAP SDK Init failed: $errorCode - $errorMsg")
-                                    TmapDataManager.authStatus.value = AuthStatus.FAILED
-                                }
+                                        override fun onFail(errorCode: Int, errorMsg: String?) {
+                                            Log.e("MainActivity", "TMAP SDK Init failed: $errorCode - $errorMsg")
+                                            TmapDataManager.authStatus.value = AuthStatus.FAILED
+                                        }
 
-                                override fun savedRouteInfoExists(dest: String?) {}
-                            }, null)
-                        }
+                                        override fun savedRouteInfoExists(dest: String?) {}
+                                    }, null)
+                                }
+                            }
+
+                            override fun onViewDetachedFromWindow(v: android.view.View) {
+                                // optional cleanup
+                            }
+                        })
+                        
                         view
                     },
                     modifier = Modifier.fillMaxSize()
