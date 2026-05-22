@@ -284,14 +284,14 @@ class MainActivity : AppCompatActivity() {
                                                 ctx.startService(serviceIntent)
                                             }
                                             
-                                            // 초기화 성공 후 안전운행모드 시작
+                                            // SurfaceView Compose 버그 우회: 지도 UI가 화면에 먼저 배치되도록 레이아웃 강제 갱신
                                             Handler(Looper.getMainLooper()).postDelayed({
-                                                fragment.startSafeDrive()
+                                                mapLoaded.value = true
                                                 
-                                                // SurfaceView Compose 버그 우회: 엔진 시작 후 레이아웃 강제 갱신
+                                                // 레이아웃이 완전히 갱신되고 지도 엔진이 준비될 시간을 준 후 여유롭게 안전운행모드 시작
                                                 Handler(Looper.getMainLooper()).postDelayed({
-                                                    mapLoaded.value = true
-                                                }, 500)
+                                                    fragment.startSafeDrive()
+                                                }, 1500)
                                             }, 500)
                                         }
 
