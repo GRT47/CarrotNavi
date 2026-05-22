@@ -121,7 +121,6 @@ class MainActivity : AppCompatActivity() {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
                                 stopService(serviceIntent)
                                 TmapDataManager.isDriving.value = false
-                                appKey = ""
                             },
                             onExitClick = {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
