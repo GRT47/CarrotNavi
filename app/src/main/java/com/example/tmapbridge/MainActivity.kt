@@ -7,8 +7,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentContainerView
+import androidx.fragment.app.commit
+import androidx.compose.ui.viewinterop.AndroidView
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,7 +34,7 @@ import android.location.LocationManager
 import android.util.Log
 import com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     private var locationManager: LocationManager? = null
     private var gnssStatusCallback: GnssStatus.Callback? = null
@@ -279,60 +284,33 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            // Middle Section (Speed & Warning)
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "현재 속도",
-                    fontSize = 20.sp,
-                    color = Color.LightGray
-                )
-                
-                Text(
-                    text = "${driveData.speed}",
-                    fontSize = 120.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White
-                )
-                
-                Text(
-                    text = "km/h",
-                    fontSize = 24.sp,
-                    color = Color.Gray
-                )
-                
-                Spacer(modifier = Modifier.height(48.dp))
-                
-                // Warning Card
-                if (driveData.sdiType >= 0) {
-                    val (warningText, warningColor) = when(driveData.sdiType) {
-                        22 -> Pair("과속 방지턱", Color(0xFFFFA000)) // Amber
-                        else -> Pair("단속 카메라 (${driveData.speedLimit}km/h)", Color(0xFFE53935)) // Red
-                    }
-                    
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = warningColor),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = warningText,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "${driveData.sdiDist}m 전방",
-                                fontSize = 20.sp,
-                                color = Color.White
-                            )
+            // Middle Section (TMAP Map)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(vertical = 16.dp)
+                    .background(Color.Black, RoundedCornerShape(16.dp))
+            ) {
+                AndroidView(
+                    factory = { ctx ->
+                        FragmentContainerView(ctx).apply {
+                            id = View.generateViewId()
                         }
-                    }
-                }
+                    },
+                    update = { view ->
+                        val fragmentManager = (view.context as FragmentActivity).supportFragmentManager
+                        if (fragmentManager.findFragmentById(view.id) == null) {
+                            val fragment = TmapUISDK.getFragment()
+                            fragmentManager.commit {
+                                replace(view.id, fragment)
+                            }
+                            // Fragment를 붙인 뒤 바로 안전운행 모드 시작
+                            fragment.startSafeDrive()
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             // Bottom Section (Buttons)
