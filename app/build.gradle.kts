@@ -61,6 +61,11 @@ dependencies {
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.compose.material3)
+  
+  // Appcompat and Material for TMAP NavigationFragment
+  implementation("androidx.appcompat:appcompat:1.6.1")
+  implementation("com.google.android.material:material:1.11.0")
+  
   // Tooling
   debugImplementation(libs.androidx.compose.ui.tooling)
   // Instrumented tests

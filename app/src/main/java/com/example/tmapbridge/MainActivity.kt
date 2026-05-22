@@ -33,7 +33,7 @@ import android.location.LocationManager
 import android.util.Log
 import com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK
 
-class MainActivity : FragmentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private var locationManager: LocationManager? = null
     private var gnssStatusCallback: GnssStatus.Callback? = null
@@ -298,7 +298,7 @@ class MainActivity : FragmentActivity() {
                         }
                     },
                     update = { view ->
-                        val fragmentManager = (view.context as FragmentActivity).supportFragmentManager
+                        val fragmentManager = (view.context as AppCompatActivity).supportFragmentManager
                         if (fragmentManager.findFragmentById(view.id) == null) {
                             val fragment = TmapUISDK.getFragment()
                             fragmentManager.beginTransaction()
