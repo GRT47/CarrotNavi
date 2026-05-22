@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.foundation.lazy.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -320,6 +322,20 @@ class MainActivity : AppCompatActivity() {
                         }
                     },
                     modifier = Modifier.fillMaxSize()
+                )
+                
+                // 지도 터치 조작 방지 오버레이
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                                    event.changes.forEach { it.consume() }
+                                }
+                            }
+                        }
                 )
             }
 
