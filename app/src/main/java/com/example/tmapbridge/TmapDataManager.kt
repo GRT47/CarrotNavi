@@ -18,4 +18,16 @@ object TmapDataManager {
     val authStatus = MutableStateFlow(AuthStatus.LOADING)
     val driveData = MutableStateFlow(DriveData())
     val satelliteCount = MutableStateFlow(0)
+    
+    val appLogs = MutableStateFlow<List<String>>(emptyList())
+    
+    fun addLog(msg: String) {
+        val currentLogs = appLogs.value.toMutableList()
+        currentLogs.add(0, msg)
+        // Keep only the latest 100 logs to prevent memory issues
+        if (currentLogs.size > 100) {
+            currentLogs.removeAt(currentLogs.size - 1)
+        }
+        appLogs.value = currentLogs
+    }
 }

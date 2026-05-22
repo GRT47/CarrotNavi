@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.lazy.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -133,7 +134,8 @@ class MainActivity : ComponentActivity() {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
                                 stopService(serviceIntent)
                                 finish()
-                            }
+                            },
+                            appLogs = TmapDataManager.appLogs.collectAsState().value
                         )
                     } else {
                         SetupScreen(
@@ -206,14 +208,37 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun DriveScreen(
         authStatus: AuthStatus, 
         driveData: DriveData, 
         satelliteCount: Int,
         onChangeKeyClick: () -> Unit,
-        onExitClick: () -> Unit
+        onExitClick: () -> Unit,
+        appLogs: List<String>
     ) {
+        var showLogs by remember { mutableStateOf(false) }
+
+        if (showLogs) {
+            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+            ModalBottomSheet(
+                onDismissRequest = { showLogs = false },
+                sheetState = sheetState
+            ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    Text("실시간 로그 뷰어 (최근 100개)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(appLogs) { log ->
+                            Text(text = log, fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(vertical = 4.dp))
+                            Divider(color = Color.DarkGray, thickness = 0.5.dp)
+                        }
+                    }
+                }
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -311,23 +336,33 @@ class MainActivity : ComponentActivity() {
             }
 
             // Bottom Section (Buttons)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                OutlinedButton(
-                    onClick = onChangeKeyClick,
-                    modifier = Modifier.weight(1f).height(56.dp)
-                ) {
-                    Text("App Key 변경", fontSize = 16.sp)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Button(
-                    onClick = onExitClick,
-                    modifier = Modifier.weight(1f).height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
+                    onClick = { showLogs = true },
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
                 ) {
-                    Text("앱 종료", fontSize = 16.sp, color = Color.White)
+                    Text("로그 보기", fontSize = 16.sp, color = Color.White)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    OutlinedButton(
+                        onClick = onChangeKeyClick,
+                        modifier = Modifier.weight(1f).height(56.dp)
+                    ) {
+                        Text("App Key 변경", fontSize = 16.sp)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Button(
+                        onClick = onExitClick,
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
+                    ) {
+                        Text("앱 종료", fontSize = 16.sp, color = Color.White)
+                    }
                 }
             }
         }

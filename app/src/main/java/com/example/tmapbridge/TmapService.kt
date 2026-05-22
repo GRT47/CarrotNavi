@@ -144,6 +144,8 @@ class TmapService : Service() {
             szTBTMainText = bundle.getString("TBT_MAIN_TEXT", "")
             nGoPosDist = bundle.getInt("GO_POS_DIST", 0)
             
+            TmapDataManager.addLog("EDC Event: SDI_TYPE=$nSdiType, SPEED_LIMIT=$nRoadLimitSpeed, TBT=$szTBTMainText")
+            
             // Do not override GPS speed/location with EDCData as it's unreliable/missing
             sendCurrentData()
         }
@@ -218,8 +220,10 @@ class TmapService : Service() {
                 val packet = DatagramPacket(buffer, buffer.size, address, OPENPILOT_PORT)
                 udpSocket?.send(packet)
                 Log.d(TAG, "Sent UDP: $jsonPayload")
+                TmapDataManager.addLog("UDP: $jsonPayload")
             } catch (e: Exception) {
                 Log.e(TAG, "UDP Send failed", e)
+                TmapDataManager.addLog("UDP Error: ${e.message}")
             }
         }
     }
