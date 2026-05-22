@@ -1,0 +1,25 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+apk/
+jdk-17.0.2/
+jdk.zip
+CarrotNavi 260317/
+KotlinSample/
+[Android]TMapNaviSDK_1.72/
+openpilot_scratch/
+*.txt
+*.jar
+*.aar
