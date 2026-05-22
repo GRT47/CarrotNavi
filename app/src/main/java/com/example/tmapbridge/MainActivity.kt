@@ -11,7 +11,6 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
-import androidx.fragment.app.commit
 import androidx.compose.ui.viewinterop.AndroidView
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -302,9 +301,10 @@ class MainActivity : FragmentActivity() {
                         val fragmentManager = (view.context as FragmentActivity).supportFragmentManager
                         if (fragmentManager.findFragmentById(view.id) == null) {
                             val fragment = TmapUISDK.getFragment()
-                            fragmentManager.commit {
-                                replace(view.id, fragment)
-                            }
+                            fragmentManager.beginTransaction()
+                                .replace(view.id, fragment)
+                                .commitAllowingStateLoss()
+                            
                             // Fragment를 붙인 뒤 바로 안전운행 모드 시작
                             fragment.startSafeDrive()
                         }
