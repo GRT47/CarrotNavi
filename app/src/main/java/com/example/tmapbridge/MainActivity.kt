@@ -126,12 +126,16 @@ class MainActivity : AppCompatActivity() {
                                 restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                                 restartIntent.putExtra("EDIT_MODE", true)
                                 startActivity(restartIntent)
-                                finish()
+                                
+                                // 강제 종료하여 TMAP SDK의 네이티브 GL 충돌 방지 및 완전한 초기화 보장
+                                Runtime.getRuntime().exit(0)
                             },
                             onExitClick = {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
                                 stopService(serviceIntent)
-                                finish()
+                                
+                                // 앱 완전 종료
+                                Runtime.getRuntime().exit(0)
                             },
                             appLogs = TmapDataManager.appLogs.collectAsState().value
                         )
