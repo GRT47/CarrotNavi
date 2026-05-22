@@ -268,7 +268,7 @@ class MainActivity : AppCompatActivity() {
                                         .commitNowAllowingStateLoss()
                                     
                                     // Fragment View가 완전히 생성된 후 TMAP SDK 초기화를 진행합니다 (가이드 권장 순서)
-                                    val currentAppKey = ctx.getSharedPreferences("TmapPrefs", Context.MODE_PRIVATE).getString("APP_KEY", "") ?: ""
+                                    val currentAppKey = ctx.getSharedPreferences("TmapBridgePrefs", Context.MODE_PRIVATE).getString("APP_KEY", "") ?: ""
                                     
                                     TmapUISDK.Companion.initialize(ctx, "", currentAppKey, "", "", object : TmapUISDK.InitializeListener {
                                         override fun onSuccess() {
