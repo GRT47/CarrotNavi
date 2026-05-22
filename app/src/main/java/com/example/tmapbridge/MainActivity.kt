@@ -121,7 +121,6 @@ class MainActivity : AppCompatActivity() {
                             onChangeKeyClick = {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
                                 stopService(serviceIntent)
-                                TmapDataManager.isDriving.value = false
                                 
                                 val restartIntent = Intent(this@MainActivity, MainActivity::class.java)
                                 restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
