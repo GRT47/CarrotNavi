@@ -283,7 +283,10 @@ class MainActivity : AppCompatActivity() {
                                             }
                                             
                                             // 초기화 성공 후 안전운행모드 시작
-                                            fragment.startSafeDrive()
+                                            // SurfaceView가 완전히 생성되고 측정될 시간을 주기 위해 delay를 줍니다.
+                                            Handler(Looper.getMainLooper()).postDelayed({
+                                                fragment.startSafeDrive()
+                                            }, 1500)
                                         }
 
                                         override fun onFail(errorCode: Int, errorMsg: String?) {
