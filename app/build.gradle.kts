@@ -30,6 +30,8 @@ android {
       aidl = false
       buildConfig = true
       shaders = false
+      dataBinding = true
+      viewBinding = true
     }
 
     packaging {
