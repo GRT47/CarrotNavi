@@ -254,6 +254,8 @@ class MainActivity : AppCompatActivity() {
                     .weight(1f)
                     .padding(vertical = 16.dp)
             ) {
+                val mapLoaded = remember { mutableStateOf(false) }
+                
                 AndroidView(
                     factory = { ctx ->
                         val view = LayoutInflater.from(ctx).inflate(R.layout.map_layout, null, false)
@@ -283,10 +285,14 @@ class MainActivity : AppCompatActivity() {
                                             }
                                             
                                             // 초기화 성공 후 안전운행모드 시작
-                                            // SurfaceView가 완전히 생성되고 측정될 시간을 주기 위해 delay를 줍니다.
                                             Handler(Looper.getMainLooper()).postDelayed({
                                                 fragment.startSafeDrive()
-                                            }, 1500)
+                                                
+                                                // SurfaceView Compose 버그 우회: 엔진 시작 후 레이아웃 강제 갱신
+                                                Handler(Looper.getMainLooper()).postDelayed({
+                                                    mapLoaded.value = true
+                                                }, 500)
+                                            }, 500)
                                         }
 
                                         override fun onFail(errorCode: Int, errorMsg: String?) {
@@ -305,6 +311,13 @@ class MainActivity : AppCompatActivity() {
                         })
                         
                         view
+                    },
+                    update = { view ->
+                        // mapLoaded 상태가 변경되면 recomposition이 일어나고, view에 대해 강제 레이아웃을 요청합니다.
+                        if (mapLoaded.value) {
+                            view.requestLayout()
+                            view.invalidate()
+                        }
                     },
                     modifier = Modifier.fillMaxSize()
                 )
