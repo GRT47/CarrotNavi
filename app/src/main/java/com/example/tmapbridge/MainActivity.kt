@@ -121,14 +121,6 @@ class MainActivity : AppCompatActivity() {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
                                 stopService(serviceIntent)
                                 TmapDataManager.isDriving.value = false
-                                
-                                val fragmentManager = supportFragmentManager
-                                val existingFragment = fragmentManager.findFragmentById(R.id.map_fragment_container)
-                                if (existingFragment != null) {
-                                    fragmentManager.beginTransaction()
-                                        .remove(existingFragment)
-                                        .commitAllowingStateLoss()
-                                }
                             },
                             onExitClick = {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
@@ -272,37 +264,40 @@ class MainActivity : AppCompatActivity() {
                         view.addOnAttachStateChangeListener(object : android.view.View.OnAttachStateChangeListener {
                             override fun onViewAttachedToWindow(v: android.view.View) {
                                 val fragmentManager = (ctx as AppCompatActivity).supportFragmentManager
-                                if (fragmentManager.findFragmentById(R.id.map_fragment_container) == null) {
-                                    val fragment = TmapUISDK.getFragment()
+                                var fragment = fragmentManager.findFragmentById(R.id.map_fragment_container) as? com.tmapmobility.tmap.tmapsdk.ui.fragment.NavigationFragment
+                                
+                                if (fragment == null) {
+                                    fragment = TmapUISDK.getFragment()
                                     fragmentManager.beginTransaction()
                                         .replace(R.id.map_fragment_container, fragment)
                                         .commitNowAllowingStateLoss()
-                                    
-                                    // Fragment View가 완전히 생성된 후 TMAP SDK 초기화를 진행합니다 (가이드 권장 순서)
-                                    val currentAppKey = ctx.getSharedPreferences("TmapBridgePrefs", Context.MODE_PRIVATE).getString("APP_KEY", "") ?: ""
-                                    
-                                    TmapUISDK.Companion.initialize(ctx, "", currentAppKey, "", "", object : TmapUISDK.InitializeListener {
-                                        override fun onSuccess() {
-                                            Log.d("MainActivity", "TMAP SDK Initialized successfully")
-                                            TmapDataManager.authStatus.value = AuthStatus.SUCCESS
-                                            
-                                            val serviceIntent = Intent(ctx, TmapService::class.java)
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                ctx.startForegroundService(serviceIntent)
-                                            } else {
-                                                ctx.startService(serviceIntent)
-                                            }
-                                            
-                                            // SurfaceView Compose 버그 우회: 지도 UI가 화면에 먼저 배치되도록 레이아웃 강제 갱신
-                                            Handler(Looper.getMainLooper()).postDelayed({
-                                                mapLoaded.value = true
-                                                
-                                                // 레이아웃이 완전히 갱신되고 지도 엔진이 준비될 시간을 준 후 여유롭게 안전운행모드 시작
-                                                Handler(Looper.getMainLooper()).postDelayed({
-                                                    fragment.startSafeDrive()
-                                                }, 1500)
-                                            }, 500)
+                                }
+                                
+                                // Fragment View가 완전히 생성된 후 TMAP SDK 초기화를 진행합니다 (가이드 권장 순서)
+                                val currentAppKey = ctx.getSharedPreferences("TmapBridgePrefs", Context.MODE_PRIVATE).getString("APP_KEY", "") ?: ""
+                                
+                                TmapUISDK.Companion.initialize(ctx, "", currentAppKey, "", "", object : TmapUISDK.InitializeListener {
+                                    override fun onSuccess() {
+                                        Log.d("MainActivity", "TMAP SDK Initialized successfully")
+                                        TmapDataManager.authStatus.value = AuthStatus.SUCCESS
+                                        
+                                        val serviceIntent = Intent(ctx, TmapService::class.java)
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                            ctx.startForegroundService(serviceIntent)
+                                        } else {
+                                            ctx.startService(serviceIntent)
                                         }
+                                        
+                                        // SurfaceView Compose 버그 우회: 지도 UI가 화면에 먼저 배치되도록 레이아웃 강제 갱신
+                                        Handler(Looper.getMainLooper()).postDelayed({
+                                            mapLoaded.value = true
+                                            
+                                            // 레이아웃이 완전히 갱신되고 지도 엔진이 준비될 시간을 준 후 여유롭게 안전운행모드 시작
+                                            Handler(Looper.getMainLooper()).postDelayed({
+                                                fragment?.startSafeDrive()
+                                            }, 1500)
+                                        }, 500)
+                                    }
 
                                         override fun onFail(errorCode: Int, errorMsg: String?) {
                                             Log.e("MainActivity", "TMAP SDK Init failed: $errorCode - $errorMsg")
@@ -311,7 +306,6 @@ class MainActivity : AppCompatActivity() {
 
                                         override fun savedRouteInfoExists(dest: String?) {}
                                     }, null)
-                                }
                             }
 
                             override fun onViewDetachedFromWindow(v: android.view.View) {
