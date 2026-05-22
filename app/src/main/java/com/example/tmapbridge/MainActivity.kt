@@ -121,6 +121,14 @@ class MainActivity : AppCompatActivity() {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
                                 stopService(serviceIntent)
                                 TmapDataManager.isDriving.value = false
+                                
+                                val fragmentManager = supportFragmentManager
+                                val existingFragment = fragmentManager.findFragmentById(R.id.map_fragment_container)
+                                if (existingFragment != null) {
+                                    fragmentManager.beginTransaction()
+                                        .remove(existingFragment)
+                                        .commitAllowingStateLoss()
+                                }
                             },
                             onExitClick = {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
