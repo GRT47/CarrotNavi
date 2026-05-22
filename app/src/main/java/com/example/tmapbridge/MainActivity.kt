@@ -13,6 +13,9 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
 import androidx.compose.ui.viewinterop.AndroidView
 import android.view.View
+import android.view.LayoutInflater
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -292,23 +295,20 @@ class MainActivity : AppCompatActivity() {
             ) {
                 AndroidView(
                     factory = { ctx ->
-                        FragmentContainerView(ctx).apply {
-                            id = View.generateViewId()
-                        }
-                    },
-                    update = { view ->
-                        val fragmentManager = (view.context as AppCompatActivity).supportFragmentManager
-                        if (fragmentManager.findFragmentById(view.id) == null) {
+                        val view = LayoutInflater.from(ctx).inflate(R.layout.map_layout, null, false)
+                        val fragmentManager = (ctx as AppCompatActivity).supportFragmentManager
+                        if (fragmentManager.findFragmentById(R.id.map_fragment_container) == null) {
                             val fragment = TmapUISDK.getFragment()
                             fragmentManager.beginTransaction()
-                                .replace(view.id, fragment)
+                                .replace(R.id.map_fragment_container, fragment)
                                 .commitNowAllowingStateLoss()
                             
-                            // Fragment View가 완전히 생성된 이후에 안전운행 모드를 시작해야 블랙스크린을 방지할 수 있습니다.
-                            view.post {
+                            // Fragment View가 생성되고 렌더링될 시간을 충분히 줍니다.
+                            Handler(Looper.getMainLooper()).postDelayed({
                                 fragment.startSafeDrive()
-                            }
+                            }, 500)
                         }
+                        view
                     },
                     modifier = Modifier.fillMaxSize()
                 )
