@@ -87,6 +87,7 @@ class MainActivity : AppCompatActivity() {
         
         val prefs = getSharedPreferences("TmapBridgePrefs", Context.MODE_PRIVATE)
         val savedKey = prefs.getString("APP_KEY", "") ?: ""
+        val isEditMode = intent.getBooleanExtra("EDIT_MODE", false)
 
         setContent {
             var appKey by remember { mutableStateOf(savedKey) }
@@ -97,7 +98,7 @@ class MainActivity : AppCompatActivity() {
 
             LaunchedEffect(Unit) {
                 registerGnssCallback()
-                if (savedKey.isNotBlank()) {
+                if (savedKey.isNotBlank() && !isEditMode) {
                     val hasPerm = ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     if (hasPerm) {
                         appKey = savedKey
@@ -121,6 +122,12 @@ class MainActivity : AppCompatActivity() {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
                                 stopService(serviceIntent)
                                 TmapDataManager.isDriving.value = false
+                                
+                                val restartIntent = Intent(this@MainActivity, MainActivity::class.java)
+                                restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                restartIntent.putExtra("EDIT_MODE", true)
+                                startActivity(restartIntent)
+                                finish()
                             },
                             onExitClick = {
                                 val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
