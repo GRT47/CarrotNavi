@@ -303,10 +303,12 @@ class MainActivity : AppCompatActivity() {
                             val fragment = TmapUISDK.getFragment()
                             fragmentManager.beginTransaction()
                                 .replace(view.id, fragment)
-                                .commitAllowingStateLoss()
+                                .commitNowAllowingStateLoss()
                             
-                            // Fragment를 붙인 뒤 바로 안전운행 모드 시작
-                            fragment.startSafeDrive()
+                            // Fragment View가 완전히 생성된 이후에 안전운행 모드를 시작해야 블랙스크린을 방지할 수 있습니다.
+                            view.post {
+                                fragment.startSafeDrive()
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxSize()
