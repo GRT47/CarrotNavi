@@ -101,22 +101,6 @@ class MainActivity : AppCompatActivity() {
                         appKey = savedKey
                         TmapDataManager.isDriving.value = true
                         TmapDataManager.authStatus.value = AuthStatus.LOADING
-                        
-                        TmapUISDK.Companion.initialize(this@MainActivity, "", appKey, "", "", object : TmapUISDK.InitializeListener {
-                            override fun onSuccess() {
-                                TmapDataManager.authStatus.value = AuthStatus.SUCCESS
-                                val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    startForegroundService(serviceIntent)
-                                } else {
-                                    startService(serviceIntent)
-                                }
-                            }
-                            override fun onFail(errorCode: Int, errorMsg: String?) {
-                                TmapDataManager.authStatus.value = AuthStatus.FAILED
-                            }
-                            override fun savedRouteInfoExists(dest: String?) {}
-                        }, null)
                     }
                 }
             }
@@ -154,29 +138,6 @@ class MainActivity : AppCompatActivity() {
                                 
                                 TmapDataManager.isDriving.value = true
                                 TmapDataManager.authStatus.value = AuthStatus.LOADING
-                                
-                                TmapUISDK.Companion.initialize(this@MainActivity, "", appKey, "", "", object : TmapUISDK.InitializeListener {
-                                    override fun onSuccess() {
-                                        Log.d("MainActivity", "TMAP SDK Initialized successfully")
-                                        TmapDataManager.authStatus.value = AuthStatus.SUCCESS
-                                        
-                                        // Start Background Service
-                                        val serviceIntent = Intent(this@MainActivity, TmapService::class.java)
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                            startForegroundService(serviceIntent)
-                                        } else {
-                                            startService(serviceIntent)
-                                        }
-                                    }
-
-                                    override fun onFail(errorCode: Int, errorMsg: String?) {
-                                        Log.e("MainActivity", "TMAP SDK Init failed: $errorCode - $errorMsg")
-                                        TmapDataManager.authStatus.value = AuthStatus.FAILED
-                                    }
-
-                                    override fun savedRouteInfoExists(dest: String?) {
-                                    }
-                                }, null)
                             }
                         )
                     }
@@ -303,10 +264,32 @@ class MainActivity : AppCompatActivity() {
                                 .replace(R.id.map_fragment_container, fragment)
                                 .commitNowAllowingStateLoss()
                             
-                            // Fragment View가 생성되고 렌더링될 시간을 충분히 줍니다.
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                fragment.startSafeDrive()
-                            }, 500)
+                            // Fragment View가 완전히 생성된 후 TMAP SDK 초기화를 진행합니다 (가이드 권장 순서)
+                            val currentAppKey = ctx.getSharedPreferences("TmapPrefs", Context.MODE_PRIVATE).getString("APP_KEY", "") ?: ""
+                            
+                            TmapUISDK.Companion.initialize(ctx as AppCompatActivity, "", currentAppKey, "", "", object : TmapUISDK.InitializeListener {
+                                override fun onSuccess() {
+                                    Log.d("MainActivity", "TMAP SDK Initialized successfully")
+                                    TmapDataManager.authStatus.value = AuthStatus.SUCCESS
+                                    
+                                    val serviceIntent = Intent(ctx, TmapService::class.java)
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        ctx.startForegroundService(serviceIntent)
+                                    } else {
+                                        ctx.startService(serviceIntent)
+                                    }
+                                    
+                                    // 초기화 성공 후 안전운행모드 시작
+                                    fragment.startSafeDrive()
+                                }
+
+                                override fun onFail(errorCode: Int, errorMsg: String?) {
+                                    Log.e("MainActivity", "TMAP SDK Init failed: $errorCode - $errorMsg")
+                                    TmapDataManager.authStatus.value = AuthStatus.FAILED
+                                }
+
+                                override fun savedRouteInfoExists(dest: String?) {}
+                            }, null)
                         }
                         view
                     },
