@@ -37,6 +37,7 @@ import android.location.GnssStatus
 import android.location.LocationManager
 import android.util.Log
 import com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK
+import androidx.compose.ui.platform.LocalContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -317,6 +318,11 @@ class MainActivity : AppCompatActivity() {
                                             ctx.startService(serviceIntent)
                                         }
                                         
+                                        val prefs = ctx.getSharedPreferences("TmapBridgePrefs", Context.MODE_PRIVATE)
+                                        if (prefs.getBoolean("IS_MUTED", false)) {
+                                            TmapUISDK.setVolume(ctx, 0)
+                                        }
+                                        
                                         // SurfaceView Compose 버그 우회: 지도 UI가 화면에 먼저 배치되도록 레이아웃 강제 갱신
                                         Handler(Looper.getMainLooper()).postDelayed({
                                             mapLoaded.value = true
@@ -383,19 +389,42 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    val context = LocalContext.current
+                    val prefs = context.getSharedPreferences("TmapBridgePrefs", Context.MODE_PRIVATE)
+                    var isMuted by remember { mutableStateOf(prefs.getBoolean("IS_MUTED", false)) }
+
+                    OutlinedButton(
+                        onClick = { 
+                            val newMuted = !isMuted
+                            isMuted = newMuted
+                            prefs.edit().putBoolean("IS_MUTED", newMuted).apply()
+                            
+                            if (newMuted) {
+                                TmapUISDK.setVolume(context, 0)
+                            } else {
+                                TmapUISDK.setVolume(context, 100)
+                            }
+                        },
+                        modifier = Modifier.weight(1f).height(56.dp)
+                    ) {
+                        Text(if (isMuted) "음소거 됨" else "소리 켜짐", fontSize = 14.sp)
+                    }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+
                     OutlinedButton(
                         onClick = onChangeKeyClick,
                         modifier = Modifier.weight(1f).height(56.dp)
                     ) {
-                        Text("App Key 변경", fontSize = 16.sp)
+                        Text("App Key 변경", fontSize = 14.sp)
                     }
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = onExitClick,
                         modifier = Modifier.weight(1f).height(56.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
                     ) {
-                        Text("앱 종료", fontSize = 16.sp, color = Color.White)
+                        Text("앱 종료", fontSize = 14.sp, color = Color.White)
                     }
                 }
             }
