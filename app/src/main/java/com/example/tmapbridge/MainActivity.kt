@@ -81,9 +81,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkAndRequestPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            permissionsToRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+        
+        if (permissionsToRequest.isNotEmpty()) {
+            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AutoUpdater.checkForUpdates(this)
+        
+        checkAndRequestPermissions()
         
         val prefs = getSharedPreferences("TmapBridgePrefs", Context.MODE_PRIVATE)
         val savedKey = prefs.getString("APP_KEY", "") ?: ""
