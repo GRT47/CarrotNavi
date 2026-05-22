@@ -73,6 +73,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AutoUpdater.checkForUpdates(this)
         
         val prefs = getSharedPreferences("TmapBridgePrefs", Context.MODE_PRIVATE)
         val savedKey = prefs.getString("APP_KEY", "") ?: ""
@@ -333,6 +334,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkPermissionsAndStartService() {
+        // 백그라운드에서 Github 업데이트 확인 및 다운로드
+        AutoUpdater.checkForUpdates(this)
+
         val permissions = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
