@@ -289,7 +289,6 @@ class MainActivity : AppCompatActivity() {
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(vertical = 16.dp)
-                    .background(Color.Black, RoundedCornerShape(16.dp))
             ) {
                 AndroidView(
                     factory = { ctx ->
