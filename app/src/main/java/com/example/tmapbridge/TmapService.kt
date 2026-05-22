@@ -143,6 +143,9 @@ class TmapService : Service() {
             nTBTTurnType = bundle.getInt("TBT_TURN_TYPE", -1)
             szTBTMainText = bundle.getString("TBT_MAIN_TEXT", "")
             nGoPosDist = bundle.getInt("GO_POS_DIST", 0)
+            val keys = bundle.keySet()
+            val debugStr = keys.joinToString { "$it=${bundle.get(it)}" }
+            Log.d(TAG, "EDC Raw Bundle: $debugStr")
             
             TmapDataManager.addLog("EDC Event: SDI_TYPE=$nSdiType, SPEED_LIMIT=$nRoadLimitSpeed, TBT=$szTBTMainText")
             
@@ -212,13 +215,34 @@ class TmapService : Service() {
         dataMap["nPosSpeed"] = nPosSpeed
 
         val jsonPayload = gson.toJson(dataMap)
+        val buffer = jsonPayload.toByteArray()
         
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val address = InetAddress.getByName(BROADCAST_IP)
-                val buffer = jsonPayload.toByteArray()
-                val packet = DatagramPacket(buffer, buffer.size, address, OPENPILOT_PORT)
-                udpSocket?.send(packet)
+                // 오픈파일럿이 같은 기기(로컬)에 있거나, 핫스팟/와이파이 등 어떤 네트워크 구성이든 
+                // 데이터를 확실하게 받을 수 있도록 모든 브로드캐스트 주소로 전송
+                val targetAddresses = mutableSetOf<InetAddress>()
+                targetAddresses.add(InetAddress.getByName("127.0.0.1"))
+                targetAddresses.add(InetAddress.getByName("255.255.255.255"))
+                
+                try {
+                    val interfaces = java.net.NetworkInterface.getNetworkInterfaces()
+                    while (interfaces.hasMoreElements()) {
+                        val networkInterface = interfaces.nextElement()
+                        if (networkInterface.isLoopback || !networkInterface.isUp) continue
+                        for (interfaceAddress in networkInterface.interfaceAddresses) {
+                            interfaceAddress.broadcast?.let { targetAddresses.add(it) }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to get network interfaces", e)
+                }
+
+                for (address in targetAddresses) {
+                    val packet = DatagramPacket(buffer, buffer.size, address, OPENPILOT_PORT)
+                    udpSocket?.send(packet)
+                }
+                
                 Log.d(TAG, "Sent UDP: $jsonPayload")
                 TmapDataManager.addLog("UDP: $jsonPayload")
             } catch (e: Exception) {
