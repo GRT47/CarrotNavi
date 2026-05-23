@@ -10,9 +10,9 @@ android {
     defaultConfig {
         applicationId = "com.example.tmapbridge"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 3
-        versionName = "1.0.2"
+        versionName = "1.0.3"
     }
 
     buildTypes {

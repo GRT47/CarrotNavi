@@ -63,6 +63,9 @@ class TmapService : Service() {
     private var nPosAngle = 0f
     private var nPosSpeed = 0f
     
+    // Debug Bundle
+    private var rawBundleMap: Map<String, Any> = emptyMap()
+    
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
@@ -132,24 +135,49 @@ class TmapService : Service() {
 
     private val edcObserver = Observer<Bundle> { bundle ->
         if (bundle != null && isRunning.get()) {
-            // Extract necessary values mapped directly to Openpilot expectations
-            // Note: Since we don't know the exact keys, we keep the default Tmap keys we guessed.
-            nRoadLimitSpeed = bundle.getInt("SPEED_LIMIT", 0) 
-            nSdiType = bundle.getInt("SDI_TYPE", -1)
-            nSdiSpeedLimit = bundle.getInt("SDI_SPEED_LIMIT", 0)
-            nSdiDist = bundle.getInt("SDI_DIST", -1)
-            nSdiBlockType = bundle.getInt("SDI_BLOCK_TYPE", -1)
-            nTBTDist = bundle.getInt("TBT_DIST", 0)
-            nTBTTurnType = bundle.getInt("TBT_TURN_TYPE", -1)
-            szTBTMainText = bundle.getString("TBT_MAIN_TEXT", "")
-            nGoPosDist = bundle.getInt("GO_POS_DIST", 0)
-            val keys = bundle.keySet()
-            val debugStr = keys.joinToString { "$it=${bundle.get(it)}" }
-            Log.d(TAG, "EDC Raw Bundle: $debugStr")
             
-            TmapDataManager.addLog("EDC Event: SDI_TYPE=$nSdiType, SPEED_LIMIT=$nRoadLimitSpeed, TBT=$szTBTMainText")
+            // 1. 기본 도로 제한 속도
+            nRoadLimitSpeed = bundle.getInt("limitSpeed", 0) 
             
-            // Do not override GPS speed/location with EDCData as it's unreliable/missing
+            // 2. SDI(안전운행) 정보 추출
+            val sdiObj = bundle.get("firstSDIInfo")
+            if (sdiObj != null) {
+                try {
+                    val sdiStr = gson.toJson(sdiObj)
+                    val sdiJson = org.json.JSONObject(sdiStr)
+                    
+                    nSdiType = sdiJson.optInt("nSdiType", -1)
+                    nSdiSpeedLimit = sdiJson.optInt("nSdiSpeedLimit", 0)
+                    nSdiDist = sdiJson.optInt("nSdiDist", -1)
+                    // 블록/구간 단속 변수들 매핑 (Openpilot 필수)
+                    nSdiBlockType = sdiJson.optInt("nSdiSection", sdiJson.optInt("nSdiBlockType", -1))
+                } catch (e: Exception) {
+                    Log.e(TAG, "SDI 파싱 에러", e)
+                }
+            } else {
+                nSdiType = -1
+                nSdiSpeedLimit = 0
+                nSdiDist = -1
+                nSdiBlockType = -1
+            }
+
+            // 3. TBT(경로/방향) 정보 추출 (Tmap SDK 2.x 에서는 TBT 정보가 다른 Key로 올 수 있음)
+            val tbtObj = bundle.get("firstTBTInfo") ?: bundle.get("tbtInfo")
+            if (tbtObj != null) {
+                try {
+                    val tbtStr = gson.toJson(tbtObj)
+                    val tbtJson = org.json.JSONObject(tbtStr)
+                    nTBTDist = tbtJson.optInt("nTbtDist", tbtJson.optInt("tbtDist", 0))
+                    nTBTTurnType = tbtJson.optInt("nTurnType", tbtJson.optInt("turnType", -1))
+                    szTBTMainText = tbtJson.optString("szMainText", tbtJson.optString("szTBTMainText", ""))
+                } catch (e: Exception) {}
+            }
+            
+            nGoPosDist = bundle.getInt("remainDistanceToGoPositionInMeter", 0)
+            
+            // 로그 기록 (UI 확인용)
+            TmapDataManager.addLog("EDC: nRoadLimit=$nRoadLimitSpeed, nSdiSpeed=$nSdiSpeedLimit, nSdiDist=$nSdiDist")
+            
             sendCurrentData()
         }
     }
@@ -200,7 +228,9 @@ class TmapService : Service() {
 
     private fun sendCurrentData() {
         val dataMap = mutableMapOf<String, Any>()
-        dataMap["nRoadLimitSpeed"] = nRoadLimitSpeed
+        if (nRoadLimitSpeed > 0) {
+            dataMap["nRoadLimitSpeed"] = nRoadLimitSpeed
+        }
         dataMap["nSdiType"] = nSdiType
         dataMap["nSdiSpeedLimit"] = nSdiSpeedLimit
         dataMap["nSdiDist"] = nSdiDist
@@ -213,6 +243,79 @@ class TmapService : Service() {
         dataMap["vpPosPointLon"] = vpPosPointLon
         dataMap["nPosAngle"] = nPosAngle
         dataMap["nPosSpeed"] = nPosSpeed
+        
+        // Openpilot이 요구하는 추가 변수들 자동 매핑
+        val bundle = TmapUISDK.observableEDCData.value
+        if (bundle != null) {
+            dataMap["roadcate"] = bundle.getInt("roadType", 8) // 기본값 8(일반도로)로 설정해 방지턱 무시 방지
+            
+            // firstSDIInfo의 모든 키를 루트로 복사 (nSdiBlockDist, nSdiBlockSpeed 등 포함)
+            val sdiObj = bundle.get("firstSDIInfo")
+            if (sdiObj != null) {
+                try {
+                    val sdiJson = org.json.JSONObject(gson.toJson(sdiObj))
+                    val keys = sdiJson.keys()
+                    while (keys.hasNext()) {
+                        val k = keys.next()
+                        dataMap[k] = sdiJson.get(k)
+                    }
+                    if (sdiJson.has("nSdiSection")) dataMap["nSdiBlockType"] = sdiJson.get("nSdiSection")
+                } catch (e: Exception) {}
+            }
+            
+            // secondSDIInfo 변환 (nSdiPlusType 등으로 매핑)
+            val sdiPlusObj = bundle.get("secondSDIInfo")
+            if (sdiPlusObj != null) {
+                try {
+                    val sdiJson = org.json.JSONObject(gson.toJson(sdiPlusObj))
+                    if (sdiJson.has("nSdiType")) dataMap["nSdiPlusType"] = sdiJson.get("nSdiType")
+                    if (sdiJson.has("nSdiSpeedLimit")) dataMap["nSdiPlusSpeedLimit"] = sdiJson.get("nSdiSpeedLimit")
+                    if (sdiJson.has("nSdiDist")) dataMap["nSdiPlusDist"] = sdiJson.get("nSdiDist")
+                    if (sdiJson.has("nSdiSection")) dataMap["nSdiPlusBlockType"] = sdiJson.get("nSdiSection")
+                    if (sdiJson.has("nSdiBlockSpeed")) dataMap["nSdiPlusBlockSpeed"] = sdiJson.get("nSdiBlockSpeed")
+                    if (sdiJson.has("nSdiBlockDist")) dataMap["nSdiPlusBlockDist"] = sdiJson.get("nSdiBlockDist")
+                } catch (e: Exception) {}
+            }
+            
+            // 디버그용 원본 데이터 전송 (raw_bundle)
+            val rawMap = mutableMapOf<String, Any>()
+            for (key in bundle.keySet()) {
+                val value = bundle.get(key)
+                if (value != null && key != "firstSDIInfo" && key != "secondSDIInfo") {
+                    rawMap[key] = value
+                }
+            }
+
+            // 엔진에서 직접 RGData 빼오기 시도
+            try {
+                val engine = com.skt.tmap.engine.navigation.TmapNavigation.getInstance()
+                val lastRg = engine?.lastRGData
+                val guidRg = engine?.routeGuidance
+                
+                if (lastRg != null) {
+                    rawMap["hidden_last_limit"] = lastRg.nRoadLimitSpeed
+                    rawMap["hidden_last_roadcate"] = lastRg.roadcate
+                    
+                    // 쓰레기 값(520 등) 방지를 위해 1~200km 사이의 정상 값일 때만 매핑
+                    // Tmap 엔진의 더미 값(120 등)이 실제 도로 제한속도를 덮어쓰지 않도록, EDC의 제한속도가 0일 때만 사용
+                    if (lastRg.nRoadLimitSpeed in 1..200 && nRoadLimitSpeed == 0) {
+                        dataMap["nRoadLimitSpeed"] = lastRg.nRoadLimitSpeed
+                    }
+                }
+                
+                if (guidRg != null) {
+                    rawMap["hidden_guidance_limit"] = guidRg.nRoadLimitSpeed
+                    
+                    // 만약 lastRg가 실패하고 guidRg만 정상일 경우를 대비 (단, EDC 제한속도가 없을 때만)
+                    if (guidRg.nRoadLimitSpeed in 1..200 && (lastRg == null || lastRg.nRoadLimitSpeed !in 1..200) && nRoadLimitSpeed == 0) {
+                        dataMap["nRoadLimitSpeed"] = guidRg.nRoadLimitSpeed
+                    }
+                }
+            } catch (e: Exception) {
+                rawMap["hidden_engine_error"] = e.message.toString()
+            }
+            dataMap["raw_bundle"] = rawMap
+        }
 
         val jsonPayload = gson.toJson(dataMap)
         val buffer = jsonPayload.toByteArray()
