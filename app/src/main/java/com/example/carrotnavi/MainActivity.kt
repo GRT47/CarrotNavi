@@ -48,6 +48,9 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        
+        // 자동 업데이트 체크
+        AutoUpdater.checkForUpdates(this)
 
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         val savedAppKey = sharedPref.getString("APP_KEY", "")
