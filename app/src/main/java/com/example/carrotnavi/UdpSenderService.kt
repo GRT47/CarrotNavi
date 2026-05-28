@@ -18,6 +18,7 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 import java.util.concurrent.atomic.AtomicBoolean
+import android.os.PowerManager
 
 class UdpSenderService : Service() {
 
@@ -32,6 +33,7 @@ class UdpSenderService : Service() {
     private val gson = Gson()
     
     private var packetIndex = 0
+    private var wakeLock: PowerManager.WakeLock? = null
 
     // Latest Safe Drive Info
     private var roadLimitSpeed = 0
@@ -54,6 +56,14 @@ class UdpSenderService : Service() {
         try {
             udpSocket = DatagramSocket()
             udpSocket?.broadcast = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        try {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CarrotNavi::UdpSenderWakelock")
+            wakeLock?.acquire()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -198,6 +208,14 @@ class UdpSenderService : Service() {
         }
         serviceScope.cancel()
         udpSocket?.close()
+        
+        try {
+            if (wakeLock?.isHeld == true) {
+                wakeLock?.release()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun createNotificationChannel() {
