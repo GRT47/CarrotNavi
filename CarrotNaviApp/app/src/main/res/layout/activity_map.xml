@@ -106,7 +106,16 @@
         <FrameLayout
             android:id="@+id/tmapUILayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
+        
+            <!-- 터치 방지용 투명 뷰 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@android:color/transparent" />
+        </FrameLayout>
 
     </FrameLayout>
     </LinearLayout>
