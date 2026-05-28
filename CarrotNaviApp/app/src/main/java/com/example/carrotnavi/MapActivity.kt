@@ -121,6 +121,9 @@ class MapActivity : AppCompatActivity() {
             finishAffinity()
         }
 
+        // 자동 업데이트 체크 (MainActivity가 바로 종료되므로 MapActivity에서도 체크)
+        AutoUpdater.checkForUpdates(this)
+
         initTmapSdk(appKey)
     }
 
