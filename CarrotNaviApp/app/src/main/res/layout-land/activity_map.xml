@@ -1,0 +1,123 @@
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    
+    <LinearLayout
+        android:id="@+id/llMainContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:background="#222222">
+
+    <!-- 왼쪽 지도 영역 -->
+    <FrameLayout
+        android:id="@+id/flMapContainer"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+        
+        <FrameLayout
+            android:id="@+id/tmapUILayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
+
+    <!-- 오른쪽 UI 영역 -->
+    <LinearLayout
+        android:id="@+id/llTopUI"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center"
+        android:background="#333333">
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tmap 초기화 중..."
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:layout_marginBottom="16dp"/>
+
+        <LinearLayout
+            android:id="@+id/llButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btnPipMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="백그라운드"
+                android:backgroundTint="#4CAF50"
+                android:layout_margin="4dp" />
+
+            <Button
+                android:id="@+id/btnScreenOff"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="화면꺼짐"
+                android:backgroundTint="#757575"
+                android:layout_margin="4dp" />
+
+            <Button
+                android:id="@+id/btnEditKey"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="설정"
+                android:backgroundTint="#FF9800"
+                android:layout_margin="4dp" />
+
+            <Button
+                android:id="@+id/btnExitApp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="앱 종료"
+                android:backgroundTint="#F44336"
+                android:layout_margin="4dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvGpsStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GPS: 확인 중..."
+            android:textColor="#FFEB3B"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+    </LinearLayout>
+
+    <!-- 절전 모드용 검은색 오버레이 -->
+    <View
+        android:id="@+id/vBlackOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <!-- PiP 모드용 심플 오버레이 -->
+    <FrameLayout
+        android:id="@+id/vPipOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:visibility="gone">
+        
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            android:src="@mipmap/ic_launcher" />
+    </FrameLayout>
+</FrameLayout>
