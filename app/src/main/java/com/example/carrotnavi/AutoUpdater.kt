@@ -38,7 +38,7 @@ object AutoUpdater {
                     val json = JSONObject(response)
                     val tagName = json.getString("tag_name").replace("v", "") // e.g. "1.0.1"
                     
-                    val currentVersion = "1.0.0" // TODO: Use BuildConfig.VERSION_NAME in production if enabled
+                    val currentVersion = BuildConfig.VERSION_NAME
 
                     if (isNewerVersion(currentVersion, tagName)) {
                         val assets = json.getJSONArray("assets")
