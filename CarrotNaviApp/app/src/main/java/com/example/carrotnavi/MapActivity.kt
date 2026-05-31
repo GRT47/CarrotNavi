@@ -163,6 +163,16 @@ class MapActivity : AppCompatActivity() {
 
     private fun muteTmapAudio() {
         try {
+            // 안드로이드 기본 설정 레벨에서 Tmap SDK의 자동 볼륨 조절 기능 강제 끄기 시도
+            val prefs = getSharedPreferences("user.settings.info", Context.MODE_PRIVATE)
+            prefs.edit()
+                .putInt("feature.naviVolume", 0)
+                .putInt("feature.musicVolumeAutoControlOnDriving", 0)
+                .putBoolean("feature.musicVolumeAutoControlOnDriving", false)
+                .putInt("feature_musicVolumeAutoControlOnDriving", 0)
+                .putBoolean("feature_musicVolumeAutoControlOnDriving", false)
+                .apply()
+
             val navClass = Class.forName("com.skt.tmap.engine.navigation.TmapNavigation")
             val getInstanceMethod = navClass.getMethod("getInstance")
             val navInstance = getInstanceMethod.invoke(null)
@@ -173,7 +183,7 @@ class MapActivity : AppCompatActivity() {
             if (audioInterface != null) {
                 val audioClass = Class.forName("com.skt.tmap.engine.navigation.TmapNavigationAudio")
                 
-                // 1. 기존처럼 Mute 처리 (만약을 대비해)
+                // 1. 기존처럼 Mute 처리
                 try {
                     val setMuteMethod = audioClass.getMethod("setMuteState", Byte::class.javaPrimitiveType)
                     setMuteMethod.invoke(audioInterface, 1.toByte())
@@ -181,10 +191,17 @@ class MapActivity : AppCompatActivity() {
                     // 무시
                 }
 
-                // 2. AudioPlayCallback을 가로채서 아무것도 안 하는 프록시를 주입
+                // 2. Volume을 0으로 명시적 설정 시도
+                try {
+                    val setVolumeMethod = audioClass.getMethod("setVolume", Int::class.javaPrimitiveType)
+                    setVolumeMethod.invoke(audioInterface, 0)
+                } catch (e: Exception) {
+                    // 무시
+                }
+
+                // 3. AudioPlayCallback 가로채기
                 val audioCallbackClass = Class.forName("com.skt.tmap.engine.navigation.TmapNavigationAudio\$AudioPlayCallback")
                 val handler = java.lang.reflect.InvocationHandler { _, _, _ ->
-                    // 콜백 메서드(onAudioPlaying 등)가 호출되어도 아무 동작도 하지 않음 (소리 가로채기)
                     null
                 }
                 val proxy = java.lang.reflect.Proxy.newProxyInstance(
@@ -196,7 +213,7 @@ class MapActivity : AppCompatActivity() {
                 val setAudioPlayCallbackMethod = audioClass.getMethod("setAudioPlayCallback", audioCallbackClass)
                 setAudioPlayCallbackMethod.invoke(audioInterface, proxy)
                 
-                Log.d("MapActivity", "Successfully intercepted Tmap AudioPlayCallback to prevent ducking.")
+                Log.d("MapActivity", "Successfully intercepted Tmap AudioPlayCallback and injected preferences.")
             }
         } catch (e: Exception) {
             Log.e("MapActivity", "Failed to mute Tmap audio", e)
