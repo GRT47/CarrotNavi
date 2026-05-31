@@ -127,6 +127,14 @@ class MapActivity : AppCompatActivity() {
         initTmapSdk(appKey)
     }
 
+    override fun getSystemService(name: String): Any? {
+        if (Context.AUDIO_SERVICE == name) {
+            // 강제로 Application의 가짜 AudioManager 반환
+            return applicationContext.getSystemService(name)
+        }
+        return super.getSystemService(name)
+    }
+
     private fun initTmapSdk(appKey: String) {
         // TmapUISDK 초기화
         initialize(this, "", appKey, "", "", object : TmapUISDK.InitializeListener {
