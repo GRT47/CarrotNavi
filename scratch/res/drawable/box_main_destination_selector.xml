@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- presssed -->
+    <item android:drawable="@drawable/box_main_destination_prs"  android:state_pressed="true"/> >
+    <!-- default -->
+    <item android:drawable="@drawable/box_main_destination_nor" />
+</selector>

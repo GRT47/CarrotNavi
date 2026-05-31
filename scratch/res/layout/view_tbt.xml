@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+                                                       
+                                                           
+                                                   
+
+    
+
+                                           
+
+                                                           
+
+                                                                                                
+
+                                                                                               
+
+                 
+                                 
+                         
+
+                 
+                              
+                             
+
+                 
+                              
+                         
+
+                 
+                         
+                         
+
+                 
+                                
+                             
+
+                 
+                                   
+                             
+
+                 
+                              
+                             
+
+                 
+                                    
+                             
+           
+
+    <RelativeLayout
+        android:id="@+id/view_tbt_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" android:tag="layout/view_tbt_0" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:bitdraw="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+
+        <!-- 가운데 TBT : 방향 + 거리 -->
+        <RelativeLayout
+            android:id="@+id/centerArea"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:tag="binding_1"                                                                                                   
+                                                                                                                                                                                                                                                                                      >
+
+            <ImageView
+                android:id="@+id/centerImg"
+                android:layout_width="@dimen/tmap_125dp"
+                android:layout_height="@dimen/tmap_125dp"
+                android:src="@drawable/ic_tbt_1_st_11" />
+
+            <com.tmapmobility.tmap.tmapsdk.ui.view.CustomTextView
+                android:id="@+id/centerFar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:tag="binding_2"                                                                                  
+                                                                                                                       
+                                                                                                                                          
+                                                                                                                                         
+                android:ellipsize="marquee"
+                android:fontFamily="@font/roboto_medium"
+                android:singleLine="true"
+                                                                                                  
+                android:textSize="@dimen/tmap_40dp"
+                bitdraw:textStroke="true"
+                                                                                                  
+                bitdraw:textStrokeWidth="@dimen/tmap_5dp" />
+
+        </RelativeLayout>
+
+        <!-- 가운데 TBT : 하이패스 요금 -->
+        <TextView
+            android:id="@+id/centerFee"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/tmap_50dp"
+            android:layout_centerHorizontal="true"
+            android:tag="binding_3"                                                                                                   
+                                                                                                                             
+            android:fontFamily="@font/skp_go_bm"
+            android:gravity="center"
+            android:maxLines="1"
+            android:paddingLeft="@dimen/tmap_18dp"
+            android:paddingRight="@dimen/tmap_18dp"
+            android:textColor="@color/color_fff356"
+            android:textSize="@dimen/tmap_20dp"
+                                                                                                                                                                                                                                                     />
+
+    </RelativeLayout>
+         

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_layout"
+    android:layout_width="@dimen/tmap_320dp"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ScrollView
+            android:id="@+id/message_container"
+            style="@style/popup_scrollbar_style"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/tmap_0dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_popup_up"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/message_body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/tmap_35dp"
+                android:paddingLeft="@dimen/tmap_20dp"
+                android:paddingRight="@dimen/tmap_20dp">
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/tmap_35dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="@dimen/tmap_6dp"
+                    android:textColor="@color/color_3a3a3a"
+                    android:textSize="@dimen/tmap_18dp"/>
+
+                <TextView
+                    android:id="@+id/message"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/tmap_15dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="@dimen/tmap_5dp"
+                    android:textColor="@color/color_7a7a7a"
+                    android:textSize="@dimen/tmap_13dp"
+                    android:textStyle="italic"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/error_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/tmap_14dp"
+                    android:gravity="center"
+                    android:textColor="@color/color_000000"
+                    android:visibility="gone"/>
+
+                <LinearLayout
+                    android:id="@+id/check_box_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/tmap_35dp"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <CheckBox
+                        android:id="@+id/dialog_check_box"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:checked="false"/>
+
+                    <TextView
+                        android:id="@+id/dialog_check_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="@dimen/tmap_9dp"
+                        android:text=""
+                        android:textColor="@color/color_000000"
+                        android:textSize="@dimen/tmap_17dp"/>
+
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/button_container"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/tmap_69dp"
+            android:layout_below="@id/message_container"
+            android:background="@drawable/bg_popup_down"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/left_button"
+                android:layout_width="@dimen/tmap_0dp"
+                android:layout_height="@dimen/tmap_55dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/button_cancel"
+                android:textColor="@color/color_b5b5b5"
+                android:textSize="@dimen/tmap_17dp"/>
+
+            <LinearLayout
+                android:id="@+id/right_button"
+                android:layout_width="@dimen/tmap_0dp"
+                android:layout_height="@dimen/tmap_55dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/right_button_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:gravity="center"
+                    android:text="@string/button_ok"
+                    android:textColor="@color/color_3a3a3a"
+                    android:textSize="@dimen/tmap_17dp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/prograss_count_num_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/tmap_6dp"
+                    android:text="5"
+                    android:textColor="@color/color_1cba6e"
+                    android:textSize="@dimen/tmap_18dp"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/icon_close_layout"
+        android:layout_width="@dimen/tmap_50dp"
+        android:layout_height="@dimen/tmap_50dp"
+        android:layout_alignParentRight="true"
+        android:paddingRight="@dimen/tmap_10dp"
+        android:paddingTop="@dimen/tmap_5dp"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/icon_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="@dimen/tmap_4dp"
+            android:layout_marginTop="@dimen/tmap_7dp"
+            android:background="@drawable/btn_cancel_set"
+            android:clickable="false"/>
+    </RelativeLayout>
+
+</RelativeLayout>

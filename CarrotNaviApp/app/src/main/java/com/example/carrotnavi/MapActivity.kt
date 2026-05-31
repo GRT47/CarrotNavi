@@ -124,6 +124,8 @@ class MapActivity : AppCompatActivity() {
         // 자동 업데이트 체크 (MainActivity가 바로 종료되므로 MapActivity에서도 체크)
         AutoUpdater.checkForUpdates(this)
 
+        dumpTmapAudioSettings()
+
         initTmapSdk(appKey)
     }
 
@@ -217,6 +219,34 @@ class MapActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             Log.e("MapActivity", "Failed to mute Tmap audio", e)
+        }
+    }
+
+    private fun dumpTmapAudioSettings() {
+        val kw = listOf("mute", "volume", "sound", "audio", "tts", "speech", "voice", "guide", "guidance", "announce", "alert")
+        try {
+            val classesToInspect = listOf(
+                "com.skt.tmap.engine.navigation.TmapNavigation",
+                "com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK",
+                "com.skt.tmap.engine.navigation.TmapNavigationAudio",
+                "com.skt.tmap.engine.navigation.TTSHelper",
+                "com.tmapmobility.tmap.tmapsdk.ui.fragment.NavigationFragment"
+            )
+
+            for (className in classesToInspect) {
+                try {
+                    val cls = Class.forName(className)
+                    for (m in cls.methods) {
+                        if (kw.any { m.name.contains(it, ignoreCase = true) }) {
+                            Log.e("TmapVolume", "$className method: ${m.name}(${m.parameterTypes.joinToString { it.name }}) -> ${m.returnType.name}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("TmapVolume", "Failed to inspect $className")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("TmapVolume", "Error in dumpTmapAudioSettings", e)
         }
     }
 

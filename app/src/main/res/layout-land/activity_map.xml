@@ -18,6 +18,97 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <!-- 실시간 오버레이 패널 -->
+        <LinearLayout
+            android:id="@+id/llRoadInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="16dp"
+            android:layout_gravity="top|center_horizontal"
+            android:elevation="6dp">
+
+            <!-- 과속 카메라 (SDI 이벤트) -->
+            <LinearLayout
+                android:id="@+id/llSdiEvent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_sdi_panel"
+                android:padding="16dp"
+                android:gravity="center"
+                android:layout_marginEnd="12dp"
+                android:visibility="gone">
+
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_speed_limit"/>
+                    <TextView
+                        android:id="@+id/tvEventSpeedLimit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="60"
+                        android:textColor="#000000"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvEventDist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="300m"
+                    android:textColor="#FFEB3B"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/tvEventType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="고정식 단속"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <!-- GPS 상태 패널 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_sdi_panel"
+                android:padding="16dp"
+                android:gravity="center"
+                android:layout_gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="GPS 상태"
+                    android:textColor="#AAAAAA"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:id="@+id/tvGpsStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="확인 중..."
+                    android:textColor="#FFEB3B"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+
         <!-- 지도 터치 방지용 투명 오버레이 -->
         <View
             android:layout_width="match_parent"
@@ -67,14 +158,6 @@
                 android:backgroundTint="#F44336" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvGpsStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="GPS: 확인 중..."
-            android:textColor="#FFEB3B"
-            android:textSize="14sp"
-            android:textStyle="bold" />
     </LinearLayout>
 
 </LinearLayout>

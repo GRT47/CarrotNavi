@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- 시간 값 (N) -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/hours_value_text_view"
+        style="@style/NavigationEta.TimeText.Day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/tmobi_heavy"
+        android:letterSpacing="@dimen/navigation_eta_value_text_line_spacing"
+        android:textSize="@dimen/navigation_eta_time_value_text_size"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/hours_unit_text_view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="5" />
+
+    <!-- 시간 단위 (시간) -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/hours_unit_text_view"
+        style="@style/NavigationEta.TimeText.Day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/tmobi_bold"
+        android:text="@string/navigation_eta_hour_unit"
+        android:textSize="@dimen/navigation_eta_time_unit_text_size"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBaseline_toBaselineOf="@id/hours_value_text_view"
+        app:layout_constraintEnd_toStartOf="@id/minutes_value_text_view"
+        app:layout_constraintStart_toEndOf="@id/hours_value_text_view"
+        app:layout_constraintTop_toTopOf="@id/hours_value_text_view" />
+
+    <!-- 시간 그룹 (시간 값 + 단위) -->
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/hours_group"
+        android:layout_width="@dimen/tmap_0dp"
+        android:layout_height="@dimen/tmap_0dp"
+        app:constraint_referenced_ids="hours_value_text_view,hours_unit_text_view" />
+
+    <!-- 분 값 (N) -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/minutes_value_text_view"
+        style="@style/NavigationEta.TimeText.Day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/tmap_2dp"
+        android:fontFamily="@font/tmobi_heavy"
+        android:letterSpacing="@dimen/navigation_eta_value_text_line_spacing"
+        android:textSize="@dimen/navigation_eta_time_value_text_size"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/minutes_unit_text_view"
+        app:layout_constraintStart_toEndOf="@id/hours_unit_text_view"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_goneMarginStart="@dimen/tmap_0dp"
+        tools:text="10" />
+
+    <!-- 분 단위 (분) -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/minutes_unit_text_view"
+        style="@style/NavigationEta.TimeText.Day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/tmobi_bold"
+        android:text="@string/navigation_eta_minute_unit"
+        android:textSize="@dimen/navigation_eta_time_unit_text_size"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBaseline_toBaselineOf="@id/minutes_value_text_view"
+        app:layout_constraintEnd_toEndOf="@id/time_barrier"
+        app:layout_constraintStart_toEndOf="@id/minutes_value_text_view" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/time_barrier"
+        android:layout_width="@dimen/tmap_0dp"
+        android:layout_height="@dimen/tmap_0dp"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="minutes_unit_text_view,hours_unit_text_view" />
+
+    <!-- 분 그룹 (분 값 + 단위) -->
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/minutes_group"
+        android:layout_width="@dimen/tmap_0dp"
+        android:layout_height="@dimen/tmap_0dp"
+        app:constraint_referenced_ids="minutes_value_text_view,minutes_unit_text_view" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

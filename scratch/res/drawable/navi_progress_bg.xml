@@ -1,0 +1,12 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="@dimen/tmap_6dp"
+        android:bottom="@dimen/tmap_1dp"
+        android:gravity="center"
+        android:top="@dimen/tmap_2dp">
+        <shape>
+            <corners android:radius="@dimen/tmap_3dp" />
+            <solid android:color="@color/deprecated_gray_300" />
+        </shape>
+    </item>
+</layer-list>

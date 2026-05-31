@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.carrotnavi.DumpMethods" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-05-28T11:18:38.254Z" hostname="GRT_DESKTOP" time="0.067">
+  <properties/>
+  <testcase name="dumpBackgroundMethods" classname="com.example.carrotnavi.DumpMethods" time="0.067"/>
+  <system-out><![CDATA[=== NavigationFragment Methods ===
+=== TmapUISDK Methods ===
+runSoundCheck
+=== TmapUISDK.Companion Methods ===
+runSoundCheck
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

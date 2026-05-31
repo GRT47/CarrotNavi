@@ -1,0 +1,102 @@
+[
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\xml_data_extraction_rules.xml.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\xml\\data_extraction_rules.xml"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-xhdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-xhdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-xxxhdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "com.example.carrotnavi.app-debug-71:/layout_activity_map.xml.flat",
+        "source": "com.example.carrotnavi.app-main-73:/layout/activity_map.xml"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-hdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-hdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-hdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-xxxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-xxhdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-xxhdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-xxxhdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-xxxhdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-hdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-hdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-mdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-mdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-xhdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\layout_activity_map.xml.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\layout\\activity_map.xml"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-xxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\layout_activity_main.xml.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\layout-land_activity_map.xml.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\layout-land\\activity_map.xml"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-xxhdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\drawable_ic_launcher_background.xml.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\drawable\\ic_launcher_background.xml"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-mdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\xml_backup_rules.xml.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\xml\\backup_rules.xml"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\drawable_ic_launcher_foreground.xml.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\drawable\\ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.example.carrotnavi.app-debug-71:/layout-land_activity_map.xml.flat",
+        "source": "com.example.carrotnavi.app-main-73:/layout-land/activity_map.xml"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-xhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\mipmap-mdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\mipmap-mdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-debug-71:\\xml_file_paths.xml.flat",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\xml\\file_paths.xml"
+    }
+]

@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+                                                       
+                                                   
+
+    
+                                           
+                                                           
+
+                 
+                              
+                         
+
+                 
+                              
+                             
+
+                 
+                                  
+                                                                           
+
+                 
+                                     
+                             
+           
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/tmap_8dp"
+        android:tag="layout/highway_full_mode_view_0"                                        xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+
+        <!-- 최 상단 가이드라인(guideline) -->
+        <View
+            android:id="@+id/highway_full_mode_top_margin_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@color/transparent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 출구 정보 카드 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/highway_full_mode_exit_layout"
+            android:layout_width="@dimen/tmap_212dp"                                                                                                       
+            android:layout_height="@dimen/tmap_86dp"                                                                                                     
+            android:layout_marginRight="@dimen/tmap_11dp"
+            android:background="@drawable/highway_full_mode_card_background"
+            android:tag="binding_1"                                                           
+            app:layout_constraintBottom_toTopOf="@id/highway_full_mode_recycler_view"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/highway_full_mode_top_margin_view"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <!-- 출구 이름 -->
+            <TextView
+                android:id="@+id/highway_full_exit_name_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/tmap_12dp"
+                android:layout_marginTop="@dimen/tmap_12dp"
+                android:layout_marginRight="@dimen/tmap_4dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/skp_go_bm"
+                android:maxLines="1"
+                android:tag="binding_2"                  
+                android:textColor="@color/color_ffffff"
+                android:textSize="@dimen/tmap_18dp"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/highway_full_exit_img"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="서울TG" />
+
+            <!-- 출구 아이콘 -->
+            <ImageView
+                android:id="@+id/highway_full_exit_img"
+                android:layout_width="@dimen/tmap_25dp"
+                android:layout_height="@dimen/tmap_25dp"
+                app:layout_constraintRight_toLeftOf="@id/highway_full_exit_cong_bar"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="@dimen/tmap_12dp"
+                android:layout_marginRight="@dimen/tmap_12dp"
+                android:src="@drawable/icn_highway_tbt_goal"/>
+
+            <!-- 혼잡도 바 -->
+            <View
+                android:id="@+id/highway_full_exit_cong_bar"
+                android:layout_width="@dimen/tmap_8dp"
+                android:layout_height="@dimen/tmap_62dp"                                                                                                     
+                android:layout_marginRight="@dimen/tmap_12dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:tag="binding_3"                          />
+
+            <!-- 통행료 -->
+            <TextView
+                android:id="@+id/highway_full_exit_fee_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/tmap_12dp"
+                android:layout_marginBottom="@dimen/tmap_12dp"
+                android:fontFamily="@font/skp_go_bm"
+                android:tag="binding_4"                  
+                android:textColor="@color/color_fff356"
+                android:textSize="@dimen/tmap_14dp"
+                                                                                                                                                  
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                tools:text="요금 3,200원" />
+
+            <!-- 주유소 정보 (유종별) - 롤링 표시 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/highway_exit_oil_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/tmap_12dp"
+                android:layout_marginBottom="@dimen/tmap_12dp"
+                android:tag="binding_5"                                                                                                                                      
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent">
+
+                <ImageView
+                    android:id="@+id/highway_exit_oil_brand_img"
+                    android:layout_width="@dimen/tmap_22dp"
+                    android:layout_height="@dimen/tmap_22dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:tag="binding_6"                              />
+
+                <ImageView
+                    android:id="@+id/highway_exit_oil_type_img"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/tmap_2dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toRightOf="@id/highway_exit_oil_brand_img"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/highway_exit_oil_price_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/tmap_3dp"
+                    android:fontFamily="@font/skp_go_bm"
+                    android:textColor="@color/color_f0f0f0"
+                    android:textSize="@dimen/tmap_14dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toRightOf="@id/highway_exit_oil_type_img"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- 주유소 정보 없음 (휴게소인데 유종정보 없을 때) - 롤링 표시 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/highway_exit_no_oil_info_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/tmap_12dp"
+                android:layout_marginBottom="@dimen/tmap_12dp"
+                android:tag="binding_7"                                                                                                                                       
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent">
+
+                <ImageView
+                    android:id="@+id/highway_exit_no_oil_brand_img"
+                    android:layout_width="@dimen/tmap_22dp"
+                    android:layout_height="@dimen/tmap_22dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:tag="binding_8"                              />
+
+                <ImageView
+                    android:id="@+id/highway_exit_no_oil_type_img"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/tmap_2dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toRightOf="@id/highway_exit_no_oil_brand_img"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/tmap_3dp"
+                    android:fontFamily="@font/skp_go_bm"
+                    android:text="@string/str_update_oil_text"
+                    android:textColor="@color/color_f0f0f0"
+                    android:textSize="@dimen/tmap_14dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toRightOf="@id/highway_exit_no_oil_type_img"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- EV 충전 간단 정보 (휴게소일 때) - 롤링 표시 -->
+            <LinearLayout
+                android:id="@+id/highway_exit_electric_simple_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/tmap_12dp"
+                android:layout_marginBottom="@dimen/tmap_12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:tag="binding_9"                                                                                                                                                                            
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent">
+
+                <ImageView
+                    android:layout_width="@dimen/tmap_14dp"
+                    android:layout_height="@dimen/tmap_14dp"
+                    android:src="@drawable/icn_highway_mini_electric" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/tmap_4dp"
+                    android:fontFamily="@font/skp_go_bm"
+                    android:textColor="@color/color_f0f0f0"
+                    android:textSize="@dimen/tmap_14dp" />
+
+            </LinearLayout>
+
+            <!-- EV 충전 상세 정보 (휴게소가 아닐 때) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/highway_exit_electric_detail_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/tmap_12dp"
+                android:tag="binding_10"                                                                                                
+                                                                                                                                                                                                                               
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/highway_exit_electric_top_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageView
+                        android:id="@+id/highway_exit_electric_img"
+                        android:layout_width="@dimen/tmap_14dp"
+                        android:layout_height="@dimen/tmap_14dp"
+                        android:src="@drawable/icn_highway_mini_electric"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/highway_exit_electric_slow_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/tmap_4dp"
+                        android:layout_marginTop="@dimen/tmap_1dp"
+                        android:fontFamily="@font/skp_go_bm"
+                        android:text="@string/electric_type_slow"
+                        android:tag="binding_11"                                                                                        
+                                                                                                                                      
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toRightOf="@id/highway_exit_electric_img"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/highway_exit_electric_dc_combo_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/tmap_4dp"
+                        android:layout_marginTop="@dimen/tmap_1dp"
+                        android:fontFamily="@font/skp_go_bm"
+                        android:text="@string/electric_type_dc_combo"
+                        android:tag="binding_12"                                                                                     
+                                                                                                                                      
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toRightOf="@id/highway_exit_electric_slow_text"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/highway_exit_electric_bottom_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/tmap_3dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/highway_exit_electric_top_layout">
+
+                    <TextView
+                        android:id="@+id/highway_exit_electric_dc_demo_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/skp_go_bm"
+                        android:text="@string/electric_type_dc_demo"
+                        android:tag="binding_13"                                                                                   
+                                                                                                                                      
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/highway_exit_electric_ac_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/tmap_4dp"
+                        android:fontFamily="@font/skp_go_bm"
+                        android:text="@string/electric_type_ac"
+                        android:tag="binding_14"                                                                                 
+                                                                                                                                      
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toRightOf="@id/highway_exit_electric_dc_demo_text"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- 화장실 혼잡도 정보 (롤링 표시) -->
+            <LinearLayout
+                android:id="@+id/highway_exit_restroom_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/tmap_22dp"
+                android:layout_marginLeft="@dimen/tmap_12dp"
+                android:layout_marginBottom="@dimen/tmap_12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:tag="binding_15"                                                                                                       
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent">
+
+                <!-- 여자 화장실 -->
+                <LinearLayout
+                    android:id="@+id/highway_exit_female_restroom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/tmap_20dp"
+                        android:layout_height="@dimen/tmap_20dp" />
+
+                    <TextView
+                        android:id="@+id/highway_exit_female_restroom_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/tmap_2dp"
+                        android:fontFamily="@font/skp_go_bm"
+                        android:includeFontPadding="false"
+                        android:textSize="@dimen/tmap_13dp" />
+
+                </LinearLayout>
+
+                <!-- 남자 화장실 -->
+                <LinearLayout
+                    android:id="@+id/highway_exit_male_restroom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/tmap_4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/tmap_20dp"
+                        android:layout_height="@dimen/tmap_20dp" />
+
+                    <TextView
+                        android:id="@+id/highway_exit_male_restroom_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/tmap_2dp"
+                        android:fontFamily="@font/skp_go_bm"
+                        android:includeFontPadding="false"
+                        android:textSize="@dimen/tmap_13dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- 남은 거리 -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/highway_full_exit_distance_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/tmap_12dp"
+                android:layout_marginBottom="@dimen/tmap_7dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/highway_full_exit_cong_bar">
+
+                <TextView
+                    android:id="@+id/highway_full_exit_distance_digit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto_medium"
+                    android:textColor="@color/color_ffffff"
+                    android:textSize="@dimen/tmap_28dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:tag="binding_16"                         
+                    tools:text="10" />
+
+                <TextView
+                    android:id="@+id/highway_full_exit_distance_unit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/tmap_2dp"
+                    android:layout_marginBottom="@dimen/tmap_5dp"
+                    android:fontFamily="@font/skp_go_bm"
+                    android:textColor="@color/color_ffffff"
+                    android:textSize="@dimen/tmap_15dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toRightOf="@id/highway_full_exit_distance_digit"
+                    android:tag="binding_17"                              
+                    tools:text="km" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- TBT 리스트 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/highway_full_mode_recycler_view"
+            android:layout_width="@dimen/tmap_234dp"                                                                                                       
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/tmap_11dp"
+            android:tag="binding_18"                                                             
+                                                                                                                                     
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constrainedHeight="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/highway_full_mode_exit_layout"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <!-- 스크롤 더보기 화살표 -->
+        <ImageView
+            android:id="@+id/highway_full_scroll_more_img"
+            android:layout_width="@dimen/tmap_24dp"
+            android:layout_height="@dimen/tmap_14dp"
+            android:src="@drawable/icn_highway_card_more_arrow"
+            android:tag="binding_19"                                             
+            app:layout_constraintLeft_toLeftOf="@id/highway_full_mode_exit_layout"
+            app:layout_constraintRight_toRightOf="@id/highway_full_mode_exit_layout"
+            app:layout_constraintTop_toBottomOf="@id/highway_full_mode_exit_layout" />
+
+        <!-- 닫기 버튼 -->
+        <ImageView
+            android:id="@+id/highway_full_mode_close_btn"
+            android:layout_width="@dimen/tmap_42dp"
+            android:layout_height="@dimen/tmap_42dp"
+            android:layout_marginLeft="@dimen/tmap_12dp"
+            android:layout_marginTop="@dimen/tmap_4dp"
+            android:src="@drawable/ic_btn_highway_x_full"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/highway_full_mode_top_margin_view" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+         

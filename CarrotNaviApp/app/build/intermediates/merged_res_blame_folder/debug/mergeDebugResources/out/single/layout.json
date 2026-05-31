@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-mergeDebugResources-70:\\layout\\activity_map.xml",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\layout\\activity_map.xml"
+    },
+    {
+        "merged": "com.example.carrotnavi.app-mergeDebugResources-70:/layout/activity_map.xml",
+        "source": "com.example.carrotnavi.app-main-73:/layout/activity_map.xml"
+    },
+    {
+        "merged": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-mergeDebugResources-70:\\layout\\activity_main.xml",
+        "source": "C:\\Users\\dlwns\\.gradle\\daemon\\9.1.0\\com.example.carrotnavi.app-main-73:\\layout\\activity_main.xml"
+    }
+]

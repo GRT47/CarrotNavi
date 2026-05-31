@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- complex_top_tbt 가로 모드: root width=wrap_content, first_tbt 320dp×67dp, complex_lane 320dp, marginTop=-12dp -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <include
+        android:id="@+id/first_tbt"
+        layout="@layout/navigation_complex_first_top_tbt"
+        android:layout_width="@dimen/tmap_320dp"
+        android:layout_height="@dimen/tmap_67dp"
+        app:layout_constraintBottom_toTopOf="@id/first_complex_lane"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <com.tmapmobility.tmap.tmapsdk.ui.view.lane.NavigationComplexLane
+        android:id="@+id/first_complex_lane"
+        android:layout_width="@dimen/tmap_320dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-12dp"
+        app:layout_constraintBottom_toTopOf="@id/second_tbt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/first_tbt"
+        tools:background="#1B7C51E5"
+        tools:layout_height="@dimen/tmap_48dp" />
+
+    <include
+        android:id="@+id/second_tbt"
+        layout="@layout/navigation_second_top_tbt"
+        android:layout_width="@dimen/tmap_128dp"
+        android:layout_height="@dimen/tmap_56dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/first_complex_lane" />
+</androidx.constraintlayout.widget.ConstraintLayout>

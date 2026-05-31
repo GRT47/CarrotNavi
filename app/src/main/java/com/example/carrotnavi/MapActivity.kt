@@ -137,6 +137,9 @@ class MapActivity : AppCompatActivity() {
                     Log.e("SdiDebug", "observableEDCData: $it")
                     
                     TmapUISDK.setVolume(this@MapActivity, 0)
+                    if (it is android.os.Bundle) {
+                        extractAndDisplaySdiInfo(it)
+                    }
                 }
             })
 
@@ -145,15 +148,15 @@ class MapActivity : AppCompatActivity() {
                 val locationManager = getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
                 locationManager.registerGnssStatusCallback(object : android.location.GnssStatus.Callback() {
                     override fun onStarted() {
-                        binding.tvGpsStatus.text = "GPS 상태: 탐색 중"
+                        binding.tvGpsStatus.text = "탐색 중"
                         binding.tvGpsStatus.setTextColor(android.graphics.Color.YELLOW)
                     }
                     override fun onStopped() {
-                        binding.tvGpsStatus.text = "GPS 상태: 끊김 (NO_SIGNAL)"
+                        binding.tvGpsStatus.text = "끊김 (NO_SIGNAL)"
                         binding.tvGpsStatus.setTextColor(android.graphics.Color.RED)
                     }
                     override fun onFirstFix(ttffMillis: Int) {
-                        binding.tvGpsStatus.text = "GPS 상태: 수신 양호"
+                        binding.tvGpsStatus.text = "수신 양호"
                         binding.tvGpsStatus.setTextColor(android.graphics.Color.GREEN)
                     }
                     override fun onSatelliteStatusChanged(status: android.location.GnssStatus) {
@@ -162,10 +165,10 @@ class MapActivity : AppCompatActivity() {
                             if (status.usedInFix(i)) usedInFix++
                         }
                         if (usedInFix >= 4) {
-                            binding.tvGpsStatus.text = "GPS 상태: GOOD (위성 $usedInFix 개)"
+                            binding.tvGpsStatus.text = "GOOD (위성 $usedInFix)"
                             binding.tvGpsStatus.setTextColor(android.graphics.Color.GREEN)
                         } else {
-                            binding.tvGpsStatus.text = "GPS 상태: BAD (위성 $usedInFix 개)"
+                            binding.tvGpsStatus.text = "BAD (위성 $usedInFix)"
                             binding.tvGpsStatus.setTextColor(android.graphics.Color.RED)
                         }
                     }
@@ -175,12 +178,6 @@ class MapActivity : AppCompatActivity() {
             }
         }
     }
-
-    /*
-    private fun processSdiInfo(sdiInfo: TmapSdiInfo) {
-        // Dummy
-    }
-    */
 
     private fun startUdpSenderService() {
         val intent = Intent(this, UdpSenderService::class.java)
@@ -195,5 +192,47 @@ class MapActivity : AppCompatActivity() {
         super.onDestroy()
         val intent = Intent(this, UdpSenderService::class.java)
         stopService(intent)
+    }
+
+
+    private fun extractAndDisplaySdiInfo(bundle: android.os.Bundle) {
+        try {
+            val sdiObj = bundle.get("firstSDIInfo")
+            if (sdiObj != null) {
+                val sdiJsonStr = if (sdiObj is String) sdiObj else com.google.gson.Gson().toJson(sdiObj)
+                val json = org.json.JSONObject(sdiJsonStr)
+                
+                val sdiType = json.optInt("nSdiType", 0)
+                val sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
+                val sdiDist = json.optInt("nSdiDist", 0)
+                
+                runOnUiThread {
+                    if (sdiType > 0 || (sdiSpeedLimit > 0 && sdiDist > 0)) {
+                        binding.llSdiEvent.visibility = android.view.View.VISIBLE
+                        binding.tvEventSpeedLimit.text = if (sdiSpeedLimit > 0) sdiSpeedLimit.toString() else "-"
+                        binding.tvEventDist.text = "${sdiDist}m"
+                        
+                        // SDI 종류 매핑 (기본적인 몇 가지만)
+                        val typeName = when (sdiType) {
+                            1 -> "과속 단속"
+                            2 -> "구간 단속"
+                            3 -> "이동식 단속"
+                            4 -> "신호 단속"
+                            7 -> "버스 전용차로 단속"
+                            else -> if (sdiSpeedLimit > 0) "단속 카메라" else "주의 구간"
+                        }
+                        binding.tvEventType.text = typeName
+                    } else {
+                        binding.llSdiEvent.visibility = android.view.View.GONE
+                    }
+                }
+            } else {
+                runOnUiThread {
+                    binding.llSdiEvent.visibility = android.view.View.GONE
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MapActivity", "Error extracting SDI Info: ${e.message}")
+        }
     }
 }
