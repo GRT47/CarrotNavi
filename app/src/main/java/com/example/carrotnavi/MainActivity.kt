@@ -40,6 +40,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        dumpTmapAudioSettings()
+        
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -126,5 +129,47 @@ class MainActivity : AppCompatActivity() {
     private fun startMapActivity() {
         val intent = Intent(this, MapActivity::class.java)
         startActivity(intent)
+    }
+
+    private fun dumpTmapAudioSettings() {
+        android.util.Log.e("TmapVolume", "dumpTmapAudioSettings started")
+        val kw = listOf("mute", "volume", "sound", "audio", "tts", "speech", "voice", "guide", "guidance", "announce", "alert")
+        val sb = java.lang.StringBuilder()
+        sb.append("dumpTmapAudioSettings started\n")
+        try {
+            val classesToInspect = listOf(
+                "com.skt.tmap.engine.navigation.TmapNavigation",
+                "com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK",
+                "com.skt.tmap.engine.navigation.TmapNavigationAudio",
+                "com.skt.tmap.engine.navigation.TTSHelper",
+                "com.tmapmobility.tmap.tmapsdk.ui.fragment.NavigationFragment"
+            )
+
+            for (className in classesToInspect) {
+                try {
+                    val cls = Class.forName(className)
+                    for (m in cls.methods) {
+                        if (kw.any { m.name.contains(it, ignoreCase = true) }) {
+                            val line = "$className method: ${m.name}(${m.parameterTypes.joinToString { it.name }}) -> ${m.returnType.name}\n"
+                            sb.append(line)
+                            android.util.Log.e("TmapVolume", line.trim())
+                        }
+                    }
+                } catch (e: Throwable) {
+                    sb.append("Failed to inspect $className\n")
+                    android.util.Log.e("TmapVolume", "Failed to inspect $className")
+                }
+            }
+        } catch (e: Throwable) {
+            sb.append("Error in dumpTmapAudioSettings: ${e.message}\n")
+            android.util.Log.e("TmapVolume", "Error in dumpTmapAudioSettings", e)
+        }
+        
+        try {
+            val file = java.io.File(getFilesDir(), "tmap_dump.txt")
+            file.writeText(sb.toString())
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

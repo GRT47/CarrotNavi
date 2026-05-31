@@ -1,7 +1,8 @@
 plugins {
-  alias(libs.plugins.android.application)
+  id("com.android.application")
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
+  id("com.example.carrotnavi.audiofocus")
 }
 
 android {
@@ -11,8 +12,8 @@ android {
         applicationId = "com.example.carrotnavi"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
     }
 
     buildTypes {

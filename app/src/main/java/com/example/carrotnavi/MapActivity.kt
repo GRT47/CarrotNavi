@@ -36,6 +36,9 @@ class MapActivity : AppCompatActivity() {
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         val appKey = sharedPref.getString("APP_KEY", "") ?: ""
         
+        // Force Tmap SDK to run in background
+        getSharedPreferences("user.settings.info", Context.MODE_PRIVATE).edit().putBoolean("set_suspend_in_background", false).apply()
+        
         if (appKey.isEmpty()) {
             Toast.makeText(this, "App Key가 설정되지 않았습니다.", Toast.LENGTH_SHORT).show()
             finish()
@@ -67,13 +70,13 @@ class MapActivity : AppCompatActivity() {
                         val methods = NavigationFragment::class.java.methods
                         for (m in methods) {
                             if (m.name.contains("mute", ignoreCase = true) || m.name.contains("volume", ignoreCase = true) || m.name.contains("sound", ignoreCase = true) || m.name.contains("audio", ignoreCase = true)) {
-                                Log.e("TmapVolume", "NavigationFragment method: \${m.name}")
+                                Log.e("TmapVolume", "NavigationFragment method: ${m.name}")
                             }
                         }
                         val uiMethods = TmapUISDK::class.java.methods
                         for (m in uiMethods) {
                             if (m.name.contains("mute", ignoreCase = true) || m.name.contains("volume", ignoreCase = true) || m.name.contains("sound", ignoreCase = true) || m.name.contains("audio", ignoreCase = true)) {
-                                Log.e("TmapVolume", "TmapUISDK method: \${m.name}")
+                                Log.e("TmapVolume", "TmapUISDK method: ${m.name}")
                             }
                         }
                         
@@ -81,7 +84,7 @@ class MapActivity : AppCompatActivity() {
                         val compMethods = TmapUISDK.Companion::class.java.methods
                         for (m in compMethods) {
                             if (m.name.contains("mute", ignoreCase = true) || m.name.contains("volume", ignoreCase = true) || m.name.contains("sound", ignoreCase = true) || m.name.contains("audio", ignoreCase = true)) {
-                                Log.e("TmapVolume", "TmapUISDK.Companion method: \${m.name}")
+                                Log.e("TmapVolume", "TmapUISDK.Companion method: ${m.name}")
                             }
                         }
                     } catch (e: Exception) {}
