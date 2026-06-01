@@ -215,13 +215,14 @@ class MapActivity : AppCompatActivity() {
                         binding.tvEventSpeedLimit.text = if (sdiSpeedLimit > 0) sdiSpeedLimit.toString() else "-"
                         binding.tvEventDist.text = "${sdiDist}m"
                         
-                        // SDI 종류 매핑 (기본적인 몇 가지만)
                         val typeName = when (sdiType) {
                             1 -> "과속 단속"
                             2 -> "구간 단속"
                             3 -> "이동식 단속"
                             4 -> "신호 단속"
                             7 -> "버스 전용차로 단속"
+                            22 -> "과속방지턱"
+                            33 -> "어린이보호구역"
                             else -> if (sdiSpeedLimit > 0) "단속 카메라" else "주의 구간"
                         }
                         binding.tvEventType.text = typeName
