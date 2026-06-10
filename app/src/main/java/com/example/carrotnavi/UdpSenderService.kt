@@ -97,7 +97,7 @@ class UdpSenderService : Service() {
                     // 1. limitSpeed 처리
                     val limitSpeedStr = bundle.getString("limitSpeed", bundle.getInt("limitSpeed", 0).toString())
                     val currentLimitSpeed = limitSpeedStr.toIntOrNull() ?: 0
-                    if (currentLimitSpeed > 0) {
+                    if (currentLimitSpeed >= 30) {
                         roadLimitSpeed = currentLimitSpeed
                     }
                     
@@ -129,13 +129,19 @@ class UdpSenderService : Service() {
                             json.put("nSdiDist", 150)
                         }
                         
-                        if (sdiSpeedLimit > 0) {
+                        if (sdiSpeedLimit >= 30) {
                             roadLimitSpeed = sdiSpeedLimit
                         }
                         
                         if (sdiType == 0 && sdiSpeedLimit > 0 && sdiDist > 0) {
                             json.put("nSdiType", 1) // 강제로 1로 세팅
                         }
+                    }
+                    
+                    // 1.5. Reflection을 통한 도로 기본 제한속도 추출 (TMAP 코어 엔진)
+                    val realRoadLimit = getRoadLimitSpeedFromEngine()
+                    if (realRoadLimit >= 30) {
+                        roadLimitSpeed = realRoadLimit
                     }
                     
                     json.put("nRoadLimitSpeed", roadLimitSpeed)
@@ -261,4 +267,41 @@ class UdpSenderService : Service() {
         .setContentText("MD 가이드 기반 안전운행 정보 UDP 송신 중...")
         .setSmallIcon(R.mipmap.ic_launcher)
         .build()
+
+    // Reflection Caching
+    private var sdkManagerCompanion: Any? = null
+    private var getInstanceMethod: java.lang.reflect.Method? = null
+    private var getRecentRGDataMethod: java.lang.reflect.Method? = null
+    private var nRoadLimitSpeedField: java.lang.reflect.Field? = null
+
+    private fun getRoadLimitSpeedFromEngine(): Int {
+        try {
+            if (sdkManagerCompanion == null) {
+                val sdkManagerClass = Class.forName("com.skt.tmap.engine.navigation.SDKManager")
+                val companionField = sdkManagerClass.getField("Companion")
+                sdkManagerCompanion = companionField.get(null)
+                getInstanceMethod = sdkManagerCompanion?.javaClass?.getMethod("getInstance")
+            }
+            
+            val sdkManager = getInstanceMethod?.invoke(sdkManagerCompanion)
+            if (sdkManager != null) {
+                if (getRecentRGDataMethod == null) {
+                    getRecentRGDataMethod = sdkManager.javaClass.getMethod("getRecentRGData")
+                }
+                val rgData = getRecentRGDataMethod?.invoke(sdkManager)
+                if (rgData != null) {
+                    if (nRoadLimitSpeedField == null) {
+                        nRoadLimitSpeedField = rgData.javaClass.getField("nRoadLimitSpeed")
+                    }
+                    val rawLimitSpeed = nRoadLimitSpeedField?.getInt(rgData) ?: 0
+                    if (rawLimitSpeed > 0) {
+                        return (rawLimitSpeed - 20) / 10
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("UdpSenderService", "Reflection error: ${e.message}")
+        }
+        return -1
+    }
 }
