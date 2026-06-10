@@ -140,6 +140,16 @@ class MapActivity : AppCompatActivity() {
                     Log.e("SdiDebug", "observableEDCData: $it")
                     
                     TmapUISDK.setVolume(this@MapActivity, 0)
+                    
+                    // 도로 기본 제한속도 추출 및 UI 업데이트
+                    val realRoadLimit = getRoadLimitSpeedFromEngine()
+                    runOnUiThread {
+                        if (realRoadLimit >= 30) {
+                            binding.llRoadSpeedLimit?.visibility = android.view.View.VISIBLE
+                            binding.tvRoadSpeedLimit?.text = realRoadLimit.toString()
+                        }
+                    }
+
                     if (it is android.os.Bundle) {
                         extractAndDisplaySdiInfo(it)
                     }
@@ -210,8 +220,8 @@ class MapActivity : AppCompatActivity() {
                 val sdiDist = json.optInt("nSdiDist", 0)
                 
                 runOnUiThread {
+                    binding.llSdiEvent.visibility = android.view.View.VISIBLE
                     if (sdiType > 0 || (sdiSpeedLimit > 0 && sdiDist > 0)) {
-                        binding.llSdiEvent.visibility = android.view.View.VISIBLE
                         binding.tvEventSpeedLimit.text = if (sdiSpeedLimit > 0) sdiSpeedLimit.toString() else "-"
                         binding.tvEventDist.text = "${sdiDist}m"
                         
@@ -227,16 +237,59 @@ class MapActivity : AppCompatActivity() {
                         }
                         binding.tvEventType.text = typeName
                     } else {
-                        binding.llSdiEvent.visibility = android.view.View.GONE
+                        binding.tvEventSpeedLimit.text = "-"
+                        binding.tvEventDist.text = "0m"
+                        binding.tvEventType.text = "이벤트 없음"
                     }
                 }
             } else {
                 runOnUiThread {
-                    binding.llSdiEvent.visibility = android.view.View.GONE
+                    binding.llSdiEvent.visibility = android.view.View.VISIBLE
+                    binding.tvEventSpeedLimit.text = "-"
+                    binding.tvEventDist.text = "0m"
+                    binding.tvEventType.text = "이벤트 없음"
                 }
             }
         } catch (e: Exception) {
             Log.e("MapActivity", "Error extracting SDI Info: ${e.message}")
         }
     }
+
+    // Reflection Caching
+    private var sdkManagerCompanion: Any? = null
+    private var getInstanceMethod: java.lang.reflect.Method? = null
+    private var getRecentRGDataMethod: java.lang.reflect.Method? = null
+    private var nRoadLimitSpeedField: java.lang.reflect.Field? = null
+
+    private fun getRoadLimitSpeedFromEngine(): Int {
+        try {
+            if (sdkManagerCompanion == null) {
+                val sdkManagerClass = Class.forName("com.skt.tmap.engine.navigation.SDKManager")
+                val companionField = sdkManagerClass.getField("Companion")
+                sdkManagerCompanion = companionField.get(null)
+                getInstanceMethod = sdkManagerCompanion?.javaClass?.getMethod("getInstance")
+            }
+            
+            val sdkManager = getInstanceMethod?.invoke(sdkManagerCompanion)
+            if (sdkManager != null) {
+                if (getRecentRGDataMethod == null) {
+                    getRecentRGDataMethod = sdkManager.javaClass.getMethod("getRecentRGData")
+                }
+                val rgData = getRecentRGDataMethod?.invoke(sdkManager)
+                if (rgData != null) {
+                    if (nRoadLimitSpeedField == null) {
+                        nRoadLimitSpeedField = rgData.javaClass.getField("nRoadLimitSpeed")
+                    }
+                    val rawLimitSpeed = nRoadLimitSpeedField?.getInt(rgData) ?: 0
+                    if (rawLimitSpeed > 0) {
+                        return (rawLimitSpeed - 20) / 10
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MapActivity", "Reflection error: ${e.message}")
+        }
+        return -1
+    }
 }
+
