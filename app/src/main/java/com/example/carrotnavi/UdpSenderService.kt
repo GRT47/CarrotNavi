@@ -81,6 +81,11 @@ class UdpSenderService : Service() {
         return START_STICKY
     }
 
+    private var lastSdiJsonStr: String? = null
+    private var lastSdiUpdateTime = 0L
+    private var lastSdiPlusJsonStr: String? = null
+    private var lastSdiPlusUpdateTime = 0L
+
     private val edcObserver = Observer<Bundle> { bundle ->
         if (bundle != null && isRunning.get()) {
             serviceScope.launch {
@@ -99,8 +104,14 @@ class UdpSenderService : Service() {
                     // 2. firstSDIInfo (GRT47과 동일하게 모든 key를 최상위로 복사)
                     val sdiObj = bundle.get("firstSDIInfo")
                     if (sdiObj != null) {
-                        val sdiJsonStr = if (sdiObj is String) sdiObj else gson.toJson(sdiObj)
-                        val sdiJson = JSONObject(sdiJsonStr)
+                        lastSdiJsonStr = if (sdiObj is String) sdiObj else gson.toJson(sdiObj)
+                        lastSdiUpdateTime = System.currentTimeMillis()
+                    } else if (System.currentTimeMillis() - lastSdiUpdateTime > 2000) {
+                        lastSdiJsonStr = null
+                    }
+                    
+                    if (lastSdiJsonStr != null) {
+                        val sdiJson = JSONObject(lastSdiJsonStr)
                         
                         val keys = sdiJson.keys()
                         while (keys.hasNext()) {
@@ -111,7 +122,12 @@ class UdpSenderService : Service() {
                         // Fallback logic for point camera (사용자 피드백 반영)
                         val sdiType = json.optInt("nSdiType", 0)
                         val sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
-                        val sdiDist = json.optInt("nSdiDist", 0)
+                        var sdiDist = json.optInt("nSdiDist", 0)
+                        
+                        if (sdiType == 22 && sdiDist <= 0) {
+                            sdiDist = 150
+                            json.put("nSdiDist", 150)
+                        }
                         
                         if (sdiSpeedLimit > 0) {
                             roadLimitSpeed = sdiSpeedLimit
@@ -127,12 +143,22 @@ class UdpSenderService : Service() {
                     // 3. secondSDIInfo (GRT47과 동일하게 nSdiPlus... 접두어로 추가)
                     val sdiPlusObj = bundle.get("secondSDIInfo")
                     if (sdiPlusObj != null) {
-                        val plusJsonStr = if (sdiPlusObj is String) sdiPlusObj else gson.toJson(sdiPlusObj)
-                        val plusJson = JSONObject(plusJsonStr)
+                        lastSdiPlusJsonStr = if (sdiPlusObj is String) sdiPlusObj else gson.toJson(sdiPlusObj)
+                        lastSdiPlusUpdateTime = System.currentTimeMillis()
+                    } else if (System.currentTimeMillis() - lastSdiPlusUpdateTime > 2000) {
+                        lastSdiPlusJsonStr = null
+                    }
+                    
+                    if (lastSdiPlusJsonStr != null) {
+                        val plusJson = JSONObject(lastSdiPlusJsonStr)
+                        
+                        val plusType = plusJson.optInt("nSdiType", 0)
+                        var plusDist = plusJson.optInt("nSdiDist", 0)
+                        if (plusType == 22 && plusDist <= 0) plusDist = 150
                         
                         if (plusJson.has("nSdiType")) json.put("nSdiPlusType", plusJson.get("nSdiType"))
                         if (plusJson.has("nSdiSpeedLimit")) json.put("nSdiPlusSpeedLimit", plusJson.get("nSdiSpeedLimit"))
-                        if (plusJson.has("nSdiDist")) json.put("nSdiPlusDist", plusJson.get("nSdiDist"))
+                        if (plusJson.has("nSdiDist") || plusDist > 0) json.put("nSdiPlusDist", plusDist)
                         if (plusJson.has("nSdiSection")) json.put("nSdiPlusBlockType", plusJson.get("nSdiSection"))
                         if (plusJson.has("nSdiBlockSpeed")) json.put("nSdiPlusBlockSpeed", plusJson.get("nSdiBlockSpeed"))
                         if (plusJson.has("nSdiBlockDist")) json.put("nSdiPlusBlockDist", plusJson.get("nSdiBlockDist"))
