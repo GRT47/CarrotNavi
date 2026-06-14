@@ -216,8 +216,12 @@ class MapActivity : AppCompatActivity() {
                 val json = org.json.JSONObject(sdiJsonStr)
                 
                 val sdiType = json.optInt("nSdiType", 0)
-                val sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
+                var sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
                 val sdiDist = json.optInt("nSdiDist", 0)
+                
+                if (sdiType == 22 && sdiSpeedLimit <= 0) {
+                    sdiSpeedLimit = 30
+                }
                 
                 runOnUiThread {
                     binding.llSdiEvent.visibility = android.view.View.VISIBLE

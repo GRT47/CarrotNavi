@@ -124,9 +124,14 @@ class UdpSenderService : Service() {
                         val sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
                         var sdiDist = json.optInt("nSdiDist", 0)
                         
-                        if (sdiType == 22 && sdiDist <= 0) {
-                            sdiDist = 150
-                            json.put("nSdiDist", 150)
+                        if (sdiType == 22) {
+                            if (sdiDist <= 0) {
+                                sdiDist = 150
+                                json.put("nSdiDist", 150)
+                            }
+                            if (sdiSpeedLimit <= 0) {
+                                json.put("nSdiSpeedLimit", 30)
+                            }
                         }
                         
                         if (sdiSpeedLimit >= 30) {
