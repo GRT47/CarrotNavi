@@ -175,6 +175,8 @@ class UdpSenderService : Service() {
                         if (plusJson.has("nSdiBlockSpeed")) json.put("nSdiPlusBlockSpeed", plusJson.get("nSdiBlockSpeed"))
                         if (plusJson.has("nSdiBlockDist")) json.put("nSdiPlusBlockDist", plusJson.get("nSdiBlockDist"))
                     }
+                    
+                    json.put("szTBTMainText", "Comma NAV 안심주행 모드")
 
                     latestPayload = json.toString()
                 } catch (e: Exception) {
