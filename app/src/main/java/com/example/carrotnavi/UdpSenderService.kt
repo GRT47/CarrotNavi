@@ -132,6 +132,7 @@ class UdpSenderService : Service() {
                             if (sdiSpeedLimit <= 0) {
                                 json.put("nSdiSpeedLimit", 30)
                             }
+                            json.put("roadcate", 8)
                         }
                         
                         if (sdiSpeedLimit >= 30) {
