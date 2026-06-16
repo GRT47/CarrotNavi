@@ -59,6 +59,51 @@ class MapActivity : AppCompatActivity() {
             finishAffinity()
         }
 
+        OpenpilotStateRepository.state.observe(this) { state ->
+            binding.tvCarrotVersion.text = "Ver: ${state.carrot2}"
+            binding.tvCarrotIp.text = "IP: ${state.ip}"
+            
+            // Connection
+            if (state.ip != "-" && state.ip.isNotEmpty()) {
+                binding.vConnectionDot.setBackgroundResource(R.drawable.shape_circle_green)
+                binding.tvConnectionStatus.text = "OP 연결됨"
+                binding.tvConnectionStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
+            } else {
+                binding.vConnectionDot.setBackgroundResource(R.drawable.shape_circle_gray)
+                binding.tvConnectionStatus.text = "OP 연결 대기"
+                binding.tvConnectionStatus.setTextColor(android.graphics.Color.parseColor("#AAAAAA"))
+            }
+            
+            // Active
+            if (state.active) {
+                binding.tvActiveStatus.text = "OP ON"
+                binding.tvActiveStatus.setBackgroundResource(R.drawable.bg_status_on)
+            } else {
+                binding.tvActiveStatus.text = "OP OFF"
+                binding.tvActiveStatus.setBackgroundResource(R.drawable.bg_status_off)
+            }
+
+            // Traffic
+            when (state.trafficState) {
+                1 -> binding.vTrafficLight.setBackgroundResource(R.drawable.shape_circle_red)
+                2 -> binding.vTrafficLight.setBackgroundResource(R.drawable.shape_circle_green)
+                else -> binding.vTrafficLight.setBackgroundResource(R.drawable.shape_circle_gray)
+            }
+
+            // xState
+            val (xText, xColor) = when (state.xState) {
+                0 -> "LEAD" to "#2196F3"
+                1 -> "CRUISE" to "#4CAF50"
+                2 -> "E2E CRZ" to "#00BCD4"
+                3 -> "E2E STP" to "#F44336"
+                4 -> "PREPARE" to "#FFC107"
+                5 -> "STOPPED" to "#B71C1C"
+                else -> "-" to "#AAAAAA"
+            }
+            binding.tvXStateBadge.text = xText
+            binding.tvXStateBadge.setTextColor(android.graphics.Color.parseColor(xColor))
+        }
+
         initTmapSdk(appKey)
     }
 
@@ -67,7 +112,6 @@ class MapActivity : AppCompatActivity() {
         initialize(this, "", appKey, "", "", object : TmapUISDK.InitializeListener {
             override fun onSuccess() {
                 runOnUiThread {
-                    binding.tvStatus.text = "Tmap SDK 초기화 성공. 안전운행 시작!"
                     
                     try {
                         val methods = NavigationFragment::class.java.methods
@@ -99,8 +143,7 @@ class MapActivity : AppCompatActivity() {
 
             override fun onFail(errorCode: Int, errorMsg: String?) {
                 runOnUiThread {
-                    binding.tvStatus.text = "초기화 실패: $errorMsg"
-                    Toast.makeText(this@MapActivity, "Tmap SDK 초기화 실패", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@MapActivity, "Tmap SDK 초기화 실패: $errorMsg", Toast.LENGTH_LONG).show()
                 }
             }
 

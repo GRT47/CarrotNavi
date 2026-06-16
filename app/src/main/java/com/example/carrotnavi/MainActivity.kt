@@ -64,6 +64,13 @@ class MainActivity : AppCompatActivity() {
         binding.etTargetIp.setText(savedTargetIp)
         binding.cbBackgroundLocation.isChecked = savedReqBackground
 
+        try {
+            val pInfo = packageManager.getPackageInfo(packageName, 0)
+            binding.tvAppVersion.text = "버전: ${pInfo.versionName}"
+        } catch (e: Exception) {
+            binding.tvAppVersion.text = "버전: -"
+        }
+
         // 자동 실행 로직
         val shouldAutoStart = intent.getBooleanExtra("auto_start", true)
         if (!savedAppKey.isNullOrEmpty() && shouldAutoStart) {

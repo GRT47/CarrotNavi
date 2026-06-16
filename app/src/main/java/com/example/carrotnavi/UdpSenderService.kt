@@ -44,6 +44,9 @@ class UdpSenderService : Service() {
     private var sdiBlockSpeed = 0
     private var sdiBlockDist = 0
 
+    @Volatile
+    private var currentGpsStatusText = "탐색 중"
+
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
@@ -69,6 +72,35 @@ class UdpSenderService : Service() {
         }
 
         isRunning.set(true)
+
+        // GPS 상태 모니터링 등록
+        try {
+            val locationManager = getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+            locationManager.registerGnssStatusCallback(object : android.location.GnssStatus.Callback() {
+                override fun onStarted() {
+                    currentGpsStatusText = "탐색 중"
+                }
+                override fun onStopped() {
+                    currentGpsStatusText = "NO_SIGNAL"
+                }
+                override fun onFirstFix(ttffMillis: Int) {
+                    currentGpsStatusText = "수신 양호"
+                }
+                override fun onSatelliteStatusChanged(status: android.location.GnssStatus) {
+                    var usedInFix = 0
+                    for (i in 0 until status.satelliteCount) {
+                        if (status.usedInFix(i)) usedInFix++
+                    }
+                    if (usedInFix >= 4) {
+                        currentGpsStatusText = "GOOD($usedInFix)"
+                    } else {
+                        currentGpsStatusText = "BAD($usedInFix)"
+                    }
+                }
+            }, android.os.Handler(android.os.Looper.getMainLooper()))
+        } catch (e: SecurityException) {
+            currentGpsStatusText = "권한 없음"
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -77,6 +109,7 @@ class UdpSenderService : Service() {
 
         startObservingEDC()
         startSendingLoop()
+        startReceivingLoop()
 
         return START_STICKY
     }
@@ -176,7 +209,22 @@ class UdpSenderService : Service() {
                         if (plusJson.has("nSdiBlockDist")) json.put("nSdiPlusBlockDist", plusJson.get("nSdiBlockDist"))
                     }
                     
-                    json.put("szTBTMainText", "Comma NAV 안심주행 모드")
+                    // 목적지 남은 거리 및 소요 시간 처리 (안심주행 모드 대응을 위해 값이 없거나 0이면 더미 값 주입)
+                    val nGoPosDist = bundle.getInt("nGoPosDist", bundle.getInt("remainDistanceToGoPositionInMeter", 0))
+                    val nGoPosTime = bundle.getInt("nGoPosTime", bundle.getInt("remainTimeToGoPositionInSec", 0))
+                    if (nGoPosDist > 0 && nGoPosTime > 0) {
+                        json.put("nGoPosDist", nGoPosDist)
+                        json.put("nGoPosTime", nGoPosTime)
+                    } else {
+                        // 오픈파일럿 HUD TBT 패널을 항상 띄우기 위해 최소 dummy 값 주입
+                        json.put("nGoPosDist", 1)
+                        json.put("nGoPosTime", 1)
+                    }
+
+                    // 상시 안내 텍스트 표시를 위한 필수 TBT 더미 값 주입
+                    json.put("nTBTDist", 9999)      // 가상의 남은 거리
+                    json.put("nTBTTurnType", 51)    // Notification 타입 (직진/알림)
+                    json.put("szTBTMainText", "안심주행 | GPS: $currentGpsStatusText")
 
                     latestPayload = json.toString()
                 } catch (e: Exception) {
@@ -200,6 +248,39 @@ class UdpSenderService : Service() {
             while (isActive) {
                 sendSdiData()
                 delay(300) // 약 3.3Hz heartbeat
+            }
+        }
+    }
+
+    private var receiveSocket: DatagramSocket? = null
+
+    private fun startReceivingLoop() {
+        serviceScope.launch(Dispatchers.IO) {
+            try {
+                receiveSocket = DatagramSocket(null)
+                receiveSocket?.reuseAddress = true
+                receiveSocket?.bind(java.net.InetSocketAddress("0.0.0.0", 7705))
+                
+                val buffer = ByteArray(4096)
+                while (isActive && isRunning.get()) {
+                    val packet = DatagramPacket(buffer, buffer.size)
+                    receiveSocket?.receive(packet)
+                    val data = String(packet.data, 0, packet.length, Charsets.UTF_8)
+                    try {
+                        val json = JSONObject(data)
+                        val carrot2 = json.optString("Carrot2", "-")
+                        val ip = json.optString("ip", "-")
+                        val trafficState = json.optInt("trafficState", 0)
+                        val xState = json.optInt("xState", 0)
+                        val active = json.optBoolean("active", false)
+                        
+                        OpenpilotStateRepository.updateState(carrot2, ip, trafficState, xState, active)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -248,6 +329,7 @@ class UdpSenderService : Service() {
         }
         serviceScope.cancel()
         udpSocket?.close()
+        receiveSocket?.close()
         
         try {
             if (wakeLock?.isHeld == true) {
