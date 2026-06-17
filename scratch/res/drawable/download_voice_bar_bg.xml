@@ -1,8 +1,0 @@
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@android:id/background">
-        <shape>
-            <solid android:color="@color/color_dddddd"/>
-            <corners android:radius="@dimen/tmap_4dp"/>
-        </shape>
-    </item>
-</layer-list>

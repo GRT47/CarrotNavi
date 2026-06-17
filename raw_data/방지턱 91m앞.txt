@@ -1,1 +1,0 @@
-[19:18:34.584] {"carrotIndex": 77, "navitype": "tmap", "nSdiDist": 91, "bIsChangeableSpeedType": false, "nSdiSpeedLimit": 0, "nSdiSection": 0, "bIsLimitSpeedSignChanged": false, "bSdiBlockSection": false, "nTruckLimit": "0.0", "nSdiBlockSpeed": 0, "nSdiBlockDist": 0, "nSdiBlockTime": 0, "nSdiType": 22, "nSdiBlockAverageSpeed": 0, "nRoadLimitSpeed": 0}

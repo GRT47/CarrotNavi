@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/navi_drive_menu_button_background_day_press" android:state_selected="true" />
-    <item android:drawable="@drawable/navi_drive_menu_button_background_day_press" android:state_pressed="true" />
-    <item android:drawable="@color/color_00000000" />
-
-</selector>
