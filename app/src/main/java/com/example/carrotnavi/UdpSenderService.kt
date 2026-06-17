@@ -176,7 +176,10 @@ class UdpSenderService : Service() {
                         
                         if (nSdiBlockType == 2 && offset > 0 && sdiSpeedLimit > 0) {
                             val avgSpeed = json.optInt("nSdiBlockAverageSpeed", 0)
-                            if (avgSpeed > 0) {
+                            // 1, 3, 4, 6, 7: 과속, 구간종점, 구간내과속, 신호위반, 이동식 등 포인트 카메라
+                            val hasPointCameraAhead = (sdiType == 1 || sdiType == 3 || sdiType == 4 || sdiType == 6 || sdiType == 7) && sdiDist > 0
+                            
+                            if (avgSpeed > 0 && !hasPointCameraAhead) {
                                 val diff = sdiSpeedLimit - avgSpeed
                                 if (diff >= 1) { // 1km/h 이상 차이 날 때만 적용
                                     // 10km/h 이상 차이 날 때 최대 여유 속도(100%) 부여
