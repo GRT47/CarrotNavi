@@ -59,6 +59,26 @@ class MapActivity : AppCompatActivity() {
             finishAffinity()
         }
 
+        // 여유가속(마진) 조절 로직
+        var currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
+        binding.tvOffsetValue?.text = currentOffset.toString()
+
+        setAutoRepeatButton(binding.btnDecreaseOffset) {
+            if (currentOffset > 0) { // 음수 방지
+                currentOffset--
+                binding.tvOffsetValue?.text = currentOffset.toString()
+                sharedPref.edit().putInt("BLOCK_SPEED_OFFSET", currentOffset).apply()
+            }
+        }
+
+        setAutoRepeatButton(binding.btnIncreaseOffset) {
+            if (currentOffset < 50) { // 최대 50km/h 제한
+                currentOffset++
+                binding.tvOffsetValue?.text = currentOffset.toString()
+                sharedPref.edit().putInt("BLOCK_SPEED_OFFSET", currentOffset).apply()
+            }
+        }
+
         OpenpilotStateRepository.state.observe(this) { state ->
             binding.tvCarrotVersion.text = "Ver: ${state.carrot2}"
             binding.tvCarrotIp.text = "IP: ${state.ip}"
@@ -134,7 +154,9 @@ class MapActivity : AppCompatActivity() {
                                 Log.e("TmapVolume", "TmapUISDK.Companion method: ${m.name}")
                             }
                         }
-                    } catch (e: Exception) {}
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
 
                     startSafeDriveMode()
                     startUdpSenderService()
@@ -262,22 +284,56 @@ class MapActivity : AppCompatActivity() {
                 var sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
                 val sdiDist = json.optInt("nSdiDist", 0)
                 
+                val blockDist = json.optInt("nSdiBlockDist", 0)
+                val blockTime = json.optInt("nSdiBlockTime", 0)
+                val blockAvgSpeed = json.optInt("nSdiBlockAverageSpeed", 0)
+                val isBlockSection = sdiType == 2 || sdiType == 3 || sdiType == 4 || json.optBoolean("bSdiBlockSection", false)
+                
+                var isBoosting = false
+                val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+                val offset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
+                if (isBlockSection && offset > 0 && sdiSpeedLimit > 0) {
+                    if (blockAvgSpeed > 0 && sdiSpeedLimit - blockAvgSpeed >= 1) {
+                        isBoosting = true
+                    }
+                }
+                
                 if (sdiType == 22 && sdiSpeedLimit <= 0) {
                     sdiSpeedLimit = 30
                 }
                 
+                val useKmFormat = sharedPref.getBoolean("USE_KM_DISTANCE_FORMAT", true)
+                fun formatDistance(dist: Int): String {
+                    return if (useKmFormat && dist >= 1000) {
+                        String.format("%.1fkm", dist / 1000.0)
+                    } else {
+                        "${dist}m"
+                    }
+                }
+                
                 runOnUiThread {
+                    binding.tvOffsetTitle?.text = if (isBoosting) "추가가속중" else "구간단속"
+                    
+                    if (isBlockSection && blockDist > 0) {
+                        binding.llBlockInfo?.visibility = android.view.View.VISIBLE
+                        binding.tvBlockAvgSpeed?.text = "평균: ${blockAvgSpeed}km/h"
+                        binding.tvBlockDist?.text = "거리: ${formatDistance(blockDist)}"
+                        binding.tvBlockTime?.text = String.format("시간: %d:%02d", blockTime / 60, blockTime % 60)
+                    } else {
+                        binding.llBlockInfo?.visibility = android.view.View.GONE
+                    }
+                    
                     binding.llSdiEvent.visibility = android.view.View.VISIBLE
                     if (sdiType > 0 || (sdiSpeedLimit > 0 && sdiDist > 0)) {
                         binding.tvEventSpeedLimit.text = if (sdiSpeedLimit > 0) sdiSpeedLimit.toString() else "-"
-                        binding.tvEventDist.text = "${sdiDist}m"
+                        binding.tvEventDist.text = formatDistance(sdiDist)
                         
                         val typeName = when (sdiType) {
                             1 -> "과속 단속"
-                            2 -> "구간 단속"
-                            3 -> "이동식 단속"
-                            4 -> "신호 단속"
-                            7 -> "버스 전용차로 단속"
+                            2 -> "구간단속 시작"
+                            3 -> "구간단속 종료"
+                            4 -> "구간단속 중"
+                            7 -> "이동식 단속"
                             22 -> "과속방지턱"
                             33 -> "어린이보호구역"
                             else -> if (sdiSpeedLimit > 0) "단속 카메라" else "주의 구간"
@@ -291,6 +347,8 @@ class MapActivity : AppCompatActivity() {
                 }
             } else {
                 runOnUiThread {
+                    binding.tvOffsetTitle?.text = "구간단속"
+                    binding.llBlockInfo?.visibility = android.view.View.GONE
                     binding.llSdiEvent.visibility = android.view.View.VISIBLE
                     binding.tvEventSpeedLimit.text = "-"
                     binding.tvEventDist.text = "0m"
@@ -337,6 +395,33 @@ class MapActivity : AppCompatActivity() {
             Log.e("MapActivity", "Reflection error: ${e.message}")
         }
         return -1
+    }
+
+    private fun setAutoRepeatButton(button: android.view.View?, action: () -> Unit) {
+        if (button == null) return
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        val runnable = object : Runnable {
+            override fun run() {
+                action()
+                handler.postDelayed(this, 100) // 0.1초마다 반복
+            }
+        }
+        button.setOnTouchListener { v, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    v.isPressed = true
+                    action() // 첫 클릭 시 1회 즉시 실행
+                    handler.postDelayed(runnable, 400) // 0.4초 후부터 연속 실행
+                    true
+                }
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                    v.isPressed = false
+                    handler.removeCallbacks(runnable)
+                    true
+                }
+                else -> false
+            }
+        }
     }
 }
 

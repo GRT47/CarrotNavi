@@ -236,6 +236,10 @@ class UdpSenderService : Service() {
         if (latestPayload == "{}" && !hasFix) return
         try {
             val obj = try { JSONObject(latestPayload) } catch (e: Exception) { JSONObject() }
+            
+            // 상시 전송
+            obj.put("szTBTMainText", "Comma NAV 안심주행 모드")
+            
             if (hasFix) {
                 obj.put("vpPosPointLat", lastLat)
                 obj.put("vpPosPointLon", lastLon)

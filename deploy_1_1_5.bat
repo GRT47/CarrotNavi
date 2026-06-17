@@ -19,8 +19,7 @@ copy /Y app\build\outputs\apk\debug\app-debug.apk apk\CarrotNavi_v1.1.5.apk
 echo [3/3] Creating Git Branch and Pushing...
 git add app\build.gradle.kts app\src\main\java\com\example\carrotnavi\UdpSenderService.kt deploy_1_1_5.bat
 git commit -m "Bump version to 1.1.5 (Add roadcate=8 logic for speed bumps)"
-git branch 1.1.5
-git checkout 1.1.5
+git checkout -b 1.1.5
 git push -u origin 1.1.5
 
 echo =========================================

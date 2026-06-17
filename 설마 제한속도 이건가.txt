@@ -1,6 +1,0 @@
-int getMaxSpeedKmh()
-Description
-제한 속도
-Example
-
-	int maxSpeedKmh = roadInfo.getMaxSpeedKmh();

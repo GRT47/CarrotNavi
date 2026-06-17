@@ -220,6 +220,110 @@
             android:layout_height="match_parent"
             android:clickable="true"
             android:focusable="true" />
+        <!-- 여유 가속 조절 플로팅 패널 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="top|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_sdi_panel"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:gravity="center"
+            android:elevation="6dp">
+
+            <TextView
+                android:id="@+id/tvOffsetTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="구간단속"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="여유가속"
+                android:textColor="#AAAAAA"
+                android:textSize="12sp"
+                android:layout_marginBottom="8dp"/>
+                
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                
+                <Button
+                    android:id="@+id/btnDecreaseOffset"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:text="-"
+                    android:textSize="24sp"
+                    android:padding="0dp"
+                    android:backgroundTint="#555555"/>
+                    
+                <TextView
+                    android:id="@+id/tvOffsetValue"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
+                    android:gravity="center"
+                    android:textStyle="bold"/>
+                    
+                    <Button
+                        android:id="@+id/btnIncreaseOffset"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:text="+"
+                        android:textSize="24sp"
+                        android:padding="0dp"
+                        android:backgroundTint="#555555"/>
+                </LinearLayout>
+
+                <!-- 구간단속 정보 -->
+                <LinearLayout
+                    android:id="@+id/llBlockInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:visibility="gone">
+                    
+                    <TextView
+                        android:id="@+id/tvBlockAvgSpeed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="평균: 0km/h"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                        
+                    <TextView
+                        android:id="@+id/tvBlockDist"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="거리: 0m"
+                        android:textColor="#EEEEEE"
+                        android:textSize="13sp"
+                        android:layout_marginTop="4dp" />
+                        
+                    <TextView
+                        android:id="@+id/tvBlockTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="시간: 0:00"
+                        android:textColor="#EEEEEE"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
     </FrameLayout>
 
     <!-- 오른쪽 UI 영역 -->

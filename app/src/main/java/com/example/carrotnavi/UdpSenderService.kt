@@ -126,6 +126,7 @@ class UdpSenderService : Service() {
                     val json = JSONObject()
                     json.put("carrotIndex", packetIndex++)
                     json.put("navitype", "tmap")
+                    var isBoosting = false
                     
                     // 1. limitSpeed 처리
                     val limitSpeedStr = bundle.getString("limitSpeed", bundle.getInt("limitSpeed", 0).toString())
@@ -156,6 +157,45 @@ class UdpSenderService : Service() {
                         val sdiType = json.optInt("nSdiType", 0)
                         val sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
                         var sdiDist = json.optInt("nSdiDist", 0)
+                        val bSdiBlockSection = json.optBoolean("bSdiBlockSection", false)
+                        
+                        var nSdiBlockType = 0
+                        if (bSdiBlockSection) {
+                            nSdiBlockType = if (sdiType == 3) 3 else 2
+                        } else if (sdiType == 2) {
+                            nSdiBlockType = 1
+                        }
+                        if (nSdiBlockType > 0) {
+                            json.put("nSdiBlockType", nSdiBlockType)
+                            json.put("nSdiSection", 1) // 사용자 요청에 따라 강제로 1 고정
+                        }
+
+                        // 구간단속 평균속도 보상 가속 로직 (부드러운 조절 알고리즘 적용)
+                        val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+                        val offset = sp.getInt("BLOCK_SPEED_OFFSET", 0)
+                        
+                        if (nSdiBlockType == 2 && offset > 0 && sdiSpeedLimit > 0) {
+                            val avgSpeed = json.optInt("nSdiBlockAverageSpeed", 0)
+                            if (avgSpeed > 0) {
+                                val diff = sdiSpeedLimit - avgSpeed
+                                if (diff >= 1) { // 1km/h 이상 차이 날 때만 적용
+                                    // 10km/h 이상 차이 날 때 최대 여유 속도(100%) 부여
+                                    val maxDiffForFullOffset = 10.0
+                                    var ratio = diff / maxDiffForFullOffset
+                                    if (ratio > 1.0) ratio = 1.0
+                                    
+                                    var boost = (offset * ratio).toInt()
+                                    if (boost < 1) boost = 1 // 계산 결과가 0이어도 최소 1km/h는 부여
+                                    
+                                    val boostedLimit = sdiSpeedLimit + boost
+                                    json.put("nSdiSpeedLimit", boostedLimit)
+                                    if (json.has("nSdiBlockSpeed")) {
+                                        json.put("nSdiBlockSpeed", boostedLimit)
+                                    }
+                                    isBoosting = true
+                                }
+                            }
+                        }
                         
                         if (sdiType == 22) {
                             if (sdiDist <= 0) {
@@ -222,9 +262,35 @@ class UdpSenderService : Service() {
                     }
 
                     // 상시 안내 텍스트 표시를 위한 필수 TBT 더미 값 주입
-                    json.put("nTBTDist", 9999)      // 가상의 남은 거리
+                    var tbtDist = json.optInt("nSdiDist", 0)
+                    var activeType = json.optInt("nSdiType", 0)
+                    
+                    if (tbtDist <= 0) {
+                        tbtDist = json.optInt("nSdiPlusDist", 0)
+                        activeType = json.optInt("nSdiPlusType", 0)
+                    }
+                    if (tbtDist <= 0) {
+                        tbtDist = json.optInt("nSdiBlockDist", 0)
+                        activeType = 4 // 구간단속 중
+                    }
+                    if (tbtDist <= 0) {
+                        tbtDist = 9999
+                        activeType = 0
+                    }
+
+                    var prefix = when (activeType) {
+                        1, 2, 3, 4, 7 -> "단속구간"
+                        22 -> "방지턱"
+                        33 -> "스쿨존"
+                        else -> if (tbtDist < 9999) "주의구간" else "안심주행"
+                    }
+                    if (isBoosting) {
+                        prefix = "추가가속중"
+                    }
+
+                    json.put("nTBTDist", tbtDist)      // 이벤트가 있으면 해당 거리 표출, 없으면 9999
                     json.put("nTBTTurnType", 51)    // Notification 타입 (직진/알림)
-                    json.put("szTBTMainText", "안심주행 | GPS: $currentGpsStatusText")
+                    json.put("szTBTMainText", "$prefix | GPS: $currentGpsStatusText")
 
                     latestPayload = json.toString()
                 } catch (e: Exception) {
