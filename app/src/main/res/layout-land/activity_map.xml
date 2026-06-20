@@ -369,6 +369,17 @@
             android:padding="12dp"
             android:layout_marginTop="16dp">
 
+            <!-- 앱 버전 -->
+            <TextView
+                android:id="@+id/tvAppVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="당근네비 v-"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
             <!-- 연결 상태 -->
             <LinearLayout
                 android:layout_width="wrap_content"
