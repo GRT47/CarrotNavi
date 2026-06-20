@@ -563,6 +563,102 @@ class MapActivity : AppCompatActivity() {
         return Pair(x, y)
     }
 
+    private var resizingView: View? = null
+    private var resizeInitialRawX = 0f
+    private var resizeInitialRawY = 0f
+    private var resizeInitialScale = 1f
+    private var resizeCornerSignX = 1f
+    private var resizeCornerSignY = 1f
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (!isEditMode) return super.dispatchTouchEvent(ev)
+
+        val touchX = ev.rawX
+        val touchY = ev.rawY
+
+        when (ev.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val views = listOf(binding.llSpeedGroup, binding.llStatusGroup, binding.llOffset)
+                for (v in views) {
+                    if (v.visibility != View.VISIBLE) continue
+
+                    val loc = IntArray(2)
+                    v.getLocationOnScreen(loc)
+                    val vX = loc[0].toFloat()
+                    val vY = loc[1].toFloat()
+                    val scaledW = v.width * v.scaleX
+                    val scaledH = v.height * v.scaleY
+
+                    val left = vX + (v.width - scaledW) / 2f
+                    val top = vY + (v.height - scaledH) / 2f
+                    val right = left + scaledW
+                    val bottom = top + scaledH
+
+                    val margin = 80f // 80 screen pixels physical touch margin
+
+                    val isTopLeft = touchX in (left - margin)..(left + margin) && touchY in (top - margin)..(top + margin)
+                    val isTopRight = touchX in (right - margin)..(right + margin) && touchY in (top - margin)..(top + margin)
+                    val isBottomLeft = touchX in (left - margin)..(left + margin) && touchY in (bottom - margin)..(bottom + margin)
+                    val isBottomRight = touchX in (right - margin)..(right + margin) && touchY in (bottom - margin)..(bottom + margin)
+
+                    if (isTopLeft || isTopRight || isBottomLeft || isBottomRight) {
+                        resizingView = v
+                        resizeInitialScale = v.scaleX
+                        resizeInitialRawX = touchX
+                        resizeInitialRawY = touchY
+                        resizeCornerSignX = if (isTopLeft || isBottomLeft) -1f else 1f
+                        resizeCornerSignY = if (isTopLeft || isTopRight) -1f else 1f
+                        return true // Intercept touch and start resizing
+                    }
+                }
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val v = resizingView
+                if (v != null) {
+                    val deltaX = touchX - resizeInitialRawX
+                    val deltaY = touchY - resizeInitialRawY
+                    
+                    val diagX = resizeCornerSignX * (v.width / 2f)
+                    val diagY = resizeCornerSignY * (v.height / 2f)
+                    val diagLen = Math.hypot(diagX.toDouble(), diagY.toDouble()).toFloat()
+                    
+                    if (diagLen > 0) {
+                        val unitX = diagX / diagLen
+                        val unitY = diagY / diagLen
+                        val projectedDelta = deltaX * unitX + deltaY * unitY
+                        
+                        var newScale = resizeInitialScale + (projectedDelta / diagLen)
+                        newScale = Math.max(0.5f, Math.min(newScale, 2.5f))
+                        
+                        v.scaleX = newScale
+                        v.scaleY = newScale
+                    }
+                    return true
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                val v = resizingView
+                if (v != null) {
+                    val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+                    val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                    val suffix = if (isLandscape) "land" else "port"
+                    val keyPrefix = when (v) {
+                        binding.llSpeedGroup -> "llSpeedGroup"
+                        binding.llStatusGroup -> "llStatusGroup"
+                        binding.llOffset -> "llOffset"
+                        else -> ""
+                    }
+                    if (keyPrefix.isNotEmpty()) {
+                        sharedPref.edit().putFloat("${keyPrefix}_scale_${suffix}", v.scaleX).apply()
+                    }
+                    resizingView = null
+                    return true
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
     private fun makeDraggable(view: View, keyPrefix: String, isLandscape: Boolean, otherViews: List<View> = emptyList()) {
         var dX = 0f
         var dY = 0f
@@ -607,7 +703,11 @@ class MapActivity : AppCompatActivity() {
         val suffix = if (isLandscape) "land" else "port"
         val x = sharedPref.getFloat("${keyPrefix}_x_${suffix}", -1f)
         val y = sharedPref.getFloat("${keyPrefix}_y_${suffix}", -1f)
+        val scale = sharedPref.getFloat("${keyPrefix}_scale_${suffix}", 1f)
         
+        view.scaleX = scale
+        view.scaleY = scale
+
         if (x != -1f && y != -1f) {
             val (clampedX, clampedY) = clampAndPreventOverlap(view, x, y, otherViews)
             view.x = clampedX
@@ -617,9 +717,9 @@ class MapActivity : AppCompatActivity() {
 
     private fun updateEditModeForegrounds() {
         if (isEditMode) {
-            binding.llSpeedGroup.foreground = HatchedDrawable()
-            binding.llStatusGroup.foreground = HatchedDrawable()
-            binding.llOffset.foreground = HatchedDrawable()
+            binding.llSpeedGroup.foreground = HatchedDrawable(binding.llSpeedGroup)
+            binding.llStatusGroup.foreground = HatchedDrawable(binding.llStatusGroup)
+            binding.llOffset.foreground = HatchedDrawable(binding.llOffset)
         } else {
             binding.llSpeedGroup.foreground = null
             binding.llStatusGroup.foreground = null
@@ -628,15 +728,18 @@ class MapActivity : AppCompatActivity() {
     }
 }
 
-private class HatchedDrawable(baseColor: Int = android.graphics.Color.parseColor("#33FFC107")) : android.graphics.drawable.Drawable() {
+private class HatchedDrawable(private val targetView: View, baseColor: Int = android.graphics.Color.parseColor("#33FFC107")) : android.graphics.drawable.Drawable() {
     private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
         color = android.graphics.Color.parseColor("#80FFC107") // Semi-transparent yellow stripes
-        strokeWidth = 6f
         style = android.graphics.Paint.Style.STROKE
     }
     private val bgPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
         color = baseColor
         style = android.graphics.Paint.Style.FILL
+    }
+    private val cornerPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.parseColor("#FF5722") // Deep orange color for corners
+        style = android.graphics.Paint.Style.STROKE
     }
 
     override fun draw(canvas: android.graphics.Canvas) {
@@ -644,26 +747,54 @@ private class HatchedDrawable(baseColor: Int = android.graphics.Color.parseColor
         val width = bounds.width()
         val height = bounds.height()
 
+        // Get view scales to keep physical rendering size constant
+        val scaleX = Math.max(0.1f, targetView.scaleX)
+        val scaleY = Math.max(0.1f, targetView.scaleY)
+
         // Draw semi-transparent background
         canvas.drawRect(bounds, bgPaint)
 
         // Draw diagonal stripes (lines at 45 degrees)
-        val step = 30 // Distance between stripes
-        var x = -height
+        paint.strokeWidth = 6f / scaleX
+        val step = 30f / scaleX // Distance between stripes
+        var x = -height.toFloat()
         while (x < width) {
-            canvas.drawLine(x.toFloat(), 0f, (x + height).toFloat(), height.toFloat(), paint)
+            canvas.drawLine(x, 0f, (x + height), height.toFloat(), paint)
             x += step
         }
+
+        // Draw corner brackets (always around 80 screen pixels size)
+        cornerPaint.strokeWidth = 20f / scaleX
+        val cornerSizeX = 80f / scaleX
+        val cornerSizeY = 80f / scaleY
+        
+        // Top-left
+        canvas.drawLine(0f, 0f, cornerSizeX, 0f, cornerPaint)
+        canvas.drawLine(0f, 0f, 0f, cornerSizeY, cornerPaint)
+        
+        // Top-right
+        canvas.drawLine(width - cornerSizeX, 0f, width.toFloat(), 0f, cornerPaint)
+        canvas.drawLine(width.toFloat(), 0f, width.toFloat(), cornerSizeY, cornerPaint)
+        
+        // Bottom-left
+        canvas.drawLine(0f, height.toFloat(), cornerSizeX, height.toFloat(), cornerPaint)
+        canvas.drawLine(0f, height - cornerSizeY, 0f, height.toFloat(), cornerPaint)
+        
+        // Bottom-right
+        canvas.drawLine(width - cornerSizeX, height.toFloat(), width.toFloat(), height.toFloat(), cornerPaint)
+        canvas.drawLine(width.toFloat(), height - cornerSizeY, width.toFloat(), height.toFloat(), cornerPaint)
     }
 
     override fun setAlpha(alpha: Int) {
         paint.alpha = alpha
         bgPaint.alpha = alpha
+        cornerPaint.alpha = alpha
     }
 
     override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {
         paint.colorFilter = colorFilter
         bgPaint.colorFilter = colorFilter
+        cornerPaint.colorFilter = colorFilter
     }
 
     @Deprecated("Deprecated in Java")
