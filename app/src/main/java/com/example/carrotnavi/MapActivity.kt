@@ -13,7 +13,9 @@ import com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK.Companion.getFragment
 import com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK.Companion.initialize
 import com.tmapmobility.tmap.tmapsdk.ui.fragment.NavigationFragment
 import androidx.lifecycle.Observer
-
+import android.content.res.Configuration
+import android.view.MotionEvent
+import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
@@ -88,6 +90,18 @@ class MapActivity : AppCompatActivity() {
                 sharedPref.edit().putInt("BLOCK_SPEED_OFFSET", currentOffset).apply()
             }
         }
+
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        
+        binding.llSdiEvent.post {
+            restorePosition(binding.llSdiEvent, "llSdiEvent", isLandscape)
+        }
+        binding.llOffset?.post {
+            restorePosition(binding.llOffset!!, "llOffset", isLandscape)
+        }
+        
+        makeDraggable(binding.llSdiEvent, "llSdiEvent", isLandscape)
+        binding.llOffset?.let { makeDraggable(it, "llOffset", isLandscape) }
 
         OpenpilotStateRepository.state.observe(this) { state ->
             binding.tvCarrotVersion.text = "Ver: ${state.carrot2}"
@@ -431,6 +445,50 @@ class MapActivity : AppCompatActivity() {
                 }
                 else -> false
             }
+        }
+    }
+    private fun makeDraggable(view: View, keyPrefix: String, isLandscape: Boolean) {
+        var dX = 0f
+        var dY = 0f
+
+        view.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    dX = v.x - event.rawX
+                    dY = v.y - event.rawY
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    v.animate()
+                        .x(event.rawX + dX)
+                        .y(event.rawY + dY)
+                        .setDuration(0)
+                        .start()
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+                    val suffix = if (isLandscape) "land" else "port"
+                    sharedPref.edit()
+                        .putFloat("${keyPrefix}_x_${suffix}", v.x)
+                        .putFloat("${keyPrefix}_y_${suffix}", v.y)
+                        .apply()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun restorePosition(view: View, keyPrefix: String, isLandscape: Boolean) {
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        val suffix = if (isLandscape) "land" else "port"
+        val x = sharedPref.getFloat("${keyPrefix}_x_${suffix}", -1f)
+        val y = sharedPref.getFloat("${keyPrefix}_y_${suffix}", -1f)
+        
+        if (x != -1f && y != -1f) {
+            view.x = x
+            view.y = y
         }
     }
 }

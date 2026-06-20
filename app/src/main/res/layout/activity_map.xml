@@ -349,6 +349,7 @@
 
         <!-- 여유 가속 조절 플로팅 패널 -->
         <LinearLayout
+            android:id="@+id/llOffset"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
