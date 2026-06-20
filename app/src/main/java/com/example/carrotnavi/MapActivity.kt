@@ -104,10 +104,15 @@ class MapActivity : AppCompatActivity() {
         makeDraggable(binding.llRoadInfo, "llRoadInfo", isLandscape, listOfNotNull(binding.llOffset))
         binding.llOffset?.let { makeDraggable(it, "llOffset", isLandscape, listOf(binding.llRoadInfo)) }
 
-        binding.tbEditMode?.setOnCheckedChangeListener { _, isChecked ->
-            isEditMode = isChecked
-            val msg = if (isChecked) "오버레이 편집 모드 켜짐" else "오버레이 편집 모드 꺼짐"
-            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        binding.btnEditMode?.setOnClickListener {
+            isEditMode = !isEditMode
+            if (isEditMode) {
+                binding.btnEditMode?.setBackgroundResource(R.drawable.shape_circle_green)
+                Toast.makeText(this, "오버레이 편집 모드 켜짐", Toast.LENGTH_SHORT).show()
+            } else {
+                binding.btnEditMode?.setBackgroundResource(R.drawable.shape_circle_gray)
+                Toast.makeText(this, "오버레이 편집 모드 꺼짐", Toast.LENGTH_SHORT).show()
+            }
         }
 
         OpenpilotStateRepository.state.observe(this) { state ->

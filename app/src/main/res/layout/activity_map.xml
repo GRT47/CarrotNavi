@@ -477,19 +477,17 @@
                 </LinearLayout>
             </LinearLayout>
 
-        <!-- 오버레이 편집 모드 토글 버튼 -->
-        <ToggleButton
-            android:id="@+id/tbEditMode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <!-- 오버레이 편집 모드 버튼 (그래픽) -->
+        <ImageButton
+            android:id="@+id/btnEditMode"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="32dp"
-            android:textOn="편집: ON"
-            android:textOff="편집: OFF"
-            android:textSize="12sp"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#444444"
+            android:src="@android:drawable/ic_menu_edit"
+            android:background="@drawable/shape_circle_gray"
+            android:scaleType="center"
             android:elevation="6dp" />
     </FrameLayout>
 
