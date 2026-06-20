@@ -93,14 +93,14 @@ class MapActivity : AppCompatActivity() {
 
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         
-        binding.llSdiEvent.post {
-            restorePosition(binding.llSdiEvent, "llSdiEvent", isLandscape)
+        binding.llRoadInfo.post {
+            restorePosition(binding.llRoadInfo, "llRoadInfo", isLandscape)
         }
         binding.llOffset?.post {
             restorePosition(binding.llOffset!!, "llOffset", isLandscape)
         }
         
-        makeDraggable(binding.llSdiEvent, "llSdiEvent", isLandscape)
+        makeDraggable(binding.llRoadInfo, "llRoadInfo", isLandscape)
         binding.llOffset?.let { makeDraggable(it, "llOffset", isLandscape) }
 
         OpenpilotStateRepository.state.observe(this) { state ->
