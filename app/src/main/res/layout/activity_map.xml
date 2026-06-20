@@ -476,6 +476,21 @@
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
             </LinearLayout>
+
+        <!-- 오버레이 편집 모드 토글 버튼 -->
+        <ToggleButton
+            android:id="@+id/tbEditMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="32dp"
+            android:textOn="편집: ON"
+            android:textOff="편집: OFF"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#444444"
+            android:elevation="6dp" />
     </FrameLayout>
 
 </LinearLayout>

@@ -23,6 +23,7 @@ class MapActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMapBinding
     private var navigationFragment: NavigationFragment? = null
+    private var isEditMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,6 +103,12 @@ class MapActivity : AppCompatActivity() {
         
         makeDraggable(binding.llRoadInfo, "llRoadInfo", isLandscape, listOfNotNull(binding.llOffset))
         binding.llOffset?.let { makeDraggable(it, "llOffset", isLandscape, listOf(binding.llRoadInfo)) }
+
+        binding.tbEditMode?.setOnCheckedChangeListener { _, isChecked ->
+            isEditMode = isChecked
+            val msg = if (isChecked) "오버레이 편집 모드 켜짐" else "오버레이 편집 모드 꺼짐"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
 
         OpenpilotStateRepository.state.observe(this) { state ->
             binding.tvCarrotVersion.text = "Ver: ${state.carrot2}"
@@ -495,6 +502,8 @@ class MapActivity : AppCompatActivity() {
         var dY = 0f
 
         view.setOnTouchListener { v, event ->
+            if (!isEditMode) return@setOnTouchListener false
+            
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     dX = v.x - event.rawX
