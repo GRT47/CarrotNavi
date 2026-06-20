@@ -36,7 +36,7 @@ class MapActivity : AppCompatActivity() {
             insets
         }
 
-        binding.tvAppVersion?.text = "당근네비 v${BuildConfig.VERSION_NAME}"
+        binding.tvAppVersion?.text = "v${BuildConfig.VERSION_NAME}"
         
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         val appKey = sharedPref.getString("APP_KEY", "") ?: ""
