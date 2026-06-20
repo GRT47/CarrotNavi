@@ -66,7 +66,7 @@ class MapActivity : AppCompatActivity() {
 
         // 여유가속(마진) 조절 로직
         var currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
-        binding.tvOffsetValue?.text = currentOffset.toString()
+        binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
 
         binding.btnOffsetInfo?.setOnClickListener {
             androidx.appcompat.app.AlertDialog.Builder(this)
@@ -79,7 +79,7 @@ class MapActivity : AppCompatActivity() {
         setAutoRepeatButton(binding.btnDecreaseOffset) {
             if (currentOffset > 0) { // 음수 방지
                 currentOffset--
-                binding.tvOffsetValue?.text = currentOffset.toString()
+                binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
                 sharedPref.edit().putInt("BLOCK_SPEED_OFFSET", currentOffset).apply()
             }
         }
@@ -87,32 +87,80 @@ class MapActivity : AppCompatActivity() {
         setAutoRepeatButton(binding.btnIncreaseOffset) {
             if (currentOffset < 50) { // 최대 50km/h 제한
                 currentOffset++
-                binding.tvOffsetValue?.text = currentOffset.toString()
+                binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
                 sharedPref.edit().putInt("BLOCK_SPEED_OFFSET", currentOffset).apply()
             }
         }
 
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         
-        binding.llRoadInfo.post {
-            restorePosition(binding.llRoadInfo, "llRoadInfo", isLandscape, listOfNotNull(binding.llOffset))
+        val draggables = listOfNotNull(
+            binding.llSpeedGroup,
+            binding.llStatusGroup,
+            binding.llOffset
+        )
+
+        draggables.forEach { view ->
+            view.post {
+                val others = draggables.filter { it != view }
+                val viewIdName = resources.getResourceEntryName(view.id)
+                restorePosition(view, viewIdName, isLandscape, others)
+            }
         }
-        binding.llOffset?.post {
-            restorePosition(binding.llOffset!!, "llOffset", isLandscape, listOf(binding.llRoadInfo))
+
+        draggables.forEach { view ->
+            val others = draggables.filter { it != view }
+            val viewIdName = resources.getResourceEntryName(view.id)
+            makeDraggable(view, viewIdName, isLandscape, others)
         }
-        
-        makeDraggable(binding.llRoadInfo, "llRoadInfo", isLandscape, listOfNotNull(binding.llOffset))
-        binding.llOffset?.let { makeDraggable(it, "llOffset", isLandscape, listOf(binding.llRoadInfo)) }
 
         binding.btnEditMode?.setOnClickListener {
             isEditMode = !isEditMode
+            updateEditModeForegrounds()
             if (isEditMode) {
                 binding.btnEditMode?.setBackgroundResource(R.drawable.shape_circle_green)
+                binding.btnRestoreDefaults?.visibility = android.view.View.VISIBLE
                 Toast.makeText(this, "오버레이 편집 모드 켜짐", Toast.LENGTH_SHORT).show()
             } else {
                 binding.btnEditMode?.setBackgroundResource(R.drawable.shape_circle_gray)
+                binding.btnRestoreDefaults?.visibility = android.view.View.GONE
                 Toast.makeText(this, "오버레이 편집 모드 꺼짐", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        binding.btnRestoreDefaults?.setOnClickListener {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("오버레이 배치 초기화")
+                .setMessage("모든 위젯의 배치를 기본값으로 복원하시겠습니까?")
+                .setPositiveButton("복원") { _, _ ->
+                    val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+                    sharedPref.edit()
+                        .remove("llSpeedGroup_x_port")
+                        .remove("llSpeedGroup_y_port")
+                        .remove("llSpeedGroup_x_land")
+                        .remove("llSpeedGroup_y_land")
+                        .remove("llStatusGroup_x_port")
+                        .remove("llStatusGroup_y_port")
+                        .remove("llStatusGroup_x_land")
+                        .remove("llStatusGroup_y_land")
+                        .remove("llOffset_x_port")
+                        .remove("llOffset_y_port")
+                        .remove("llOffset_x_land")
+                        .remove("llOffset_y_land")
+                        .apply()
+
+                    // Reset views to layout defaults immediately
+                    binding.llSpeedGroup.translationX = 0f
+                    binding.llSpeedGroup.translationY = 0f
+                    binding.llStatusGroup.translationX = 0f
+                    binding.llStatusGroup.translationY = 0f
+                    binding.llOffset.translationX = 0f
+                    binding.llOffset.translationY = 0f
+
+                    Toast.makeText(this, "기본값으로 복원되었습니다.", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("취소", null)
+                .show()
         }
 
         OpenpilotStateRepository.state.observe(this) { state ->
@@ -132,11 +180,13 @@ class MapActivity : AppCompatActivity() {
             
             // Active
             if (state.active) {
-                binding.tvActiveStatus.text = "OP ON"
-                binding.tvActiveStatus.setBackgroundResource(R.drawable.bg_status_on)
+                binding.tvActiveStatus.text = "ON"
+                binding.tvActiveStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
+                binding.ivOpIcon?.setColorFilter(android.graphics.Color.parseColor("#4CAF50"))
             } else {
-                binding.tvActiveStatus.text = "OP OFF"
-                binding.tvActiveStatus.setBackgroundResource(R.drawable.bg_status_off)
+                binding.tvActiveStatus.text = "OFF"
+                binding.tvActiveStatus.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
+                binding.ivOpIcon?.setColorFilter(android.graphics.Color.parseColor("#AAAAAA"))
             }
 
             // Traffic
@@ -262,14 +312,17 @@ class MapActivity : AppCompatActivity() {
                 val locationManager = getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
                 locationManager.registerGnssStatusCallback(object : android.location.GnssStatus.Callback() {
                     override fun onStarted() {
+                        binding.ivGpsIcon?.setColorFilter(android.graphics.Color.YELLOW)
                         binding.tvGpsStatus.text = "탐색 중"
                         binding.tvGpsStatus.setTextColor(android.graphics.Color.YELLOW)
                     }
                     override fun onStopped() {
-                        binding.tvGpsStatus.text = "끊김 (NO_SIGNAL)"
+                        binding.ivGpsIcon?.setColorFilter(android.graphics.Color.RED)
+                        binding.tvGpsStatus.text = "끊김 (NO)"
                         binding.tvGpsStatus.setTextColor(android.graphics.Color.RED)
                     }
                     override fun onFirstFix(ttffMillis: Int) {
+                        binding.ivGpsIcon?.setColorFilter(android.graphics.Color.GREEN)
                         binding.tvGpsStatus.text = "수신 양호"
                         binding.tvGpsStatus.setTextColor(android.graphics.Color.GREEN)
                     }
@@ -279,9 +332,11 @@ class MapActivity : AppCompatActivity() {
                             if (status.usedInFix(i)) usedInFix++
                         }
                         if (usedInFix >= 4) {
+                            binding.ivGpsIcon?.setColorFilter(android.graphics.Color.GREEN)
                             binding.tvGpsStatus.text = "GOOD (위성 $usedInFix)"
                             binding.tvGpsStatus.setTextColor(android.graphics.Color.GREEN)
                         } else {
+                            binding.ivGpsIcon?.setColorFilter(android.graphics.Color.RED)
                             binding.tvGpsStatus.text = "BAD (위성 $usedInFix)"
                             binding.tvGpsStatus.setTextColor(android.graphics.Color.RED)
                         }
@@ -349,18 +404,23 @@ class MapActivity : AppCompatActivity() {
                 
                 runOnUiThread {
                     binding.tvOffsetTitle?.text = if (isBoosting) "추가가속중" else "구간단속"
+                    if (isBoosting) {
+                        binding.ivSpeedometerIcon?.setColorFilter(android.graphics.Color.parseColor("#FFEB3B"))
+                    } else {
+                        binding.ivSpeedometerIcon?.setColorFilter(android.graphics.Color.parseColor("#FFFFFF"))
+                    }
                     
                     if (isBlockSection && blockDist > 0) {
                         binding.llBlockInfo?.visibility = android.view.View.VISIBLE
                         binding.tvBlockAvgSpeed?.text = "평균: ${blockAvgSpeed}km/h"
-                        binding.tvBlockDist?.text = "거리: ${formatDistance(blockDist)}"
-                        binding.tvBlockTime?.text = String.format("시간: %d:%02d", blockTime / 60, blockTime % 60)
+                        binding.tvBlockDistTime?.text = String.format("남은: %s (%d:%02d)", formatDistance(blockDist), blockTime / 60, blockTime % 60)
                     } else {
                         binding.llBlockInfo?.visibility = android.view.View.GONE
                     }
                     
                     binding.llSdiEvent.visibility = android.view.View.VISIBLE
                     if (sdiType > 0 || (sdiSpeedLimit > 0 && sdiDist > 0)) {
+                        binding.ivCameraIcon?.setColorFilter(android.graphics.Color.parseColor("#F44336"))
                         binding.tvEventSpeedLimit.text = if (sdiSpeedLimit > 0) sdiSpeedLimit.toString() else "-"
                         binding.tvEventDist.text = formatDistance(sdiDist)
                         
@@ -376,6 +436,7 @@ class MapActivity : AppCompatActivity() {
                         }
                         binding.tvEventType.text = typeName
                     } else {
+                        binding.ivCameraIcon?.setColorFilter(android.graphics.Color.parseColor("#AAAAAA"))
                         binding.tvEventSpeedLimit.text = "-"
                         binding.tvEventDist.text = "0m"
                         binding.tvEventType.text = "이벤트 없음"
@@ -552,6 +613,62 @@ class MapActivity : AppCompatActivity() {
             view.x = clampedX
             view.y = clampedY
         }
+    }
+
+    private fun updateEditModeForegrounds() {
+        if (isEditMode) {
+            binding.llSpeedGroup.foreground = HatchedDrawable()
+            binding.llStatusGroup.foreground = HatchedDrawable()
+            binding.llOffset.foreground = HatchedDrawable()
+        } else {
+            binding.llSpeedGroup.foreground = null
+            binding.llStatusGroup.foreground = null
+            binding.llOffset.foreground = null
+        }
+    }
+}
+
+private class HatchedDrawable(baseColor: Int = android.graphics.Color.parseColor("#33FFC107")) : android.graphics.drawable.Drawable() {
+    private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.parseColor("#80FFC107") // Semi-transparent yellow stripes
+        strokeWidth = 6f
+        style = android.graphics.Paint.Style.STROKE
+    }
+    private val bgPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = baseColor
+        style = android.graphics.Paint.Style.FILL
+    }
+
+    override fun draw(canvas: android.graphics.Canvas) {
+        val bounds = bounds
+        val width = bounds.width()
+        val height = bounds.height()
+
+        // Draw semi-transparent background
+        canvas.drawRect(bounds, bgPaint)
+
+        // Draw diagonal stripes (lines at 45 degrees)
+        val step = 30 // Distance between stripes
+        var x = -height
+        while (x < width) {
+            canvas.drawLine(x.toFloat(), 0f, (x + height).toFloat(), height.toFloat(), paint)
+            x += step
+        }
+    }
+
+    override fun setAlpha(alpha: Int) {
+        paint.alpha = alpha
+        bgPaint.alpha = alpha
+    }
+
+    override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {
+        paint.colorFilter = colorFilter
+        bgPaint.colorFilter = colorFilter
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun getOpacity(): Int {
+        return android.graphics.PixelFormat.TRANSLUCENT
     }
 }
 
