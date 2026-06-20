@@ -94,14 +94,14 @@ class MapActivity : AppCompatActivity() {
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         
         binding.llRoadInfo.post {
-            restorePosition(binding.llRoadInfo, "llRoadInfo", isLandscape)
+            restorePosition(binding.llRoadInfo, "llRoadInfo", isLandscape, listOfNotNull(binding.llOffset))
         }
         binding.llOffset?.post {
-            restorePosition(binding.llOffset!!, "llOffset", isLandscape)
+            restorePosition(binding.llOffset!!, "llOffset", isLandscape, listOf(binding.llRoadInfo))
         }
         
-        makeDraggable(binding.llRoadInfo, "llRoadInfo", isLandscape)
-        binding.llOffset?.let { makeDraggable(it, "llOffset", isLandscape) }
+        makeDraggable(binding.llRoadInfo, "llRoadInfo", isLandscape, listOfNotNull(binding.llOffset))
+        binding.llOffset?.let { makeDraggable(it, "llOffset", isLandscape, listOf(binding.llRoadInfo)) }
 
         OpenpilotStateRepository.state.observe(this) { state ->
             binding.tvCarrotVersion.text = "Ver: ${state.carrot2}"
@@ -447,7 +447,50 @@ class MapActivity : AppCompatActivity() {
             }
         }
     }
-    private fun makeDraggable(view: View, keyPrefix: String, isLandscape: Boolean) {
+    private fun clampAndPreventOverlap(v: View, targetX: Float, targetY: Float, otherViews: List<View>): Pair<Float, Float> {
+        var x = targetX
+        var y = targetY
+        
+        // 1. Clamp to parent boundaries
+        val parent = v.parent as? View
+        if (parent != null) {
+            val maxX = (parent.width - v.width).toFloat().coerceAtLeast(0f)
+            val maxY = (parent.height - v.height).toFloat().coerceAtLeast(0f)
+            x = x.coerceIn(0f, maxX)
+            y = y.coerceIn(0f, maxY)
+        }
+
+        // 2. Prevent overlap with other views
+        val targetRect = android.graphics.RectF(x, y, x + v.width, y + v.height)
+        for (other in otherViews) {
+            if (other.visibility == View.VISIBLE) {
+                val otherRect = android.graphics.RectF(other.x, other.y, other.x + other.width, other.y + other.height)
+                if (android.graphics.RectF.intersects(targetRect, otherRect)) {
+                    // Try moving only X
+                    val rectX = android.graphics.RectF(x, v.y, x + v.width, v.y + v.height)
+                    // Try moving only Y
+                    val rectY = android.graphics.RectF(v.x, y, v.x + v.width, y + v.height)
+                    
+                    val canMoveX = !android.graphics.RectF.intersects(rectX, otherRect)
+                    val canMoveY = !android.graphics.RectF.intersects(rectY, otherRect)
+                    
+                    if (canMoveX && !canMoveY) {
+                        y = v.y
+                    } else if (!canMoveX && canMoveY) {
+                        x = v.x
+                    } else {
+                        // Cannot move independently without collision, stop movement
+                        x = v.x
+                        y = v.y
+                    }
+                    targetRect.set(x, y, x + v.width, y + v.height)
+                }
+            }
+        }
+        return Pair(x, y)
+    }
+
+    private fun makeDraggable(view: View, keyPrefix: String, isLandscape: Boolean, otherViews: List<View> = emptyList()) {
         var dX = 0f
         var dY = 0f
 
@@ -459,9 +502,13 @@ class MapActivity : AppCompatActivity() {
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
+                    val rawX = event.rawX + dX
+                    val rawY = event.rawY + dY
+                    val (clampedX, clampedY) = clampAndPreventOverlap(v, rawX, rawY, otherViews)
+                    
                     v.animate()
-                        .x(event.rawX + dX)
-                        .y(event.rawY + dY)
+                        .x(clampedX)
+                        .y(clampedY)
                         .setDuration(0)
                         .start()
                     true
@@ -480,15 +527,16 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-    private fun restorePosition(view: View, keyPrefix: String, isLandscape: Boolean) {
+    private fun restorePosition(view: View, keyPrefix: String, isLandscape: Boolean, otherViews: List<View> = emptyList()) {
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         val suffix = if (isLandscape) "land" else "port"
         val x = sharedPref.getFloat("${keyPrefix}_x_${suffix}", -1f)
         val y = sharedPref.getFloat("${keyPrefix}_y_${suffix}", -1f)
         
         if (x != -1f && y != -1f) {
-            view.x = x
-            view.y = y
+            val (clampedX, clampedY) = clampAndPreventOverlap(view, x, y, otherViews)
+            view.x = clampedX
+            view.y = clampedY
         }
     }
 }
