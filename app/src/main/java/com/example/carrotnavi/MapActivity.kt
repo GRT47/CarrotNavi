@@ -63,6 +63,14 @@ class MapActivity : AppCompatActivity() {
         var currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
         binding.tvOffsetValue?.text = currentOffset.toString()
 
+        binding.btnOffsetInfo?.setOnClickListener {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("구간단속 여유가속(Boost) 안내")
+                .setMessage("구간단속 중 현재 평균 속도가 낮을 경우, 설정된 값(km/h) 내에서 크루즈 설정 속도를 부드럽게 상향(Boost)하여 통과 시간을 단축시켜 줍니다.\n\n예시: 제한속도 100km/h 구간에서 현재 평균이 90km/h이고, 여유가속을 '+10'으로 설정했다면, 목표 속도를 최대 110km/h까지 올려 평균 속도를 맞춥니다.\n\n(단속 종료 지점이 다가오거나 내부에 일반 카메라가 나타나면 즉시 안전 속도로 자동 복귀합니다.)")
+                .setPositiveButton("확인", null)
+                .show()
+        }
+
         setAutoRepeatButton(binding.btnDecreaseOffset) {
             if (currentOffset > 0) { // 음수 방지
                 currentOffset--
