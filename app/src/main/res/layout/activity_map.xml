@@ -26,15 +26,6 @@
             android:background="@drawable/bg_sdi_panel"
             android:padding="12dp">
 
-            <TextView
-                android:id="@+id/tvAppVersion"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="당근네비 v-"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp"/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -85,26 +76,43 @@
             android:id="@+id/llButtons"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
+            android:gravity="end"
             android:layout_marginStart="8dp">
 
-            <Button
-                android:id="@+id/btnEditKey"
+            <TextView
+                android:id="@+id/tvAppVersion"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="설정"
+                android:layout_height="wrap_content"
+                android:text="당근네비 v-"
+                android:textColor="#FFFFFF"
                 android:textSize="12sp"
-                android:paddingHorizontal="12dp"
-                android:layout_marginEnd="8dp"/>
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
 
-            <Button
-                android:id="@+id/btnExitApp"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="앱 종료"
-                android:textSize="12sp"
-                android:paddingHorizontal="12dp"
-                android:backgroundTint="#F44336" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnEditKey"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="설정"
+                    android:textSize="12sp"
+                    android:paddingHorizontal="12dp"
+                    android:layout_marginEnd="8dp"/>
+
+                <Button
+                    android:id="@+id/btnExitApp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="앱 종료"
+                    android:textSize="12sp"
+                    android:paddingHorizontal="12dp"
+                    android:backgroundTint="#F44336" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
