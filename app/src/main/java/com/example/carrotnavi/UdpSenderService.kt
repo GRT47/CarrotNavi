@@ -178,8 +178,8 @@ class UdpSenderService : Service() {
                         
                         if (nSdiBlockType == 2 && punchPower > 0 && sdiSpeedLimit > 0) {
                             val avgSpeed = json.optInt("nSdiBlockAverageSpeed", 0)
-                            // 1, 3, 4, 6, 7: 과속, 구간종점, 구간내과속, 신호위반, 이동식 등 포인트 카메라
-                            val hasPointCameraAhead = (sdiType == 1 || sdiType == 3 || sdiType == 4 || sdiType == 6 || sdiType == 7) && sdiDist > 0
+                            // 1, 3, 6, 7: 과속, 구간종점, 신호위반, 이동식 등 포인트 카메라 (4: 구간단속중은 제외)
+                            val hasPointCameraAhead = (sdiType == 1 || sdiType == 3 || sdiType == 6 || sdiType == 7) && sdiDist > 0
                             
                             if (avgSpeed > 0 && !hasPointCameraAhead) {
                                 val targetAvgSpeed = sdiSpeedLimit + targetOffset

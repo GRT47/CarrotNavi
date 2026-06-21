@@ -82,7 +82,7 @@ class UdpSenderGUI:
         # Populate SDI Tab
         self.add_field(self.tab_sdi.scrollable_frame, "nRoadLimitSpeed", "현재 도로 제한속도", "100")
         self.add_field(self.tab_sdi.scrollable_frame, "roadcate", "도로종별 (0:고속,1:도시고속,2+:일반)", "0")
-        self.add_field(self.tab_sdi.scrollable_frame, "nSdiType", "1차 이벤트 타입 (1:고정, 7:이동)", "1")
+        self.add_field(self.tab_sdi.scrollable_frame, "nSdiType", "1차 이벤트 타입 (1:고정, 7:이동)", "0")
         self.add_field(self.tab_sdi.scrollable_frame, "nSdiSpeedLimit", "1차 이벤트 제한속도", "100")
         self.add_field(self.tab_sdi.scrollable_frame, "nSdiDist", "1차 이벤트 남은 거리", "500")
         self.add_field(self.tab_sdi.scrollable_frame, "nSdiSection", "구간단속 여부 (1:예, 0:아니오)", "1")
