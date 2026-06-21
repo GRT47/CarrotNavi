@@ -298,19 +298,27 @@ class UdpSenderService : Service() {
                         activeType = 0
                     }
 
-                    var prefix = when (activeType) {
-                        1, 2, 3, 4, 7 -> "단속구간"
-                        22 -> "방지턱"
-                        33 -> "스쿨존"
-                        else -> if (tbtDist < 9999) "주의구간" else "안심주행"
+                    var eventText = ""
+                    var tbtTurnType = 51 // 기본값 (안내지점)
+
+                    when (activeType) {
+                        1 -> { eventText = "고정식 단속"; tbtTurnType = 201 }
+                        2 -> { eventText = "구간단속 시작"; tbtTurnType = 201 }
+                        3 -> { eventText = "구간단속 종료"; tbtTurnType = 201 }
+                        4 -> { eventText = "구간단속중"; tbtTurnType = 201 }
+                        7 -> { eventText = "이동식 단속"; tbtTurnType = 201 }
+                        22 -> { eventText = "과속방지턱"; tbtTurnType = 201 }
+                        33 -> { eventText = "스쿨존"; tbtTurnType = 51 }
+                        else -> { eventText = if (tbtDist < 9999) "주의구간" else "안심주행"; tbtTurnType = 51 }
                     }
+
                     if (isBoosting) {
-                        prefix = "추가가속중"
+                        eventText += " (가속중)"
                     }
 
                     json.put("nTBTDist", tbtDist)      // 이벤트가 있으면 해당 거리 표출, 없으면 9999
-                    json.put("nTBTTurnType", 51)    // Notification 타입 (직진/알림)
-                    json.put("szTBTMainText", "$prefix | GPS: $currentGpsStatusText")
+                    json.put("nTBTTurnType", tbtTurnType)
+                    json.put("szTBTMainText", "$eventText | GPS: $currentGpsStatusText")
 
                     latestPayload = json.toString()
                 } catch (e: Exception) {
