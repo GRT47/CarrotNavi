@@ -280,6 +280,18 @@ class UdpSenderService : Service() {
                         json.put("nGoPosDist", 1)
                         json.put("nGoPosTime", 1)
                     }
+                    
+                    // 4. tbtInfo 에서 도로명(szPosRoadName) 등 추출
+                    val tbtObj = bundle.get("tbtInfo")
+                    if (tbtObj != null) {
+                        val tbtStr = if (tbtObj is String) tbtObj else gson.toJson(tbtObj)
+                        try {
+                            val tbtJson = JSONObject(tbtStr)
+                            if (tbtJson.has("szPosRoadName")) {
+                                json.put("szPosRoadName", tbtJson.get("szPosRoadName"))
+                            }
+                        } catch (e: Exception) {}
+                    }
 
                     // 상시 안내 텍스트 표시를 위한 필수 TBT 더미 값 주입
                     // 우선순위: 1차 이벤트 -> 2차 이벤트 -> 구간단속
@@ -327,7 +339,10 @@ class UdpSenderService : Service() {
                         7 -> { eventText = "이동식 단속"; tbtTurnType = 201 }
                         22 -> { eventText = "과속방지턱"; tbtTurnType = 201 }
                         33 -> { eventText = "스쿨존"; tbtTurnType = 51 }
-                        else -> { eventText = if (tbtDist < 9999) "주의구간" else "안심주행"; tbtTurnType = 51 }
+                        else -> { 
+                            eventText = json.optString("szPosRoadName", "")
+                            tbtTurnType = 51 
+                        }
                     }
 
                     if (isBoosting) {
