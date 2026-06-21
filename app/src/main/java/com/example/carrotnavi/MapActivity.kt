@@ -89,7 +89,7 @@ class MapActivity : AppCompatActivity() {
                 setPadding(0, 30, 0, 10)
             }
             val sbDrop = android.widget.SeekBar(this).apply {
-                max = 30
+                max = 10
                 progress = fakeDrop
                 setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
