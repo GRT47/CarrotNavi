@@ -85,7 +85,7 @@ class MapActivity : AppCompatActivity() {
             rg.check(if (currentMode == 0) rbProgressive.id else rbFixed.id)
             
             val tvDrop = android.widget.TextView(this).apply { 
-                text = "고정 가속 시 평균속도 속임값 (km/h): $fakeDrop"
+                text = "평균속도 속임값 (km/h): $fakeDrop"
                 setPadding(0, 30, 0, 10)
             }
             val sbDrop = android.widget.SeekBar(this).apply {
@@ -94,22 +94,21 @@ class MapActivity : AppCompatActivity() {
                 setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
                         fakeDrop = progress
-                        tvDrop.text = "고정 가속 시 평균속도 속임값 (km/h): $fakeDrop"
+                        tvDrop.text = "평균속도 속임값 (km/h): $fakeDrop"
                     }
                     override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
                     override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
                 })
             }
             
-            rg.setOnCheckedChangeListener { _, checkedId ->
-                val isFixed = checkedId == rbFixed.id
-                tvDrop.visibility = if (isFixed) android.view.View.VISIBLE else android.view.View.GONE
-                sbDrop.visibility = if (isFixed) android.view.View.VISIBLE else android.view.View.GONE
+            rg.setOnCheckedChangeListener { _, _ ->
+                // 속임값 설정은 이제 두 모드 모두에서 지원됨
+                tvDrop.visibility = android.view.View.VISIBLE
+                sbDrop.visibility = android.view.View.VISIBLE
             }
             
-            val isFixedInit = currentMode == 1
-            tvDrop.visibility = if (isFixedInit) android.view.View.VISIBLE else android.view.View.GONE
-            sbDrop.visibility = if (isFixedInit) android.view.View.VISIBLE else android.view.View.GONE
+            tvDrop.visibility = android.view.View.VISIBLE
+            sbDrop.visibility = android.view.View.VISIBLE
             
             layout.addView(rg)
             layout.addView(tvDrop)

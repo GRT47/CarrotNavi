@@ -193,12 +193,18 @@ class UdpSenderService : Service() {
                                     if (boostMode == 1) {
                                         // 고정 가속: 사용자가 설정한 속임값(fakeDrop)만큼 평균속도를 낮춤
                                         fakeAvgSpeed = sdiSpeedLimit - fakeDrop
-                                        if (fakeAvgSpeed > avgSpeed) fakeAvgSpeed = avgSpeed - offset
                                     } else {
-                                        // 점진적 가속 (기본): 목표 속도에 도달할 때까지 부드럽게 가속되도록 수학적 시프트 적용
-                                        // fakeAvgSpeed = 실제평균 - 오프셋
-                                        // 실제평균이 84가 되면 fakeAvgSpeed는 80이 되어 오픈파일럿이 더 이상 가속하지 않음.
-                                        fakeAvgSpeed = avgSpeed - offset
+                                        // 점진적 가속: 남은 여유 속도 비율에 따라 fakeDrop을 점진적으로 줄임
+                                        val diff = targetAvgSpeed - avgSpeed
+                                        val ratio = diff.toDouble() / offset.toDouble()
+                                        val progressiveDrop = Math.ceil(fakeDrop * ratio).toInt()
+                                        fakeAvgSpeed = sdiSpeedLimit - progressiveDrop
+                                    }
+                                    
+                                    // 오픈파일럿이 감속하지 않도록 최소한의 보정 (가짜 속도는 최소한 기본 점진 로직보단 낮게)
+                                    val minFake = avgSpeed - offset
+                                    if (fakeAvgSpeed > minFake) {
+                                        fakeAvgSpeed = minFake
                                     }
                                     
                                     if (fakeAvgSpeed < 0) fakeAvgSpeed = 0
