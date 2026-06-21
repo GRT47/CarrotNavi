@@ -219,7 +219,13 @@ class UdpSenderService : Service() {
                         // SDI 이벤트 발생 시 TBT 패널을 이벤트 거리/직진으로 덮어쓰기
                         val finalSdiType = json.optInt("nSdiType", 0)
                         val finalSdiDist = json.optInt("nSdiDist", 0)
-                        if (finalSdiType > 0 && finalSdiDist > 0) {
+                        val isBlockSection = json.optInt("nSdiSection", 0) == 1 || json.optInt("nSdiBlockType", 0) == 2
+                        val blockDist = json.optInt("nSdiBlockDist", 0)
+
+                        if (isBlockSection && blockDist > 0) {
+                            json.put("nTBTDist", blockDist)
+                            json.put("nTBTTurnType", 1)
+                        } else if (finalSdiType > 0 && finalSdiDist > 0) {
                             json.put("nTBTDist", finalSdiDist)
                             json.put("nTBTTurnType", 1) // 1: 직진 (Straight)
                         }
