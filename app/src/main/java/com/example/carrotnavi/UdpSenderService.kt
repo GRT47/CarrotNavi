@@ -181,28 +181,29 @@ class UdpSenderService : Service() {
                             val hasPointCameraAhead = (sdiType == 1 || sdiType == 3 || sdiType == 4 || sdiType == 6 || sdiType == 7) && sdiDist > 0
                             
                             if (avgSpeed > 0 && !hasPointCameraAhead) {
-                                val diff = sdiSpeedLimit - avgSpeed
-                                if (diff >= 1) { // 1km/h 이상 차이 날 때만 적용
-                                    var boost = 0
+                                // 사용자의 요청: 오픈파일럿이 제한속도를 변경된 값(예: 84)으로 인식하면 안 됨 (UI에 84로 뜨는 것 방지).
+                                // 따라서 제한속도(nSdiSpeedLimit)는 건드리지 않고, '현재 평균속도(nSdiBlockAverageSpeed)'를 낮춰서 오픈파일럿을 속임.
+                                // 오픈파일럿은 (평균속도 < 제한속도) 일 때 가속하므로, 평균속도를 낮춰 보내면 자연스럽게 가속됨.
+                                
+                                val targetAvgSpeed = sdiSpeedLimit + offset
+                                if (avgSpeed < targetAvgSpeed) {
+                                    var fakeAvgSpeed = avgSpeed
+                                    
                                     if (boostMode == 1) {
-                                        // 고정 가속 모드: 1km/h라도 차이 나면 오프셋 전체 적용
-                                        boost = offset
+                                        // 고정 가속: 오픈파일럿이 풀가속하도록 평균속도를 많이 낮춤 (제한속도보다 10km/h 낮게)
+                                        fakeAvgSpeed = sdiSpeedLimit - 10
+                                        if (fakeAvgSpeed > avgSpeed) fakeAvgSpeed = avgSpeed - offset
                                     } else {
-                                        // 점진적 가속 모드 (기본): 10km/h 차이일 때 100% 비율 적용
-                                        val maxDiffForFullOffset = 10.0
-                                        var ratio = diff / maxDiffForFullOffset
-                                        if (ratio > 1.0) ratio = 1.0
-                                        
-                                        boost = (offset * ratio).toInt()
+                                        // 점진적 가속 (기본): 목표 속도에 도달할 때까지 부드럽게 가속되도록 수학적 시프트 적용
+                                        // fakeAvgSpeed = 실제평균 - 오프셋
+                                        // 실제평균이 84가 되면 fakeAvgSpeed는 80이 되어 오픈파일럿이 더 이상 가속하지 않음.
+                                        fakeAvgSpeed = avgSpeed - offset
                                     }
                                     
-                                    if (boost < 1) boost = 1 // 계산 결과가 0이어도 최소 1km/h는 부여
+                                    if (fakeAvgSpeed < 0) fakeAvgSpeed = 0
                                     
-                                    val boostedLimit = sdiSpeedLimit + boost
-                                    json.put("nSdiSpeedLimit", boostedLimit)
-                                    if (json.has("nSdiBlockSpeed")) {
-                                        json.put("nSdiBlockSpeed", boostedLimit)
-                                    }
+                                    // 평균속도 변조
+                                    json.put("nSdiBlockAverageSpeed", fakeAvgSpeed)
                                     isBoosting = true
                                 }
                             }
