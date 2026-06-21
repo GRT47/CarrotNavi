@@ -409,6 +409,19 @@
             android:elevation="6dp"
             android:visibility="gone" />
 
+        <!-- 오버레이 표시/숨기기 버튼 -->
+        <ImageButton
+            android:id="@+id/btnToggleVisibility"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="76dp"
+            android:layout_marginBottom="32dp"
+            android:src="@android:drawable/ic_menu_view"
+            android:background="@drawable/shape_circle_gray"
+            android:scaleType="center"
+            android:elevation="6dp" />
+
         <!-- 오버레이 편집 모드 버튼 (그래픽) -->
         <ImageButton
             android:id="@+id/btnEditMode"

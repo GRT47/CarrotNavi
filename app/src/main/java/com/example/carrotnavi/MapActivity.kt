@@ -24,6 +24,7 @@ class MapActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMapBinding
     private var navigationFragment: NavigationFragment? = null
     private var isEditMode = false
+    private var isOverlayVisible = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -174,6 +175,17 @@ class MapActivity : AppCompatActivity() {
             makeDraggable(view, viewIdName, isLandscape, others)
         }
 
+        isOverlayVisible = sharedPref.getBoolean("OVERLAY_VISIBLE", true)
+        updateOverlayVisibility()
+
+        binding.btnToggleVisibility?.setOnClickListener {
+            isOverlayVisible = !isOverlayVisible
+            sharedPref.edit().putBoolean("OVERLAY_VISIBLE", isOverlayVisible).apply()
+            updateOverlayVisibility()
+            val msg = if (isOverlayVisible) "오버레이 켜짐" else "오버레이 꺼짐"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
+
         binding.btnEditMode?.setOnClickListener {
             isEditMode = !isEditMode
             updateEditModeForegrounds()
@@ -271,6 +283,14 @@ class MapActivity : AppCompatActivity() {
         }
 
         initTmapSdk(appKey)
+    }
+
+    private fun updateOverlayVisibility() {
+        val visibility = if (isOverlayVisible) android.view.View.VISIBLE else android.view.View.GONE
+        binding.llSpeedGroup.visibility = visibility
+        binding.llStatusGroup.visibility = visibility
+        binding.llOffset.visibility = visibility
+        binding.btnToggleVisibility?.alpha = if (isOverlayVisible) 1.0f else 0.5f
     }
 
     private fun initTmapSdk(appKey: String) {
