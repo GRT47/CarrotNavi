@@ -172,37 +172,34 @@ class UdpSenderService : Service() {
 
                         // 구간단속 평균속도 보상 가속 로직 (부드러운 조절 알고리즘 적용)
                         val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-                        val offset = sp.getInt("BLOCK_SPEED_OFFSET", 0)
+                        val punchPower = sp.getInt("BLOCK_SPEED_OFFSET", 0) // 위젯 (+/-): 최대 가속력 (속임값)
                         val boostMode = sp.getInt("BLOCK_SPEED_BOOST_MODE", 0) // 0: 점진적, 1: 고정
-                        val fakeDrop = sp.getInt("BLOCK_SPEED_FAKE_DROP", 10)
+                        val targetOffset = sp.getInt("BLOCK_SPEED_FAKE_DROP", 10) // 슬라이더: 목표 평균속도 상향값
                         
-                        if (nSdiBlockType == 2 && offset > 0 && sdiSpeedLimit > 0) {
+                        if (nSdiBlockType == 2 && punchPower > 0 && sdiSpeedLimit > 0) {
                             val avgSpeed = json.optInt("nSdiBlockAverageSpeed", 0)
                             // 1, 3, 4, 6, 7: 과속, 구간종점, 구간내과속, 신호위반, 이동식 등 포인트 카메라
                             val hasPointCameraAhead = (sdiType == 1 || sdiType == 3 || sdiType == 4 || sdiType == 6 || sdiType == 7) && sdiDist > 0
                             
                             if (avgSpeed > 0 && !hasPointCameraAhead) {
-                                // 사용자의 요청: 오픈파일럿이 제한속도를 변경된 값(예: 84)으로 인식하면 안 됨 (UI에 84로 뜨는 것 방지).
-                                // 따라서 제한속도(nSdiSpeedLimit)는 건드리지 않고, '현재 평균속도(nSdiBlockAverageSpeed)'를 낮춰서 오픈파일럿을 속임.
-                                // 오픈파일럿은 (평균속도 < 제한속도) 일 때 가속하므로, 평균속도를 낮춰 보내면 자연스럽게 가속됨.
-                                
-                                val targetAvgSpeed = sdiSpeedLimit + offset
+                                // 사용자의 요청에 따라 위젯과 슬라이더의 역할 맞교환
+                                val targetAvgSpeed = sdiSpeedLimit + targetOffset
                                 if (avgSpeed < targetAvgSpeed) {
                                     var fakeAvgSpeed = avgSpeed
                                     
                                     if (boostMode == 1) {
-                                        // 고정 가속: 사용자가 설정한 속임값(fakeDrop)만큼 평균속도를 낮춤
-                                        fakeAvgSpeed = sdiSpeedLimit - fakeDrop
+                                        // 고정 가속: 사용자가 설정한 가속력(punchPower)만큼 무조건 평균속도를 낮춤
+                                        fakeAvgSpeed = sdiSpeedLimit - punchPower
                                     } else {
-                                        // 점진적 가속: 남은 여유 속도 비율에 따라 fakeDrop을 점진적으로 줄임
+                                        // 점진적 가속: 남은 여유 속도 비율에 따라 가속력(punchPower)을 점진적으로 줄임
                                         val diff = targetAvgSpeed - avgSpeed
-                                        val ratio = diff.toDouble() / offset.toDouble()
-                                        val progressiveDrop = Math.ceil(fakeDrop * ratio).toInt()
+                                        val ratio = if (targetOffset > 0) diff.toDouble() / targetOffset.toDouble() else 1.0
+                                        val progressiveDrop = Math.ceil(punchPower * ratio).toInt()
                                         fakeAvgSpeed = sdiSpeedLimit - progressiveDrop
                                     }
                                     
-                                    // 오픈파일럿이 감속하지 않도록 최소한의 보정 (가짜 속도는 최소한 기본 점진 로직보단 낮게)
-                                    val minFake = avgSpeed - offset
+                                    // 오픈파일럿이 감속하지 않도록 최소한의 보정
+                                    val minFake = avgSpeed - targetOffset
                                     if (fakeAvgSpeed > minFake) {
                                         fakeAvgSpeed = minFake
                                     }

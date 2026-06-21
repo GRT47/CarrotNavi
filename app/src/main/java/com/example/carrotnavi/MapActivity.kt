@@ -85,16 +85,16 @@ class MapActivity : AppCompatActivity() {
             rg.check(if (currentMode == 0) rbProgressive.id else rbFixed.id)
             
             val tvDrop = android.widget.TextView(this).apply { 
-                text = "평균속도 속임값 (km/h): $fakeDrop"
+                text = "목표 평균속도 상향값 (km/h): $fakeDrop"
                 setPadding(0, 30, 0, 10)
             }
             val sbDrop = android.widget.SeekBar(this).apply {
-                max = 10
+                max = 20 // 목표 상향값이므로 최대치를 20 정도로 설정 (사용자 편의)
                 progress = fakeDrop
                 setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
                         fakeDrop = progress
-                        tvDrop.text = "평균속도 속임값 (km/h): $fakeDrop"
+                        tvDrop.text = "목표 평균속도 상향값 (km/h): $fakeDrop"
                     }
                     override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
                     override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
@@ -128,7 +128,7 @@ class MapActivity : AppCompatActivity() {
                 .setNeutralButton("도움말") { _, _ ->
                     androidx.appcompat.app.AlertDialog.Builder(this)
                         .setTitle("안내")
-                        .setMessage("- 점진적 가속: 평균속도를 (실제평균 - 위젯설정값)으로 보내어 부드럽게 가속합니다.\n- 고정 가속: 평균속도를 (제한속도 - 속임값)으로 보내어 강하게 가속을 유도합니다.")
+                        .setMessage("- 메인 화면 위젯(+/-): 최대 가속력(초기 펀치력)을 조절합니다.\n- 팝업 슬라이더: 목표로 하는 최종 평균속도를 제한속도 대비 얼마나 상향할지 조절합니다.")
                         .setPositiveButton("확인", null)
                         .show()
                 }
