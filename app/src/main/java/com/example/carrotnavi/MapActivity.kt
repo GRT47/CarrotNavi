@@ -69,10 +69,25 @@ class MapActivity : AppCompatActivity() {
         binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
 
         binding.btnOffsetInfo?.setOnClickListener {
+            val modes = arrayOf("점진적 가속 (기본: 차이에 비례)", "고정 가속 (지정한 값만큼 무조건 추가)")
+            val currentMode = sharedPref.getInt("BLOCK_SPEED_BOOST_MODE", 0)
+            
             androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("구간단속 여유가속(Boost) 안내")
-                .setMessage("구간단속 중 현재 평균 속도가 낮을 경우, 설정된 값(km/h) 내에서 크루즈 설정 속도를 부드럽게 상향(Boost)하여 통과 시간을 단축시켜 줍니다.\n\n예시: 제한속도 100km/h 구간에서 현재 평균이 90km/h이고, 여유가속을 '+10'으로 설정했다면, 목표 속도를 최대 110km/h까지 올려 평균 속도를 맞춥니다.\n\n(단속 종료 지점이 다가오거나 내부에 일반 카메라가 나타나면 즉시 안전 속도로 자동 복귀합니다.)")
-                .setPositiveButton("확인", null)
+                .setTitle("구간단속 보상가속 모드 설정")
+                .setSingleChoiceItems(modes, currentMode) { dialog, which ->
+                    sharedPref.edit().putInt("BLOCK_SPEED_BOOST_MODE", which).apply()
+                    val toastMsg = if (which == 0) "점진적 가속으로 설정되었습니다." else "고정 가속으로 설정되었습니다."
+                    android.widget.Toast.makeText(this@MapActivity, toastMsg, android.widget.Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                }
+                .setPositiveButton("도움말") { _, _ ->
+                    androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("보상가속 모드 안내")
+                        .setMessage("- 점진적 가속: 평균 속도와 제한 속도의 차이에 비례하여 부드럽게 가속 폭을 늘립니다.\n- 고정 가속: 평균 속도가 제한 속도보다 단 1km/h라도 낮으면 설정한 오프셋 전체를 무조건 추가로 부여합니다.")
+                        .setPositiveButton("확인", null)
+                        .show()
+                }
+                .setNegativeButton("닫기", null)
                 .show()
         }
 

@@ -173,6 +173,7 @@ class UdpSenderService : Service() {
                         // 구간단속 평균속도 보상 가속 로직 (부드러운 조절 알고리즘 적용)
                         val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
                         val offset = sp.getInt("BLOCK_SPEED_OFFSET", 0)
+                        val boostMode = sp.getInt("BLOCK_SPEED_BOOST_MODE", 0) // 0: 점진적, 1: 고정
                         
                         if (nSdiBlockType == 2 && offset > 0 && sdiSpeedLimit > 0) {
                             val avgSpeed = json.optInt("nSdiBlockAverageSpeed", 0)
@@ -182,12 +183,19 @@ class UdpSenderService : Service() {
                             if (avgSpeed > 0 && !hasPointCameraAhead) {
                                 val diff = sdiSpeedLimit - avgSpeed
                                 if (diff >= 1) { // 1km/h 이상 차이 날 때만 적용
-                                    // 10km/h 이상 차이 날 때 최대 여유 속도(100%) 부여
-                                    val maxDiffForFullOffset = 10.0
-                                    var ratio = diff / maxDiffForFullOffset
-                                    if (ratio > 1.0) ratio = 1.0
+                                    var boost = 0
+                                    if (boostMode == 1) {
+                                        // 고정 가속 모드: 1km/h라도 차이 나면 오프셋 전체 적용
+                                        boost = offset
+                                    } else {
+                                        // 점진적 가속 모드 (기본): 10km/h 차이일 때 100% 비율 적용
+                                        val maxDiffForFullOffset = 10.0
+                                        var ratio = diff / maxDiffForFullOffset
+                                        if (ratio > 1.0) ratio = 1.0
+                                        
+                                        boost = (offset * ratio).toInt()
+                                    }
                                     
-                                    var boost = (offset * ratio).toInt()
                                     if (boost < 1) boost = 1 // 계산 결과가 0이어도 최소 1km/h는 부여
                                     
                                     val boostedLimit = sdiSpeedLimit + boost
