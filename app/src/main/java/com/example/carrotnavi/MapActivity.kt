@@ -69,25 +69,71 @@ class MapActivity : AppCompatActivity() {
         binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
 
         binding.btnOffsetInfo?.setOnClickListener {
-            val modes = arrayOf("점진적 가속 (기본: 차이에 비례)", "고정 가속 (지정한 값만큼 무조건 추가)")
             val currentMode = sharedPref.getInt("BLOCK_SPEED_BOOST_MODE", 0)
+            var fakeDrop = sharedPref.getInt("BLOCK_SPEED_FAKE_DROP", 10)
+            
+            val layout = android.widget.LinearLayout(this).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding(50, 40, 50, 0)
+            }
+            
+            val rg = android.widget.RadioGroup(this)
+            val rbProgressive = android.widget.RadioButton(this).apply { text = "점진적 가속 (기본: 목표속도 도달 시 정지)" }
+            val rbFixed = android.widget.RadioButton(this).apply { text = "고정 가속 (강제 풀가속)" }
+            rg.addView(rbProgressive)
+            rg.addView(rbFixed)
+            rg.check(if (currentMode == 0) rbProgressive.id else rbFixed.id)
+            
+            val tvDrop = android.widget.TextView(this).apply { 
+                text = "고정 가속 시 평균속도 속임값 (km/h): $fakeDrop"
+                setPadding(0, 30, 0, 10)
+            }
+            val sbDrop = android.widget.SeekBar(this).apply {
+                max = 30
+                progress = fakeDrop
+                setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                        fakeDrop = progress
+                        tvDrop.text = "고정 가속 시 평균속도 속임값 (km/h): $fakeDrop"
+                    }
+                    override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+                    override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+                })
+            }
+            
+            rg.setOnCheckedChangeListener { _, checkedId ->
+                val isFixed = checkedId == rbFixed.id
+                tvDrop.visibility = if (isFixed) android.view.View.VISIBLE else android.view.View.GONE
+                sbDrop.visibility = if (isFixed) android.view.View.VISIBLE else android.view.View.GONE
+            }
+            
+            val isFixedInit = currentMode == 1
+            tvDrop.visibility = if (isFixedInit) android.view.View.VISIBLE else android.view.View.GONE
+            sbDrop.visibility = if (isFixedInit) android.view.View.VISIBLE else android.view.View.GONE
+            
+            layout.addView(rg)
+            layout.addView(tvDrop)
+            layout.addView(sbDrop)
             
             androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("구간단속 보상가속 모드 설정")
-                .setSingleChoiceItems(modes, currentMode) { dialog, which ->
-                    sharedPref.edit().putInt("BLOCK_SPEED_BOOST_MODE", which).apply()
-                    val toastMsg = if (which == 0) "점진적 가속으로 설정되었습니다." else "고정 가속으로 설정되었습니다."
-                    android.widget.Toast.makeText(this@MapActivity, toastMsg, android.widget.Toast.LENGTH_SHORT).show()
-                    dialog.dismiss()
+                .setTitle("보상가속 모드 설정")
+                .setView(layout)
+                .setPositiveButton("저장") { _, _ ->
+                    val mode = if (rg.checkedRadioButtonId == rbProgressive.id) 0 else 1
+                    sharedPref.edit()
+                        .putInt("BLOCK_SPEED_BOOST_MODE", mode)
+                        .putInt("BLOCK_SPEED_FAKE_DROP", fakeDrop)
+                        .apply()
+                    android.widget.Toast.makeText(this@MapActivity, "설정이 저장되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
                 }
-                .setPositiveButton("도움말") { _, _ ->
+                .setNeutralButton("도움말") { _, _ ->
                     androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("보상가속 모드 안내")
-                        .setMessage("- 점진적 가속: 평균 속도와 제한 속도의 차이에 비례하여 부드럽게 가속 폭을 늘립니다.\n- 고정 가속: 평균 속도가 제한 속도보다 단 1km/h라도 낮으면 설정한 오프셋 전체를 무조건 추가로 부여합니다.")
+                        .setTitle("안내")
+                        .setMessage("- 점진적 가속: 평균속도를 (실제평균 - 위젯설정값)으로 보내어 부드럽게 가속합니다.\n- 고정 가속: 평균속도를 (제한속도 - 속임값)으로 보내어 강하게 가속을 유도합니다.")
                         .setPositiveButton("확인", null)
                         .show()
                 }
-                .setNegativeButton("닫기", null)
+                .setNegativeButton("취소", null)
                 .show()
         }
 

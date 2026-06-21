@@ -174,6 +174,7 @@ class UdpSenderService : Service() {
                         val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
                         val offset = sp.getInt("BLOCK_SPEED_OFFSET", 0)
                         val boostMode = sp.getInt("BLOCK_SPEED_BOOST_MODE", 0) // 0: 점진적, 1: 고정
+                        val fakeDrop = sp.getInt("BLOCK_SPEED_FAKE_DROP", 10)
                         
                         if (nSdiBlockType == 2 && offset > 0 && sdiSpeedLimit > 0) {
                             val avgSpeed = json.optInt("nSdiBlockAverageSpeed", 0)
@@ -190,8 +191,8 @@ class UdpSenderService : Service() {
                                     var fakeAvgSpeed = avgSpeed
                                     
                                     if (boostMode == 1) {
-                                        // 고정 가속: 오픈파일럿이 풀가속하도록 평균속도를 많이 낮춤 (제한속도보다 10km/h 낮게)
-                                        fakeAvgSpeed = sdiSpeedLimit - 10
+                                        // 고정 가속: 사용자가 설정한 속임값(fakeDrop)만큼 평균속도를 낮춤
+                                        fakeAvgSpeed = sdiSpeedLimit - fakeDrop
                                         if (fakeAvgSpeed > avgSpeed) fakeAvgSpeed = avgSpeed - offset
                                     } else {
                                         // 점진적 가속 (기본): 목표 속도에 도달할 때까지 부드럽게 가속되도록 수학적 시프트 적용
