@@ -340,7 +340,7 @@ class UdpSenderService : Service() {
                         22 -> { eventText = "과속방지턱"; tbtTurnType = 201 }
                         33 -> { eventText = "스쿨존"; tbtTurnType = 51 }
                         else -> { 
-                            eventText = json.optString("szPosRoadName", "")
+                            eventText = if (tbtDist < 9999) "주의구간" else "안심주행"
                             tbtTurnType = 51 
                         }
                     }
@@ -351,7 +351,13 @@ class UdpSenderService : Service() {
 
                     json.put("nTBTDist", tbtDist)      // 이벤트가 있으면 해당 거리 표출, 없으면 9999
                     json.put("nTBTTurnType", tbtTurnType)
-                    json.put("szTBTMainText", "$eventText | GPS: $currentGpsStatusText")
+                    
+                    if (activeType > 0) {
+                        json.put("szTBTMainText", "$eventText | GPS: $currentGpsStatusText")
+                    } else {
+                        json.put("szTBTMainText", "")
+                        json.put("szPosRoadName", "$eventText | GPS: $currentGpsStatusText")
+                    }
 
                     latestPayload = json.toString()
                 } catch (e: Exception) {
