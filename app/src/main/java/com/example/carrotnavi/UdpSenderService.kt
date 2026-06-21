@@ -170,7 +170,7 @@ class UdpSenderService : Service() {
                             json.put("nSdiSection", 1) // 사용자 요청에 따라 강제로 1 고정
                         }
 
-                        // 구간단속 평균속도 보상 가속 로직 (부드러운 조절 알고리즘 적용)
+                        // 구간단속 제한속도 상향 로직 (평균속도는 원본 유지, 제한속도만 뻥튀기)
                         val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
                         val punchPower = sp.getInt("BLOCK_SPEED_OFFSET", 0) // 위젯 (+/-): 최대 가속력 (속임값)
                         val boostMode = sp.getInt("BLOCK_SPEED_BOOST_MODE", 0) // 0: 점진적, 1: 고정
@@ -182,34 +182,27 @@ class UdpSenderService : Service() {
                             val hasPointCameraAhead = (sdiType == 1 || sdiType == 3 || sdiType == 4 || sdiType == 6 || sdiType == 7) && sdiDist > 0
                             
                             if (avgSpeed > 0 && !hasPointCameraAhead) {
-                                // 사용자의 요청에 따라 위젯과 슬라이더의 역할 맞교환
                                 val targetAvgSpeed = sdiSpeedLimit + targetOffset
+                                var fakeSpeedLimit = targetAvgSpeed // 기본적으로 목표 평균속도로 제한속도를 상향
+                                
                                 if (avgSpeed < targetAvgSpeed) {
-                                    var fakeAvgSpeed = avgSpeed
-                                    
                                     if (boostMode == 1) {
-                                        // 고정 가속: 사용자가 설정한 가속력(punchPower)만큼 무조건 평균속도를 낮춤
-                                        fakeAvgSpeed = sdiSpeedLimit - punchPower
+                                        // 고정 가속: 펀치력만큼 무조건 제한속도를 더 상향
+                                        fakeSpeedLimit = targetAvgSpeed + punchPower
                                     } else {
-                                        // 점진적 가속: 남은 여유 속도 비율에 따라 가속력(punchPower)을 점진적으로 줄임
+                                        // 점진적 가속: 남은 여유 속도 비율에 따라 펀치력을 점진적으로 가감
                                         val diff = targetAvgSpeed - avgSpeed
                                         val ratio = if (targetOffset > 0) diff.toDouble() / targetOffset.toDouble() else 1.0
-                                        val progressiveDrop = Math.ceil(punchPower * ratio).toInt()
-                                        fakeAvgSpeed = sdiSpeedLimit - progressiveDrop
+                                        val progressiveBoost = Math.ceil(punchPower * ratio).toInt()
+                                        fakeSpeedLimit = targetAvgSpeed + progressiveBoost
                                     }
-                                    
-                                    // 오픈파일럿이 감속하지 않도록 최소한의 보정
-                                    val minFake = avgSpeed - targetOffset
-                                    if (fakeAvgSpeed > minFake) {
-                                        fakeAvgSpeed = minFake
-                                    }
-                                    
-                                    if (fakeAvgSpeed < 0) fakeAvgSpeed = 0
-                                    
-                                    // 평균속도 변조
-                                    json.put("nSdiBlockAverageSpeed", fakeAvgSpeed)
-                                    isBoosting = true
                                 }
+                                
+                                // 평균속도(nSdiBlockAverageSpeed)는 변조하지 않고 원본 그대로 둠
+                                // 제한속도와 구간단속 속도만 변조하여 오픈파일럿의 가속 락을 해제함
+                                json.put("nSdiSpeedLimit", fakeSpeedLimit)
+                                json.put("nSdiBlockSpeed", fakeSpeedLimit)
+                                isBoosting = true
                             }
                         }
                         
