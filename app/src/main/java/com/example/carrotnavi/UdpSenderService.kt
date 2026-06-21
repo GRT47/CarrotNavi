@@ -282,18 +282,36 @@ class UdpSenderService : Service() {
                     }
 
                     // 상시 안내 텍스트 표시를 위한 필수 TBT 더미 값 주입
-                    var tbtDist = json.optInt("nSdiDist", 0)
-                    var activeType = json.optInt("nSdiType", 0)
+                    // 우선순위: 1차 이벤트 -> 2차 이벤트 -> 구간단속
+                    var tbtDist = 0
+                    var activeType = 0
                     
-                    if (tbtDist <= 0) {
-                        tbtDist = json.optInt("nSdiPlusDist", 0)
-                        activeType = json.optInt("nSdiPlusType", 0)
-                    }
-                    if (tbtDist <= 0) {
-                        tbtDist = json.optInt("nSdiBlockDist", 0)
-                        activeType = 4 // 구간단속 중
-                    }
-                    if (tbtDist <= 0) {
+                    val type1 = json.optInt("nSdiType", 0)
+                    val dist1 = json.optInt("nSdiDist", 0)
+                    val type2 = json.optInt("nSdiPlusType", 0)
+                    val dist2 = json.optInt("nSdiPlusDist", 0)
+                    val blockType = json.optInt("nSdiBlockType", 0)
+                    val blockDist = json.optInt("nSdiBlockDist", 0)
+
+                    if (type1 > 0 && dist1 > 0) {
+                        tbtDist = dist1
+                        activeType = type1
+                    } else if (type2 > 0 && dist2 > 0) {
+                        tbtDist = dist2
+                        activeType = type2
+                    } else if (blockType > 0 && blockDist > 0) {
+                        tbtDist = blockDist
+                        // blockType(1:시작, 2:진행, 3:종료) -> activeType(2, 4, 3) 매핑
+                        activeType = when (blockType) {
+                            1 -> 2
+                            2 -> 4
+                            3 -> 3
+                            else -> 4
+                        }
+                    } else if (dist1 > 0) {
+                        tbtDist = dist1
+                        activeType = 0
+                    } else {
                         tbtDist = 9999
                         activeType = 0
                     }
