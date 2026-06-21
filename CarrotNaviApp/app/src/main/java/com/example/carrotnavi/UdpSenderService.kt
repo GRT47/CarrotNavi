@@ -188,6 +188,13 @@ class UdpSenderService : Service() {
                         if (sdiType == 0 && sdiSpeedLimit > 0 && sdiDist > 0) {
                             json.put("nSdiType", 1) // 강제로 1로 세팅
                         }
+                        
+                        // SDI 이벤트 발생 시 TBT 패널을 이벤트 거리/직진으로 덮어쓰기
+                        val finalSdiType = json.optInt("nSdiType", 0)
+                        if (finalSdiType > 0 && sdiDist > 0) {
+                            json.put("nTBTDist", sdiDist)
+                            json.put("nTBTTurnType", 1) // 1: 직진 (Straight)
+                        }
                     }
                     
                     json.put("nRoadLimitSpeed", roadLimitSpeed)

@@ -215,6 +215,14 @@ class UdpSenderService : Service() {
                         if (sdiType == 0 && sdiSpeedLimit > 0 && sdiDist > 0) {
                             json.put("nSdiType", 1) // 강제로 1로 세팅
                         }
+                        
+                        // SDI 이벤트 발생 시 TBT 패널을 이벤트 거리/직진으로 덮어쓰기
+                        val finalSdiType = json.optInt("nSdiType", 0)
+                        val finalSdiDist = json.optInt("nSdiDist", 0)
+                        if (finalSdiType > 0 && finalSdiDist > 0) {
+                            json.put("nTBTDist", finalSdiDist)
+                            json.put("nTBTTurnType", 1) // 1: 직진 (Straight)
+                        }
                     }
                     
                     // 1.5. Reflection을 통한 도로 기본 제한속도 추출 (TMAP 코어 엔진)
