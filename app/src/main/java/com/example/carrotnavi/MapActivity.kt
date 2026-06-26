@@ -153,12 +153,56 @@ class MapActivity : AppCompatActivity() {
             }
         }
 
+        val turnTypeOverride = sharedPref.getInt("OVERRIDE_TBT_TURN_TYPE", -1)
+        val displayText = when (turnTypeOverride) {
+            -1 -> "끄기"
+            0 -> "끄기" // 기존 자동 사용자들은 끄기로 일괄 변경
+            else -> turnTypeOverride.toString()
+        }
+        binding.tvTurnTypeOverride?.text = displayText
+        binding.llTurnTypeOverride?.setOnClickListener {
+            if (isEditMode) return@setOnClickListener
+            val options = arrayOf(
+                "끄기 (알림 끄기)",
+                "목적지 도착 / 경고 팝업 (201)",
+                "좌회전 (12)",
+                "우회전 (13)",
+                "유턴 (14)",
+                "좌측 분기점 (7)",
+                "우측 분기점 (6)",
+                "좌측 램프 진출 (102)",
+                "우측 램프 진출 (101)",
+                "직진 / 단순 알림 (51)",
+                "톨게이트 (153)"
+            )
+            val values = intArrayOf(-1, 201, 12, 13, 14, 7, 6, 102, 101, 51, 153)
+            val currentVal = sharedPref.getInt("OVERRIDE_TBT_TURN_TYPE", -1)
+            val checkedItem = values.indexOf(currentVal).let { if (it == -1) 0 else it }
+
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("TBT TurnType 지정")
+                .setSingleChoiceItems(options, checkedItem) { dialog, which ->
+                    val value = values[which]
+                    sharedPref.edit().putInt("OVERRIDE_TBT_TURN_TYPE", value).apply()
+                    val dialogDisplayText = when (value) {
+                        -1 -> "끄기"
+                        else -> value.toString()
+                    }
+                    binding.tvTurnTypeOverride?.text = dialogDisplayText
+                    Toast.makeText(this, "TBT TurnType이 $dialogDisplayText(으)로 설정되었습니다.", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                }
+                .setNegativeButton("취소", null)
+                .show()
+        }
+
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         
         val draggables = listOfNotNull(
             binding.llSpeedGroup,
             binding.llStatusGroup,
-            binding.llOffset
+            binding.llOffset,
+            binding.llTurnTypeOverride
         )
 
         draggables.forEach { view ->
@@ -219,6 +263,10 @@ class MapActivity : AppCompatActivity() {
                         .remove("llOffset_y_port")
                         .remove("llOffset_x_land")
                         .remove("llOffset_y_land")
+                        .remove("llTurnTypeOverride_x_port")
+                        .remove("llTurnTypeOverride_y_port")
+                        .remove("llTurnTypeOverride_x_land")
+                        .remove("llTurnTypeOverride_y_land")
                         .apply()
 
                     // Reset views to layout defaults immediately
@@ -228,6 +276,8 @@ class MapActivity : AppCompatActivity() {
                     binding.llStatusGroup.translationY = 0f
                     binding.llOffset.translationX = 0f
                     binding.llOffset.translationY = 0f
+                    binding.llTurnTypeOverride?.translationX = 0f
+                    binding.llTurnTypeOverride?.translationY = 0f
 
                     Toast.makeText(this, "기본값으로 복원되었습니다.", Toast.LENGTH_SHORT).show()
                 }
@@ -353,6 +403,19 @@ class MapActivity : AppCompatActivity() {
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 frag.startSafeDrive()
                 Log.d("MapActivity", "startSafeDrive() called")
+                try {
+                    // Tmap SDK의 NavigationFragment에 교통 정보 표시 설정 시도
+                    val methods = frag.javaClass.methods
+                    for (m in methods) {
+                        // 1. 교통정보 켜기
+                        if (m.name.contains("traffic", ignoreCase = true) && m.parameterTypes.size == 1 && m.parameterTypes[0] == Boolean::class.javaPrimitiveType) {
+                            m.invoke(frag, true)
+                            Log.d("MapActivity", "Successfully invoked ${m.name}(true)")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("MapActivity", "Failed to set map options via reflection: ${e.message}")
+                }
             }, 1000)
 
             /* 

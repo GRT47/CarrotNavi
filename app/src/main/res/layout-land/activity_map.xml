@@ -395,6 +395,39 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- TBT TurnType Override 오버레이 -->
+        <LinearLayout
+            android:id="@+id/llTurnTypeOverride"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_sdi_panel"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:gravity="center"
+            android:elevation="6dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TBT Turn:"
+                android:textColor="#AAAAAA"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp"/>
+
+            <TextView
+                android:id="@+id/tvTurnTypeOverride"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="자동"
+                android:textColor="#FF9800"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
         <!-- 오버레이 기본값 복원 버튼 -->
         <ImageButton
             android:id="@+id/btnRestoreDefaults"

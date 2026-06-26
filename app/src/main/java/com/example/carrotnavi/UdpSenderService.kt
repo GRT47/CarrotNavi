@@ -349,8 +349,21 @@ class UdpSenderService : Service() {
                         eventText += " (가속중)"
                     }
 
-                    json.put("nTBTDist", tbtDist)      // 이벤트가 있으면 해당 거리 표출, 없으면 9999
-                    json.put("nTBTTurnType", tbtTurnType)
+                    // TBT TurnType 강제 오버라이드
+                    val spOverride = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+                    val overrideTurnType = spOverride.getInt("OVERRIDE_TBT_TURN_TYPE", -1)
+                    
+                    if (overrideTurnType <= 0) {
+                        // 끄기 모드: 팝업이 뜨지 않도록 무효화
+                        json.put("nTBTTurnType", -1)
+                        json.put("nTBTDist", 9999)
+                    } else {
+                        if (overrideTurnType > 0) {
+                            tbtTurnType = overrideTurnType
+                        }
+                        json.put("nTBTDist", tbtDist)      // 이벤트가 있으면 해당 거리 표출, 없으면 9999
+                        json.put("nTBTTurnType", tbtTurnType)
+                    }
                     
                     if (activeType > 0) {
                         json.put("szTBTMainText", "$eventText | GPS: $currentGpsStatusText")
