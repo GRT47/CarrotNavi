@@ -21,6 +21,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                 params["TEXT_OUTPUT_TARGET"]?.firstOrNull()?.let { editor.putString("TEXT_OUTPUT_TARGET", it) }
                 params["TBT_SPACE_BEFORE"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("TBT_SPACE_BEFORE", it) }
                 params["TBT_SPACE_AFTER"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("TBT_SPACE_AFTER", it) }
+                params["BLOCK_SPEED_OFFSET"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("BLOCK_SPEED_OFFSET", it) }
                 editor.apply()
                 
             } catch (e: Exception) {
@@ -40,6 +41,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val textOutputTarget = prefs.getString("TEXT_OUTPUT_TARGET", "szTBTMainText")
         val spaceBefore = prefs.getInt("TBT_SPACE_BEFORE", 0)
         val spaceAfter = prefs.getInt("TBT_SPACE_AFTER", 0)
+        val blockSpeedOffset = prefs.getInt("BLOCK_SPEED_OFFSET", 0)
 
         val html = """
             <!DOCTYPE html>
@@ -115,6 +117,12 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                                 <label>뒤 여백 (칸 수)</label>
                                 <input type="number" name="TBT_SPACE_AFTER" value="$spaceAfter">
                             </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>구간단속 여유 가속 (km/h)</label>
+                            <input type="number" name="BLOCK_SPEED_OFFSET" value="$blockSpeedOffset">
+                            <div class="hint">기본값: 0 (구간단속 시 카메라 속도에 추가할 여유 속도)</div>
                         </div>
 
                         <button type="submit">설정 저장</button>
