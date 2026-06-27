@@ -440,6 +440,9 @@ class UdpSenderService : Service() {
 
     private fun sendSdiData() {
         if (latestPayload == "{}") return
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        if (sharedPref.getBoolean("IS_DEBUG_MODE", false)) return
+
         try {
             val buffer = latestPayload.toByteArray(Charsets.UTF_8)
             

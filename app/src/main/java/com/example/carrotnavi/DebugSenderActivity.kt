@@ -47,6 +47,18 @@ class DebugSenderActivity : AppCompatActivity() {
         generateJson()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+        sharedPref.edit().putBoolean("IS_DEBUG_MODE", true).apply()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+        sharedPref.edit().putBoolean("IS_DEBUG_MODE", false).apply()
+    }
+
     private fun addField(category: String, key: String, desc: String, defaultVal: String) {
         if (llFieldsContainer.childCount == 0 || fieldsMap.isEmpty()) {
             // First item or new category
