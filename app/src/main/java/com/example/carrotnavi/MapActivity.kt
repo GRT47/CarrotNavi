@@ -162,6 +162,13 @@ class MapActivity : AppCompatActivity() {
         binding.tvTurnTypeOverride?.text = displayText
         binding.llTurnTypeOverride?.setOnClickListener {
             if (isEditMode) return@setOnClickListener
+            
+            val dialogView = layoutInflater.inflate(R.layout.dialog_tbt_settings, null)
+            val spinnerTurnType = dialogView.findViewById<android.widget.Spinner>(R.id.spinnerTurnType)
+            val rgTextOutput = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgTextOutput)
+            val rbPosRoadName = dialogView.findViewById<android.widget.RadioButton>(R.id.rbPosRoadName)
+            val rbTbtMainText = dialogView.findViewById<android.widget.RadioButton>(R.id.rbTbtMainText)
+            
             val options = arrayOf(
                 "끄기 (알림 끄기)",
                 "목적지 도착 / 경고 팝업 (201)",
@@ -178,19 +185,36 @@ class MapActivity : AppCompatActivity() {
             val values = intArrayOf(-1, 201, 12, 13, 14, 7, 6, 102, 101, 51, 153)
             val currentVal = sharedPref.getInt("OVERRIDE_TBT_TURN_TYPE", -1)
             val checkedItem = values.indexOf(currentVal).let { if (it == -1) 0 else it }
+            
+            val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, options)
+            spinnerTurnType.adapter = adapter
+            spinnerTurnType.setSelection(checkedItem)
+            
+            val textOutputTarget = sharedPref.getString("TEXT_OUTPUT_TARGET", "szPosRoadName")
+            if (textOutputTarget == "szTBTMainText") {
+                rbTbtMainText.isChecked = true
+            } else {
+                rbPosRoadName.isChecked = true
+            }
 
             androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("TBT TurnType 지정")
-                .setSingleChoiceItems(options, checkedItem) { dialog, which ->
-                    val value = values[which]
-                    sharedPref.edit().putInt("OVERRIDE_TBT_TURN_TYPE", value).apply()
+                .setView(dialogView)
+                .setPositiveButton("저장") { dialog, _ ->
+                    val selectedPosition = spinnerTurnType.selectedItemPosition
+                    val value = values[selectedPosition]
+                    val newTextOutputTarget = if (rbTbtMainText.isChecked) "szTBTMainText" else "szPosRoadName"
+                    
+                    sharedPref.edit()
+                        .putInt("OVERRIDE_TBT_TURN_TYPE", value)
+                        .putString("TEXT_OUTPUT_TARGET", newTextOutputTarget)
+                        .apply()
+                        
                     val dialogDisplayText = when (value) {
                         -1 -> "끄기"
                         else -> value.toString()
                     }
                     binding.tvTurnTypeOverride?.text = dialogDisplayText
-                    Toast.makeText(this, "TBT TurnType이 $dialogDisplayText(으)로 설정되었습니다.", Toast.LENGTH_SHORT).show()
-                    dialog.dismiss()
+                    Toast.makeText(this, "설정이 저장되었습니다.", Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton("취소", null)
                 .show()

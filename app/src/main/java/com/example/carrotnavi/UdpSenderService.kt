@@ -365,11 +365,18 @@ class UdpSenderService : Service() {
                         json.put("nTBTTurnType", tbtTurnType)
                     }
                     
+                    val textOutputTarget = spOverride.getString("TEXT_OUTPUT_TARGET", "szPosRoadName")
+                    
                     if (activeType > 0) {
                         json.put("szTBTMainText", "$eventText | GPS: $currentGpsStatusText")
                     } else {
-                        json.put("szTBTMainText", "")
-                        json.put("szPosRoadName", "$eventText | GPS: $currentGpsStatusText")
+                        if (textOutputTarget == "szTBTMainText") {
+                            json.put("szTBTMainText", "$eventText | GPS: $currentGpsStatusText")
+                            json.put("szPosRoadName", "")
+                        } else {
+                            json.put("szTBTMainText", "")
+                            json.put("szPosRoadName", "$eventText | GPS: $currentGpsStatusText")
+                        }
                     }
 
                     latestPayload = json.toString()

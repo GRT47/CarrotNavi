@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TBT TurnType 강제 지정"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <Spinner
+        android:id="@+id/spinnerTurnType"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="평상시 텍스트 출력 위치"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <RadioGroup
+        android:id="@+id/rgTextOutput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/rbPosRoadName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="도로명 영역 (szPosRoadName - 기본값)"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rbTbtMainText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="메인 팝업 (szTBTMainText)"
+            android:textSize="14sp" />
+
+    </RadioGroup>
+
+</LinearLayout>
