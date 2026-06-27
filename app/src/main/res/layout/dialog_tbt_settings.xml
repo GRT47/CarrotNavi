@@ -36,14 +36,14 @@
             android:id="@+id/rbPosRoadName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="도로명 영역 (szPosRoadName - 기본값)"
+            android:text="도로명 영역 (szPosRoadName)"
             android:textSize="14sp" />
 
         <RadioButton
             android:id="@+id/rbTbtMainText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="메인 팝업 (szTBTMainText)"
+            android:text="메인 팝업 (szTBTMainText - 기본값)"
             android:textSize="14sp" />
 
     </RadioGroup>

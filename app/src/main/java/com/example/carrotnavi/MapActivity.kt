@@ -190,7 +190,7 @@ class MapActivity : AppCompatActivity() {
             spinnerTurnType.adapter = adapter
             spinnerTurnType.setSelection(checkedItem)
             
-            val textOutputTarget = sharedPref.getString("TEXT_OUTPUT_TARGET", "szPosRoadName")
+            val textOutputTarget = sharedPref.getString("TEXT_OUTPUT_TARGET", "szTBTMainText")
             if (textOutputTarget == "szTBTMainText") {
                 rbTbtMainText.isChecked = true
             } else {
