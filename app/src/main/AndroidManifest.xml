@@ -30,6 +30,7 @@
         </activity>
         
         <activity android:name=".MapActivity" />
+        <activity android:name=".DebugSenderActivity" />
         
         <service
             android:name=".UdpSenderService"

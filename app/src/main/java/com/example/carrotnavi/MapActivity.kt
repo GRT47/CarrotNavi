@@ -225,8 +225,7 @@ class MapActivity : AppCompatActivity() {
         val draggables = listOfNotNull(
             binding.llSpeedGroup,
             binding.llStatusGroup,
-            binding.llOffset,
-            binding.llTurnTypeOverride
+            binding.llOffset
         )
 
         draggables.forEach { view ->
@@ -245,6 +244,11 @@ class MapActivity : AppCompatActivity() {
 
         isOverlayVisible = sharedPref.getBoolean("OVERLAY_VISIBLE", true)
         updateOverlayVisibility()
+
+        binding.llDebugOverlay?.setOnClickListener {
+            val intent = android.content.Intent(this, DebugSenderActivity::class.java)
+            startActivity(intent)
+        }
 
         binding.btnToggleVisibility?.setOnClickListener {
             isOverlayVisible = !isOverlayVisible
@@ -287,18 +291,12 @@ class MapActivity : AppCompatActivity() {
                         .remove("llOffset_y_port")
                         .remove("llOffset_x_land")
                         .remove("llOffset_y_land")
-                        .remove("llTurnTypeOverride_x_port")
-                        .remove("llTurnTypeOverride_y_port")
-                        .remove("llTurnTypeOverride_x_land")
-                        .remove("llTurnTypeOverride_y_land")
                         .remove("llSpeedGroup_scale_port")
                         .remove("llSpeedGroup_scale_land")
                         .remove("llStatusGroup_scale_port")
                         .remove("llStatusGroup_scale_land")
                         .remove("llOffset_scale_port")
                         .remove("llOffset_scale_land")
-                        .remove("llTurnTypeOverride_scale_port")
-                        .remove("llTurnTypeOverride_scale_land")
                         .apply()
 
                     // Reset views to layout defaults immediately
@@ -373,6 +371,7 @@ class MapActivity : AppCompatActivity() {
         binding.llStatusGroup.visibility = visibility
         binding.llOffset.visibility = visibility
         binding.llTurnTypeOverride?.visibility = visibility
+        binding.llDebugOverlay?.visibility = visibility
         binding.btnToggleVisibility?.alpha = if (isOverlayVisible) 1.0f else 0.5f
     }
 
@@ -754,7 +753,7 @@ class MapActivity : AppCompatActivity() {
 
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
-                val views = listOfNotNull(binding.llSpeedGroup, binding.llStatusGroup, binding.llOffset, binding.llTurnTypeOverride)
+                val views = listOfNotNull(binding.llSpeedGroup, binding.llStatusGroup, binding.llOffset)
                 for (v in views) {
                     if (v.visibility != View.VISIBLE) continue
 
@@ -822,7 +821,6 @@ class MapActivity : AppCompatActivity() {
                         binding.llSpeedGroup -> "llSpeedGroup"
                         binding.llStatusGroup -> "llStatusGroup"
                         binding.llOffset -> "llOffset"
-                        binding.llTurnTypeOverride -> "llTurnTypeOverride"
                         else -> ""
                     }
                     if (keyPrefix.isNotEmpty()) {
@@ -897,12 +895,10 @@ class MapActivity : AppCompatActivity() {
             binding.llSpeedGroup.foreground = HatchedDrawable(binding.llSpeedGroup)
             binding.llStatusGroup.foreground = HatchedDrawable(binding.llStatusGroup)
             binding.llOffset.foreground = HatchedDrawable(binding.llOffset)
-            binding.llTurnTypeOverride?.foreground = HatchedDrawable(binding.llTurnTypeOverride)
         } else {
             binding.llSpeedGroup.foreground = null
             binding.llStatusGroup.foreground = null
             binding.llOffset.foreground = null
-            binding.llTurnTypeOverride?.foreground = null
         }
     }
 }
