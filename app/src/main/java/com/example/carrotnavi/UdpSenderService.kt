@@ -366,16 +366,20 @@ class UdpSenderService : Service() {
                     }
                     
                     val textOutputTarget = spOverride.getString("TEXT_OUTPUT_TARGET", "szTBTMainText")
+                    val spaceBefore = spOverride.getInt("TBT_SPACE_BEFORE", 0)
+                    val spaceAfter = spOverride.getInt("TBT_SPACE_AFTER", 0)
+
+                    val outputText = " ".repeat(spaceBefore) + "$eventText | GPS: $currentGpsStatusText" + " ".repeat(spaceAfter)
                     
                     if (activeType > 0) {
-                        json.put("szTBTMainText", "$eventText | GPS: $currentGpsStatusText")
+                        json.put("szTBTMainText", outputText)
                     } else {
                         if (textOutputTarget == "szTBTMainText") {
-                            json.put("szTBTMainText", "$eventText | GPS: $currentGpsStatusText")
+                            json.put("szTBTMainText", outputText)
                             json.put("szPosRoadName", "")
                         } else {
                             json.put("szTBTMainText", "")
-                            json.put("szPosRoadName", "$eventText | GPS: $currentGpsStatusText")
+                            json.put("szPosRoadName", outputText)
                         }
                     }
 

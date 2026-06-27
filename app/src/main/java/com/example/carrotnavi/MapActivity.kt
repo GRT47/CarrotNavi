@@ -169,6 +169,9 @@ class MapActivity : AppCompatActivity() {
             val rbPosRoadName = dialogView.findViewById<android.widget.RadioButton>(R.id.rbPosRoadName)
             val rbTbtMainText = dialogView.findViewById<android.widget.RadioButton>(R.id.rbTbtMainText)
             
+            val etSpaceBefore = dialogView.findViewById<android.widget.EditText>(R.id.etSpaceBefore)
+            val etSpaceAfter = dialogView.findViewById<android.widget.EditText>(R.id.etSpaceAfter)
+            
             val options = arrayOf(
                 "끄기 (알림 끄기)",
                 "목적지 도착 / 경고 팝업 (201)",
@@ -197,16 +200,23 @@ class MapActivity : AppCompatActivity() {
                 rbPosRoadName.isChecked = true
             }
 
+            etSpaceBefore.setText(sharedPref.getInt("TBT_SPACE_BEFORE", 0).toString())
+            etSpaceAfter.setText(sharedPref.getInt("TBT_SPACE_AFTER", 0).toString())
+
             androidx.appcompat.app.AlertDialog.Builder(this)
                 .setView(dialogView)
                 .setPositiveButton("저장") { dialog, _ ->
                     val selectedPosition = spinnerTurnType.selectedItemPosition
                     val value = values[selectedPosition]
                     val newTextOutputTarget = if (rbTbtMainText.isChecked) "szTBTMainText" else "szPosRoadName"
+                    val spaceBefore = etSpaceBefore.text.toString().toIntOrNull() ?: 0
+                    val spaceAfter = etSpaceAfter.text.toString().toIntOrNull() ?: 0
                     
                     sharedPref.edit()
                         .putInt("OVERRIDE_TBT_TURN_TYPE", value)
                         .putString("TEXT_OUTPUT_TARGET", newTextOutputTarget)
+                        .putInt("TBT_SPACE_BEFORE", spaceBefore)
+                        .putInt("TBT_SPACE_AFTER", spaceAfter)
                         .apply()
                         
                     val dialogDisplayText = when (value) {
