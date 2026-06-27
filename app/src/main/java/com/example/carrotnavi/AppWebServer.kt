@@ -22,6 +22,8 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                 params["TBT_SPACE_BEFORE"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("TBT_SPACE_BEFORE", it) }
                 params["TBT_SPACE_AFTER"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("TBT_SPACE_AFTER", it) }
                 params["BLOCK_SPEED_OFFSET"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("BLOCK_SPEED_OFFSET", it) }
+                params["BLOCK_SPEED_FAKE_DROP"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("BLOCK_SPEED_FAKE_DROP", it) }
+                params["BLOCK_SPEED_BOOST_MODE"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("BLOCK_SPEED_BOOST_MODE", it) }
                 editor.apply()
                 
             } catch (e: Exception) {
@@ -42,6 +44,8 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val spaceBefore = prefs.getInt("TBT_SPACE_BEFORE", 0)
         val spaceAfter = prefs.getInt("TBT_SPACE_AFTER", 0)
         val blockSpeedOffset = prefs.getInt("BLOCK_SPEED_OFFSET", 0)
+        val blockSpeedFakeDrop = prefs.getInt("BLOCK_SPEED_FAKE_DROP", 10)
+        val blockSpeedBoostMode = prefs.getInt("BLOCK_SPEED_BOOST_MODE", 0)
 
         val html = """
             <!DOCTYPE html>
@@ -122,7 +126,23 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                         <div class="form-group">
                             <label>구간단속 여유 가속 (km/h)</label>
                             <input type="number" name="BLOCK_SPEED_OFFSET" value="$blockSpeedOffset">
-                            <div class="hint">기본값: 0 (구간단속 시 카메라 속도에 추가할 여유 속도)</div>
+                            <div class="hint">기본값: 0 (구간단속 시 오픈파일럿에 부여할 최대 펀치력/추가 가속력)</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>목표 평균속도 상향값 (km/h)</label>
+                            <input type="number" name="BLOCK_SPEED_FAKE_DROP" value="$blockSpeedFakeDrop">
+                            <div class="hint">기본값: 10 (제한속도 대비 평균속도를 얼마나 더 높게 유지할 것인지)</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>가속 방식 (보상 가속 모드)</label>
+                            <div class="radio-group">
+                                <input type="radio" id="boostProg" name="BLOCK_SPEED_BOOST_MODE" value="0" ${if(blockSpeedBoostMode == 0) "checked" else ""}>
+                                <label for="boostProg">점진적 가속 (목표속도 도달 시 정지)</label><br>
+                                <input type="radio" id="boostFixed" name="BLOCK_SPEED_BOOST_MODE" value="1" ${if(blockSpeedBoostMode == 1) "checked" else ""}>
+                                <label for="boostFixed">고정 가속 (강제 풀가속)</label>
+                            </div>
                         </div>
 
                         <button type="submit">설정 저장</button>
