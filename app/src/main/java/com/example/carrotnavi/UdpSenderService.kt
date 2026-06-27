@@ -23,8 +23,8 @@ import android.os.PowerManager
 class UdpSenderService : Service() {
 
     private val CHANNEL_ID = "CarrotNaviChannel"
-    private val UDP_PORT = 7706
     private var targetIp = "255.255.255.255"
+    private var udpPort = 7706
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + Job())
     private var udpSocket: DatagramSocket? = null
@@ -352,6 +352,8 @@ class UdpSenderService : Service() {
                     // TBT TurnType 강제 오버라이드
                     val spOverride = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
                     val overrideTurnType = spOverride.getInt("OVERRIDE_TBT_TURN_TYPE", -1)
+                    targetIp = spOverride.getString("TARGET_UDP_IP", "255.255.255.255") ?: "255.255.255.255"
+                    udpPort = spOverride.getInt("TARGET_UDP_PORT", 7706)
                     
                     if (overrideTurnType <= 0) {
                         // 끄기 모드: 팝업이 뜨지 않도록 무효화
@@ -469,7 +471,7 @@ class UdpSenderService : Service() {
             }
 
             for (address in targetAddresses) {
-                val packet = DatagramPacket(buffer, buffer.size, address, UDP_PORT)
+                val packet = DatagramPacket(buffer, buffer.size, address, udpPort)
                 udpSocket?.send(packet)
             }
         } catch (e: Exception) {

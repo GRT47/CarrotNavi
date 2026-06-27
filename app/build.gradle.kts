@@ -74,6 +74,9 @@ dependencies {
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
 
+  // NanoHTTPD for embedded web server
+  implementation("org.nanohttpd:nanohttpd:2.3.1")
+
   // Instrumented tests: jUnit rules and runners
   androidTestImplementation(libs.androidx.test.core)
   androidTestImplementation(libs.androidx.test.ext.junit)

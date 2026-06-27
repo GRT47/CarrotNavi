@@ -75,6 +75,22 @@ class MainActivity : AppCompatActivity() {
             binding.tvAppVersion.text = "버전: -"
         }
 
+        // Start Web Server Service
+        val webServerIntent = Intent(this, WebServerService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(webServerIntent)
+        } else {
+            startService(webServerIntent)
+        }
+
+        // Show IP Address
+        val ipAddress = getLocalIpAddress()
+        if (ipAddress != null) {
+            binding.tvWebServerInfo.text = "원격 설정: http://$ipAddress:8080"
+        } else {
+            binding.tvWebServerInfo.text = "원격 설정: Wi-Fi 연결 확인 필요"
+        }
+
         // 자동 실행 로직
         val shouldAutoStart = intent.getBooleanExtra("auto_start", true)
         if (!savedAppKey.isNullOrEmpty() && shouldAutoStart) {
@@ -147,6 +163,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun dumpTmapAudioSettings() {
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+        android.util.Log.d("CarrotNaviAudio", "Music stream volume: ${audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)}")
+        android.util.Log.d("CarrotNaviAudio", "Navi stream volume: ${audioManager.getStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION)}")
+        
         android.util.Log.e("TmapVolume", "dumpTmapAudioSettings started")
         val kw = listOf("mute", "volume", "sound", "audio", "tts", "speech", "voice", "guide", "guidance", "announce", "alert")
         val sb = java.lang.StringBuilder()
@@ -167,7 +187,7 @@ class MainActivity : AppCompatActivity() {
                         if (kw.any { m.name.contains(it, ignoreCase = true) }) {
                             val line = "$className method: ${m.name}(${m.parameterTypes.joinToString { it.name }}) -> ${m.returnType.name}\n"
                             sb.append(line)
-                            android.util.Log.e("TmapVolume", line.trim())
+                            android.util.Log.e("TmapVolume", sb.toString())
                         }
                     }
                 } catch (e: Throwable) {
@@ -186,5 +206,24 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun getLocalIpAddress(): String? {
+        try {
+            val interfaces = java.net.NetworkInterface.getNetworkInterfaces()
+            while (interfaces.hasMoreElements()) {
+                val networkInterface = interfaces.nextElement()
+                val addresses = networkInterface.inetAddresses
+                while (addresses.hasMoreElements()) {
+                    val address = addresses.nextElement()
+                    if (!address.isLoopbackAddress && address is java.net.Inet4Address) {
+                        return address.hostAddress
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
     }
 }

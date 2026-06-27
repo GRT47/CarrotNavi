@@ -83,6 +83,17 @@
         android:textSize="18sp"/>
 
     <TextView
+        android:id="@+id/tvWebServerInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="원격 설정: 연결 중..."
+        android:textColor="#2E7D32"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp"/>
+
+    <TextView
         android:id="@+id/tvAppVersion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
