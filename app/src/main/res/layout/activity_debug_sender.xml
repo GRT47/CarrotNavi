@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#121212"
+    android:fitsSystemWindows="true"
     android:padding="16dp">
 
     <!-- Scrollable area for Title, Connection, and Fields -->
