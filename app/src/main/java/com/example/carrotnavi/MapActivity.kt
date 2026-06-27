@@ -291,6 +291,14 @@ class MapActivity : AppCompatActivity() {
                         .remove("llTurnTypeOverride_y_port")
                         .remove("llTurnTypeOverride_x_land")
                         .remove("llTurnTypeOverride_y_land")
+                        .remove("llSpeedGroup_scale_port")
+                        .remove("llSpeedGroup_scale_land")
+                        .remove("llStatusGroup_scale_port")
+                        .remove("llStatusGroup_scale_land")
+                        .remove("llOffset_scale_port")
+                        .remove("llOffset_scale_land")
+                        .remove("llTurnTypeOverride_scale_port")
+                        .remove("llTurnTypeOverride_scale_land")
                         .apply()
 
                     // Reset views to layout defaults immediately
@@ -364,6 +372,7 @@ class MapActivity : AppCompatActivity() {
         binding.llSpeedGroup.visibility = visibility
         binding.llStatusGroup.visibility = visibility
         binding.llOffset.visibility = visibility
+        binding.llTurnTypeOverride?.visibility = visibility
         binding.btnToggleVisibility?.alpha = if (isOverlayVisible) 1.0f else 0.5f
     }
 
@@ -745,7 +754,7 @@ class MapActivity : AppCompatActivity() {
 
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
-                val views = listOf(binding.llSpeedGroup, binding.llStatusGroup, binding.llOffset)
+                val views = listOfNotNull(binding.llSpeedGroup, binding.llStatusGroup, binding.llOffset, binding.llTurnTypeOverride)
                 for (v in views) {
                     if (v.visibility != View.VISIBLE) continue
 
@@ -813,6 +822,7 @@ class MapActivity : AppCompatActivity() {
                         binding.llSpeedGroup -> "llSpeedGroup"
                         binding.llStatusGroup -> "llStatusGroup"
                         binding.llOffset -> "llOffset"
+                        binding.llTurnTypeOverride -> "llTurnTypeOverride"
                         else -> ""
                     }
                     if (keyPrefix.isNotEmpty()) {
@@ -887,10 +897,12 @@ class MapActivity : AppCompatActivity() {
             binding.llSpeedGroup.foreground = HatchedDrawable(binding.llSpeedGroup)
             binding.llStatusGroup.foreground = HatchedDrawable(binding.llStatusGroup)
             binding.llOffset.foreground = HatchedDrawable(binding.llOffset)
+            binding.llTurnTypeOverride?.foreground = HatchedDrawable(binding.llTurnTypeOverride)
         } else {
             binding.llSpeedGroup.foreground = null
             binding.llStatusGroup.foreground = null
             binding.llOffset.foreground = null
+            binding.llTurnTypeOverride?.foreground = null
         }
     }
 }
