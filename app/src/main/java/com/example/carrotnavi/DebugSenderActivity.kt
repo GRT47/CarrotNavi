@@ -33,6 +33,7 @@ class DebugSenderActivity : AppCompatActivity() {
 
         val btnGenerateJson = findViewById<Button>(R.id.btnGenerateJson)
         val btnSendUdp = findViewById<Button>(R.id.btnSendUdp)
+        val btnStopUdp = findViewById<Button>(R.id.btnStopUdp)
 
         setupFields()
 
@@ -41,7 +42,11 @@ class DebugSenderActivity : AppCompatActivity() {
         }
 
         btnSendUdp.setOnClickListener {
-            sendUdp()
+            startUdpLoop()
+        }
+
+        btnStopUdp.setOnClickListener {
+            stopUdpLoop()
         }
 
         generateJson()
@@ -57,6 +62,12 @@ class DebugSenderActivity : AppCompatActivity() {
         super.onPause()
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
         sharedPref.edit().putBoolean("IS_DEBUG_MODE", false).apply()
+        stopUdpLoop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopUdpLoop()
     }
 
     private fun addField(category: String, key: String, desc: String, defaultVal: String) {
@@ -175,12 +186,22 @@ class DebugSenderActivity : AppCompatActivity() {
         etJsonPreview.setText(json.toString(2))
     }
 
-    private fun sendUdp() {
+    @Volatile
+    private var isSending = false
+
+    private fun startUdpLoop() {
+        if (isSending) return
         val ip = etIp.text.toString().trim()
         val portStr = etPort.text.toString().trim()
-        val jsonStr = etJsonPreview.text.toString().trim()
+        if (ip.isEmpty() || portStr.isEmpty()) {
+            Toast.makeText(this, "IP와 Port를 확인해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        if (ip.isEmpty() || portStr.isEmpty() || jsonStr.isEmpty()) return
+        isSending = true
+        findViewById<Button>(R.id.btnSendUdp).isEnabled = false
+        findViewById<Button>(R.id.btnStopUdp).isEnabled = true
+        Toast.makeText(this, "UDP 전송 시작", Toast.LENGTH_SHORT).show()
 
         val port = portStr.toIntOrNull() ?: 7706
 
@@ -189,28 +210,62 @@ class DebugSenderActivity : AppCompatActivity() {
                 val socket = DatagramSocket()
                 socket.broadcast = true
                 val address = InetAddress.getByName(ip)
-                val bytes = jsonStr.toByteArray(Charsets.UTF_8)
-                val packet = DatagramPacket(bytes, bytes.size, address, port)
-                socket.send(packet)
-                socket.close()
 
-                runOnUiThread {
-                    Toast.makeText(this@DebugSenderActivity, "전송 완료!", Toast.LENGTH_SHORT).show()
-                    
-                    // Increment carrotIndex
-                    val indexEt = fieldsMap["carrotIndex"]
-                    if (indexEt != null) {
-                        val currentIdx = indexEt.text.toString().toIntOrNull() ?: 0
-                        indexEt.setText((currentIdx + 1).toString())
-                        generateJson()
+                while (isSending) {
+                    var currentJsonStr = ""
+                    val lock = Object()
+                    runOnUiThread {
+                        synchronized(lock) {
+                            // JSON 생성
+                            generateJson()
+                            currentJsonStr = etJsonPreview.text.toString().trim()
+
+                            // carrotIndex 증가
+                            val idxEt = fieldsMap["carrotIndex"]
+                            val currIdx = idxEt?.text?.toString()?.toIntOrNull() ?: 0
+                            idxEt?.setText((currIdx + 1).toString())
+                            (lock as Object).notify()
+                        }
                     }
+                    synchronized(lock) {
+                        try { (lock as Object).wait(100) } catch (e: Exception) {}
+                    }
+
+                    // UI 스레드 작업 후 잠시 대기
+                    Thread.sleep(50)
+
+                    if (currentJsonStr.isNotEmpty() && isSending) {
+                        try {
+                            val bytes = currentJsonStr.toByteArray(Charsets.UTF_8)
+                            val packet = DatagramPacket(bytes, bytes.size, address, port)
+                            socket.send(packet)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+
+                    // UdpSenderService와 비슷하게 약 300ms 주기 (50ms + 250ms)
+                    Thread.sleep(250)
                 }
+
+                socket.close()
             } catch (e: Exception) {
                 e.printStackTrace()
                 runOnUiThread {
-                    Toast.makeText(this@DebugSenderActivity, "전송 에러: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@DebugSenderActivity, "오류: ${e.message}", Toast.LENGTH_LONG).show()
+                    stopUdpLoop()
                 }
             }
+        }
+    }
+
+    private fun stopUdpLoop() {
+        if (!isSending) return
+        isSending = false
+        runOnUiThread {
+            findViewById<Button>(R.id.btnSendUdp).isEnabled = true
+            findViewById<Button>(R.id.btnStopUdp).isEnabled = false
+            Toast.makeText(this, "UDP 전송 중단", Toast.LENGTH_SHORT).show()
         }
     }
 }
