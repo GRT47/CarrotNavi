@@ -26,6 +26,28 @@ class MapActivity : AppCompatActivity() {
     private var isEditMode = false
     private var isOverlayVisible = true
 
+    private val preferenceChangeListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+        when (key) {
+            "BLOCK_SPEED_OFFSET" -> {
+                runOnUiThread {
+                    val currentOffset = sharedPreferences.getInt(key, 0)
+                    binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
+                }
+            }
+            "OVERRIDE_TBT_TURN_TYPE" -> {
+                runOnUiThread {
+                    val turnTypeOverride = sharedPreferences.getInt(key, -1)
+                    val displayText = when (turnTypeOverride) {
+                        -1 -> "끄기"
+                        0 -> "끄기"
+                        else -> turnTypeOverride.toString()
+                    }
+                    binding.tvTurnTypeOverride?.text = displayText
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMapBinding.inflate(layoutInflater)
@@ -45,6 +67,8 @@ class MapActivity : AppCompatActivity() {
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         val appKey = sharedPref.getString("APP_KEY", "") ?: ""
         
+        sharedPref.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+
         // Force Tmap SDK to run in background
         getSharedPreferences("user.settings.info", Context.MODE_PRIVATE).edit().putBoolean("set_suspend_in_background", false).apply()
         
@@ -138,6 +162,7 @@ class MapActivity : AppCompatActivity() {
         }
 
         setAutoRepeatButton(binding.btnDecreaseOffset) {
+            var currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
             if (currentOffset > 0) { // 음수 방지
                 currentOffset--
                 binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
@@ -146,6 +171,7 @@ class MapActivity : AppCompatActivity() {
         }
 
         setAutoRepeatButton(binding.btnIncreaseOffset) {
+            var currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
             if (currentOffset < 50) { // 최대 50km/h 제한
                 currentOffset++
                 binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
@@ -545,6 +571,8 @@ class MapActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        sharedPref.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         val intent = Intent(this, UdpSenderService::class.java)
         stopService(intent)
     }
