@@ -13,6 +13,10 @@ class WebServerService : Service() {
 
     private val CHANNEL_ID = "WebServerChannel"
     private var webServer: AppWebServer? = null
+    private var nsdManager: android.net.nsd.NsdManager? = null
+    private var registrationListener: android.net.nsd.NsdManager.RegistrationListener? = null
+    private val SERVICE_NAME = "carrotnavi"
+    private val SERVICE_TYPE = "_http._tcp."
 
     override fun onCreate() {
         super.onCreate()
@@ -27,9 +31,42 @@ class WebServerService : Service() {
         try {
             webServer?.start()
             android.util.Log.d("WebServerService", "Web server started on port 8080")
+            registerService(8080)
         } catch (e: IOException) {
             e.printStackTrace()
         }
+    }
+
+    private fun registerService(port: Int) {
+        val serviceInfo = android.net.nsd.NsdServiceInfo().apply {
+            serviceName = SERVICE_NAME
+            serviceType = SERVICE_TYPE
+            setPort(port)
+        }
+
+        nsdManager = getSystemService(android.content.Context.NSD_SERVICE) as android.net.nsd.NsdManager
+
+        registrationListener = object : android.net.nsd.NsdManager.RegistrationListener {
+            override fun onServiceRegistered(NsdServiceInfo: android.net.nsd.NsdServiceInfo) {
+                android.util.Log.d("WebServerService", "mDNS Service registered: ${NsdServiceInfo.serviceName}")
+            }
+
+            override fun onRegistrationFailed(serviceInfo: android.net.nsd.NsdServiceInfo, errorCode: Int) {
+                android.util.Log.e("WebServerService", "mDNS Registration failed: $errorCode")
+            }
+
+            override fun onServiceUnregistered(arg0: android.net.nsd.NsdServiceInfo) {
+                android.util.Log.d("WebServerService", "mDNS Service unregistered: ${arg0.serviceName}")
+            }
+
+            override fun onUnregistrationFailed(serviceInfo: android.net.nsd.NsdServiceInfo, errorCode: Int) {
+                android.util.Log.e("WebServerService", "mDNS Unregistration failed: $errorCode")
+            }
+        }
+
+        nsdManager?.registerService(
+            serviceInfo, android.net.nsd.NsdManager.PROTOCOL_DNS_SD, registrationListener
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -39,6 +76,9 @@ class WebServerService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         webServer?.stop()
+        registrationListener?.let {
+            nsdManager?.unregisterService(it)
+        }
         android.util.Log.d("WebServerService", "Web server stopped")
     }
 
@@ -61,7 +101,7 @@ class WebServerService : Service() {
     private fun createNotification(): android.app.Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("원격 설정 서버 실행 중")
-            .setContentText("같은 Wi-Fi 내 브라우저에서 설정 페이지에 접속 가능합니다.")
+            .setContentText("http://carrotnavi.local:8080/ (또는 표시된 IP) 로 접속하세요.")
             .setSmallIcon(R.mipmap.ic_launcher) // TODO: Check if ic_launcher exists or use a generic icon
             .build()
     }

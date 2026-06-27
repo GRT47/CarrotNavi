@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import com.example.carrotnavi.databinding.ActivityMainBinding
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import android.view.View
 
 class MainActivity : AppCompatActivity() {
 
@@ -86,7 +87,8 @@ class MainActivity : AppCompatActivity() {
         // Show IP Address
         val ipAddress = getLocalIpAddress()
         if (ipAddress != null) {
-            binding.tvWebServerInfo.text = "원격 설정: http://$ipAddress:8080"
+            binding.tvWebServerInfo.text = "원격 설정: http://carrotnavi.local:8080/\n(접속 불가 시: http://$ipAddress:8080/)"
+            binding.tvWebServerInfo.visibility = View.VISIBLE
         } else {
             binding.tvWebServerInfo.text = "원격 설정: Wi-Fi 연결 확인 필요"
         }
