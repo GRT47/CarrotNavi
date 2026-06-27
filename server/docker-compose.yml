@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  redirect-server:
+    build: .
+    container_name: carrotnavi-redirect
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./device_ips.json:/app/device_ips.json
+    restart: unless-stopped

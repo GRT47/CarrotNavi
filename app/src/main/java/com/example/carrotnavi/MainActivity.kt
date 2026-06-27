@@ -85,13 +85,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Show IP Address
-        val ipAddress = getLocalIpAddress()
-        if (ipAddress != null) {
-            binding.tvWebServerInfo.text = "원격 설정: http://carrotnavi.local:8080/\n(접속 불가 시: http://$ipAddress:8080/)"
-            binding.tvWebServerInfo.visibility = View.VISIBLE
-        } else {
-            binding.tvWebServerInfo.text = "원격 설정: Wi-Fi 연결 확인 필요"
-        }
+        updateWebServerInfo(sharedPref)
 
         // 자동 실행 로직
         val shouldAutoStart = intent.getBooleanExtra("auto_start", true)
@@ -122,6 +116,52 @@ class MainActivity : AppCompatActivity() {
             }
 
             checkPermissionsAndStart()
+        }
+
+        binding.btnRemoteServer.setOnClickListener {
+            val layout = android.widget.LinearLayout(this).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding(50, 40, 50, 0)
+            }
+
+            val etServerUrl = android.widget.EditText(this).apply {
+                hint = "서버 주소 (예: http://192.168.0.10:5000)"
+                setText(sharedPref.getString("IP_REPORT_SERVER_URL", ""))
+                inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
+            }
+
+            val etDeviceId = android.widget.EditText(this).apply {
+                hint = "기기 ID (예: carrot)"
+                setText(sharedPref.getString("DEVICE_ID", "carrot"))
+                inputType = android.text.InputType.TYPE_CLASS_TEXT
+            }
+
+            val tvInfo = android.widget.TextView(this).apply {
+                text = "Docker 리다이렉트 서버를 구축한 경우에만 사용하세요.\n서버 주소가 비어있으면 이 기능은 비활성화됩니다."
+                textSize = 12f
+                setTextColor(android.graphics.Color.GRAY)
+                setPadding(0, 20, 0, 0)
+            }
+
+            layout.addView(etServerUrl)
+            layout.addView(etDeviceId)
+            layout.addView(tvInfo)
+
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("외부 리다이렉트 서버 설정")
+                .setView(layout)
+                .setPositiveButton("저장") { _, _ ->
+                    val serverUrl = etServerUrl.text.toString().trim()
+                    val deviceId = etDeviceId.text.toString().trim()
+                    sharedPref.edit()
+                        .putString("IP_REPORT_SERVER_URL", serverUrl)
+                        .putString("DEVICE_ID", if (deviceId.isEmpty()) "carrot" else deviceId)
+                        .apply()
+                    updateWebServerInfo(sharedPref)
+                    Toast.makeText(this, "설정이 저장되었습니다.", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("취소", null)
+                .show()
         }
     }
 
@@ -227,5 +267,23 @@ class MainActivity : AppCompatActivity() {
             e.printStackTrace()
         }
         return null
+    }
+
+    private fun updateWebServerInfo(sharedPref: android.content.SharedPreferences) {
+        val ipAddress = getLocalIpAddress()
+        val serverUrl = sharedPref.getString("IP_REPORT_SERVER_URL", "")?.trim()
+        val deviceId = sharedPref.getString("DEVICE_ID", "carrot")?.trim()
+
+        if (ipAddress != null) {
+            var infoText = "내부 IP: http://$ipAddress:8080/\nmDNS: http://carrotnavi.local:8080/"
+            if (!serverUrl.isNullOrEmpty()) {
+                val connectUrl = if (serverUrl.endsWith("/")) "${serverUrl}connect/$deviceId" else "$serverUrl/connect/$deviceId"
+                infoText += "\n원격 접속: $connectUrl"
+            }
+            binding.tvWebServerInfo.text = infoText
+            binding.tvWebServerInfo.visibility = View.VISIBLE
+        } else {
+            binding.tvWebServerInfo.text = "원격 설정: Wi-Fi 연결 확인 필요"
+        }
     }
 }

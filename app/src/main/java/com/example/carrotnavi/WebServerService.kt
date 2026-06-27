@@ -32,6 +32,7 @@ class WebServerService : Service() {
             webServer?.start()
             android.util.Log.d("WebServerService", "Web server started on port 8080")
             registerService(8080)
+            startIpReporting()
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -79,6 +80,8 @@ class WebServerService : Service() {
         registrationListener?.let {
             nsdManager?.unregisterService(it)
         }
+        reportTimer?.cancel()
+        reportTimer = null
         android.util.Log.d("WebServerService", "Web server stopped")
     }
 
@@ -104,5 +107,67 @@ class WebServerService : Service() {
             .setContentText("http://carrotnavi.local:8080/ (또는 표시된 IP) 로 접속하세요.")
             .setSmallIcon(R.mipmap.ic_launcher) // TODO: Check if ic_launcher exists or use a generic icon
             .build()
+    }
+
+    private var reportTimer: java.util.Timer? = null
+
+    private fun startIpReporting() {
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+        val serverUrl = sharedPref.getString("IP_REPORT_SERVER_URL", "")?.trim()
+        val deviceId = sharedPref.getString("DEVICE_ID", "carrot")?.trim()
+
+        if (serverUrl.isNullOrEmpty()) return
+
+        val targetUrl = if (serverUrl.endsWith("/")) "${serverUrl}api/update_ip" else "$serverUrl/api/update_ip"
+
+        reportTimer = java.util.Timer()
+        reportTimer?.scheduleAtFixedRate(object : java.util.TimerTask() {
+            override fun run() {
+                try {
+                    val ipAddress = getLocalIpAddress() ?: return
+                    val json = org.json.JSONObject().apply {
+                        put("device_id", deviceId)
+                        put("local_ip", ipAddress)
+                        put("port", 8080)
+                    }
+
+                    val url = java.net.URL(targetUrl)
+                    val conn = url.openConnection() as java.net.HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
+                    conn.doOutput = true
+                    
+                    conn.outputStream.use { os ->
+                        val input = json.toString().toByteArray(Charsets.UTF_8)
+                        os.write(input, 0, input.size)
+                    }
+
+                    val responseCode = conn.responseCode
+                    android.util.Log.d("WebServerService", "Reported IP: $ipAddress to $targetUrl, code: $responseCode")
+                    conn.disconnect()
+                } catch (e: Exception) {
+                    android.util.Log.e("WebServerService", "Failed to report IP", e)
+                }
+            }
+        }, 0, 60000) // Report every 60 seconds
+    }
+
+    private fun getLocalIpAddress(): String? {
+        try {
+            val interfaces = java.net.NetworkInterface.getNetworkInterfaces()
+            while (interfaces.hasMoreElements()) {
+                val networkInterface = interfaces.nextElement()
+                val addresses = networkInterface.inetAddresses
+                while (addresses.hasMoreElements()) {
+                    val address = addresses.nextElement()
+                    if (!address.isLoopbackAddress && address is java.net.Inet4Address) {
+                        return address.hostAddress
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
     }
 }

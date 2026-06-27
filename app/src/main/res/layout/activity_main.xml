@@ -82,6 +82,14 @@
         android:text="안전운행 시작하기"
         android:textSize="18sp"/>
 
+    <Button
+        android:id="@+id/btnRemoteServer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="외부 리다이렉트 서버 설정 (옵션)"
+        android:layout_marginTop="8dp"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
     <TextView
         android:id="@+id/tvWebServerInfo"
         android:layout_width="wrap_content"
