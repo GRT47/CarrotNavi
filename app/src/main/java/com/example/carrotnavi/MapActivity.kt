@@ -204,6 +204,7 @@ class MapActivity : AppCompatActivity() {
             etSpaceAfter.setText(sharedPref.getInt("TBT_SPACE_AFTER", 0).toString())
 
             androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("TBT 알림 및 UI 설정")
                 .setView(dialogView)
                 .setPositiveButton("저장") { dialog, _ ->
                     val selectedPosition = spinnerTurnType.selectedItemPosition

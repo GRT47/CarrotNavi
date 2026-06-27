@@ -3,92 +3,166 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="24dp">
+
+    <!-- Section 1: TurnType -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="내비게이션 화살표(TurnType) 강제 지정"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        android:layout_marginBottom="4dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TBT TurnType 강제 지정"
-        android:textStyle="bold"
-        android:textSize="16sp"
+        android:text="원하는 방향 화살표를 강제로 띄울 수 있습니다."
+        android:textSize="12sp"
+        android:textColor="#888888"
         android:layout_marginBottom="8dp" />
 
     <Spinner
         android:id="@+id/spinnerTurnType"
         android:layout_width="match_parent"
         android:layout_height="48dp"
+        android:background="@android:drawable/btn_dropdown"
         android:layout_marginBottom="16dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Section 2: Text Output Location -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="안내 텍스트 출력 위치"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        android:layout_marginBottom="4dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="평상시 텍스트 출력 위치"
-        android:textStyle="bold"
-        android:textSize="16sp"
+        android:text="평상시 안내 문구가 표시될 위치를 선택하세요."
+        android:textSize="12sp"
+        android:textColor="#888888"
         android:layout_marginBottom="8dp" />
 
     <RadioGroup
         android:id="@+id/rgTextOutput"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <RadioButton
-            android:id="@+id/rbPosRoadName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="도로명 영역 (szPosRoadName)"
-            android:textSize="14sp" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
 
         <RadioButton
             android:id="@+id/rbTbtMainText"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="메인 팝업 (szTBTMainText - 기본값)"
-            android:textSize="14sp" />
+            android:text="메인 팝업 (기본값, 화면 중앙)"
+            android:textSize="14sp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+
+        <RadioButton
+            android:id="@+id/rbPosRoadName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="도로명 영역 (화면 상단 또는 하단)"
+            android:textSize="14sp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
 
     </RadioGroup>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Section 3: Spaces -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="안내 텍스트 여백(공백) 설정"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        android:layout_marginBottom="4dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="공백 추가 (칸 수)"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp" />
+        android:text="화면 가장자리에 글씨가 잘린다면 여백 칸 수를 입력하세요."
+        android:textSize="12sp"
+        android:textColor="#888888"
+        android:layout_marginBottom="12dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:weightSum="2"
+        android:baselineAligned="false">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="앞: " />
-
-        <EditText
-            android:id="@+id/etSpaceBefore"
-            android:layout_width="80dp"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:text="0"
+            android:layout_weight="1"
+            android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="8dp">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="앞 여백 (칸)"
+                android:textSize="14sp"
+                android:textColor="#555555"
+                android:layout_marginBottom="4dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="뒤: " />
+            <EditText
+                android:id="@+id/etSpaceBefore"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="number"
+                android:text="0"
+                android:gravity="center"
+                android:background="@android:drawable/editbox_background" />
+        </LinearLayout>
 
-        <EditText
-            android:id="@+id/etSpaceAfter"
-            android:layout_width="80dp"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:text="0"
-            android:gravity="center" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="뒤 여백 (칸)"
+                android:textSize="14sp"
+                android:textColor="#555555"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/etSpaceAfter"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="number"
+                android:text="0"
+                android:gravity="center"
+                android:background="@android:drawable/editbox_background" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </LinearLayout>
