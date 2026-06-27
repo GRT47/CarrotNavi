@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -34,8 +35,13 @@ class DebugSenderActivity : AppCompatActivity() {
         val btnGenerateJson = findViewById<Button>(R.id.btnGenerateJson)
         val btnSendUdp = findViewById<Button>(R.id.btnSendUdp)
         val btnStopUdp = findViewById<Button>(R.id.btnStopUdp)
+        val btnBack = findViewById<ImageButton>(R.id.btnBack)
 
         setupFields()
+
+        btnBack.setOnClickListener {
+            finish()
+        }
 
         btnGenerateJson.setOnClickListener {
             generateJson()
