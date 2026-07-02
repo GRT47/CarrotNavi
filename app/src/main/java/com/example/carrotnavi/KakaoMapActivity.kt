@@ -586,8 +586,8 @@ class KakaoMapActivity : AppCompatActivity(),
             } else {
                 Toast.makeText(this@KakaoMapActivity, "경로 안내를 시작합니다.", Toast.LENGTH_SHORT).show()
                 val guidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance()!!
+                try { guidance.stop() } catch(e: Exception) {}
                 
-
                 guidance.guideStateDelegate = this@KakaoMapActivity
                 guidance.routeGuideDelegate = this@KakaoMapActivity
                 guidance.safetyGuideDelegate = this@KakaoMapActivity
