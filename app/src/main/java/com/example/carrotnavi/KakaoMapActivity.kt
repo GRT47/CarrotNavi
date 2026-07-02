@@ -224,56 +224,17 @@ class KakaoMapActivity : AppCompatActivity(),
             }
         })
 
-        // TMAP 데이터(EDC)를 관찰하여 HUD에 도로 제한속도 오버레이 업데이트
-        com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK.observableEDCData.observe(this, Observer { data ->
-            data?.let {
-                val realRoadLimit = getRoadLimitSpeedFromEngine()
-                runOnUiThread {
-                    if (realRoadLimit >= 30) {
-                        hudOverlayManager.binding.llRoadSpeedLimit?.visibility = android.view.View.VISIBLE
-                        hudOverlayManager.binding.tvRoadSpeedLimit?.text = realRoadLimit.toString()
-                    } else {
-                        // 제한속도가 30 미만이거나 없으면 기본 UI 처리 (선택사항)
-                    }
+        // 백그라운드 서비스(UdpSenderService)에서 갱신하는 최신 티맵 도로 제한속도 옵저빙
+        SdiDataRepository.observableRoadLimitSpeed.observe(this, Observer { limitSpeed ->
+            runOnUiThread {
+                if (limitSpeed >= 30) {
+                    hudOverlayManager.binding.llRoadSpeedLimit?.visibility = android.view.View.VISIBLE
+                    hudOverlayManager.binding.tvRoadSpeedLimit?.text = limitSpeed.toString()
+                } else {
+                    hudOverlayManager.binding.llRoadSpeedLimit?.visibility = android.view.View.GONE
                 }
             }
         })
-    }
-
-    private var sdkManagerCompanion: Any? = null
-    private var getInstanceMethod: java.lang.reflect.Method? = null
-    private var getRecentRGDataMethod: java.lang.reflect.Method? = null
-    private var nRoadLimitSpeedField: java.lang.reflect.Field? = null
-
-    private fun getRoadLimitSpeedFromEngine(): Int {
-        try {
-            if (sdkManagerCompanion == null) {
-                val sdkManagerClass = Class.forName("com.skt.tmap.engine.navigation.SDKManager")
-                val companionField = sdkManagerClass.getField("Companion")
-                sdkManagerCompanion = companionField.get(null)
-                getInstanceMethod = sdkManagerCompanion?.javaClass?.getMethod("getInstance")
-            }
-            
-            val sdkManager = getInstanceMethod?.invoke(sdkManagerCompanion)
-            if (sdkManager != null) {
-                if (getRecentRGDataMethod == null) {
-                    getRecentRGDataMethod = sdkManager.javaClass.getMethod("getRecentRGData")
-                }
-                val rgData = getRecentRGDataMethod?.invoke(sdkManager)
-                if (rgData != null) {
-                    if (nRoadLimitSpeedField == null) {
-                        nRoadLimitSpeedField = rgData.javaClass.getField("nRoadLimitSpeed")
-                    }
-                    val rawLimitSpeed = nRoadLimitSpeedField?.getInt(rgData) ?: 0
-                    if (rawLimitSpeed > 0) {
-                        return (rawLimitSpeed - 20) / 10
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("KakaoMapActivity", "Reflection error: ${e.message}")
-        }
-        return -1
     }
 
     private fun startUdpSenderService() {

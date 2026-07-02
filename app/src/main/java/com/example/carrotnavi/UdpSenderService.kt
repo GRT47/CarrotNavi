@@ -265,6 +265,7 @@ class UdpSenderService : Service() {
                     }
                     
                     json.put("nRoadLimitSpeed", roadLimitSpeed)
+                    SdiDataRepository.updateRoadLimitSpeed(roadLimitSpeed)
                     
                     // 3. secondSDIInfo (GRT47과 동일하게 nSdiPlus... 접두어로 추가)
                     val sdiPlusObj = bundle.get("secondSDIInfo")
