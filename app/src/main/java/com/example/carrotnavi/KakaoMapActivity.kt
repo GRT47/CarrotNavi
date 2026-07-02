@@ -193,6 +193,16 @@ class KakaoMapActivity : AppCompatActivity(),
 
         startUdpSenderService()
 
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                locationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER, 0L, 0f, this)
+            }
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        }
     }
 
     private fun setupUI() {
