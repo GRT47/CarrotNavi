@@ -10,7 +10,7 @@ android {
     compileSdk = 36
     defaultConfig {
         applicationId = "com.example.carrotnavi"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 42
         versionName = "1.5.0"
@@ -98,6 +98,9 @@ dependencies {
 
   // for vsm sdk
   implementation("com.google.flatbuffers:flatbuffers-java:1.11.0")
+
+  // Kakao Navi SDK
+  implementation("com.kakaomobility.knsdk:knsdk_ui:1.12.8-hotfix02")
 
   // Dependency for Navi SDK.
   implementation("com.squareup.retrofit2:retrofit:2.9.0")

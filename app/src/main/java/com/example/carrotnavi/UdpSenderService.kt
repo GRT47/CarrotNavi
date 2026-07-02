@@ -118,22 +118,38 @@ class UdpSenderService : Service() {
     private var lastSdiUpdateTime = 0L
     private var lastSdiPlusJsonStr: String? = null
     private var lastSdiPlusUpdateTime = 0L
+    private var tmapRoadLimitSpeed = 0
 
     private val edcObserver = Observer<Bundle> { bundle ->
         if (bundle != null && isRunning.get()) {
             serviceScope.launch {
                 try {
+                    val naviType = bundle.getString("navitype", "tmap")
+                    val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+                    val activeNavi = sharedPref.getString("ACTIVE_NAVI", "tmap") ?: "tmap"
+                    
+                    // 1. limitSpeed 처리
+                    val limitObj = bundle.get("limitSpeed")
+                    val currentLimitSpeed = when (limitObj) {
+                        is Int -> limitObj
+                        is String -> limitObj.toIntOrNull() ?: 0
+                        else -> 0
+                    }
+                    if (currentLimitSpeed >= 30) {
+                        roadLimitSpeed = currentLimitSpeed
+                        if (naviType == "tmap") {
+                            tmapRoadLimitSpeed = currentLimitSpeed
+                        }
+                    }
+
+                    if (naviType != activeNavi) {
+                        return@launch
+                    }
+
                     val json = JSONObject()
                     json.put("carrotIndex", packetIndex++)
                     json.put("navitype", "tmap")
                     var isBoosting = false
-                    
-                    // 1. limitSpeed 처리
-                    val limitSpeedStr = bundle.getString("limitSpeed", bundle.getInt("limitSpeed", 0).toString())
-                    val currentLimitSpeed = limitSpeedStr.toIntOrNull() ?: 0
-                    if (currentLimitSpeed >= 30) {
-                        roadLimitSpeed = currentLimitSpeed
-                    }
                     
                     // 2. firstSDIInfo (GRT47과 동일하게 모든 key를 최상위로 복사)
                     val sdiObj = bundle.get("firstSDIInfo")
@@ -243,6 +259,11 @@ class UdpSenderService : Service() {
                         roadLimitSpeed = realRoadLimit
                     }
                     
+                    // Kakao 모드일 경우 tmap의 limitSpeed를 최우선 적용
+                    if (activeNavi == "kakao" && tmapRoadLimitSpeed >= 30) {
+                        roadLimitSpeed = tmapRoadLimitSpeed
+                    }
+                    
                     json.put("nRoadLimitSpeed", roadLimitSpeed)
                     
                     // 3. secondSDIInfo (GRT47과 동일하게 nSdiPlus... 접두어로 추가)
@@ -282,6 +303,9 @@ class UdpSenderService : Service() {
                     }
                     
                     // 4. tbtInfo 에서 도로명(szPosRoadName) 등 추출
+                    var kakaoTbtDist = -1
+                    var kakaoTbtTurnType = -1
+                    var kakaoTbtText = ""
                     val tbtObj = bundle.get("tbtInfo")
                     if (tbtObj != null) {
                         val tbtStr = if (tbtObj is String) tbtObj else gson.toJson(tbtObj)
@@ -290,8 +314,27 @@ class UdpSenderService : Service() {
                             if (tbtJson.has("szPosRoadName")) {
                                 json.put("szPosRoadName", tbtJson.get("szPosRoadName"))
                             }
+                            if (tbtJson.has("nTBTDist")) kakaoTbtDist = tbtJson.getInt("nTBTDist")
+                            if (tbtJson.has("nTBTTurnType")) kakaoTbtTurnType = tbtJson.getInt("nTBTTurnType")
+                            if (tbtJson.has("szTBTMainText")) kakaoTbtText = tbtJson.getString("szTBTMainText")
                         } catch (e: Exception) {}
                     }
+                    
+                    // 목적지 정보 추출
+                    val szGoalName = bundle.getString("szGoalName")
+                    if (!szGoalName.isNullOrEmpty()) {
+                        json.put("szGoalName", szGoalName)
+                        val goalPosX = bundle.getDouble("goalPosX", 0.0)
+                        val goalPosY = bundle.getDouble("goalPosY", 0.0)
+                        if (goalPosX > 0.0) json.put("goalPosX", goalPosX)
+                        if (goalPosY > 0.0) json.put("goalPosY", goalPosY)
+                    }
+                    
+                    // 위치(위경도) 정보 추출
+                    val lat = bundle.getDouble("lat", 0.0)
+                    val lon = bundle.getDouble("lon", 0.0)
+                    if (lat > 0.0) json.put("lat", lat)
+                    if (lon > 0.0) json.put("lon", lon)
 
                     // 상시 안내 텍스트 표시를 위한 필수 TBT 더미 값 주입
                     // 우선순위: 1차 이벤트 -> 2차 이벤트 -> 구간단속
@@ -349,40 +392,41 @@ class UdpSenderService : Service() {
                         eventText += " (가속중)"
                     }
 
-                    // TBT TurnType 강제 오버라이드
+                    // TBT 강제 오버라이드
                     val spOverride = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
                     val overrideTurnType = spOverride.getInt("OVERRIDE_TBT_TURN_TYPE", -1)
-                    targetIp = spOverride.getString("TARGET_UDP_IP", "255.255.255.255") ?: "255.255.255.255"
+                    targetIp = spOverride.getString("TARGET_IP", "255.255.255.255") ?: "255.255.255.255"
                     udpPort = spOverride.getInt("TARGET_UDP_PORT", 7706)
-                    
-                    if (overrideTurnType <= 0) {
-                        // 끄기 모드: 팝업이 뜨지 않도록 무효화
-                        json.put("nTBTTurnType", -1)
-                        json.put("nTBTDist", 9999)
-                    } else {
-                        if (overrideTurnType > 0) {
-                            tbtTurnType = overrideTurnType
-                        }
-                        json.put("nTBTDist", tbtDist)      // 이벤트가 있으면 해당 거리 표출, 없으면 9999
-                        json.put("nTBTTurnType", tbtTurnType)
-                    }
                     
                     val textOutputTarget = spOverride.getString("TEXT_OUTPUT_TARGET", "szTBTMainText")
                     val spaceBefore = spOverride.getInt("TBT_SPACE_BEFORE", 0)
                     val spaceAfter = spOverride.getInt("TBT_SPACE_AFTER", 0)
-
-                    val outputText = " ".repeat(spaceBefore) + "$eventText | GPS: $currentGpsStatusText" + " ".repeat(spaceAfter)
+                    val outputText = " ".repeat(spaceBefore) + "GPS: $currentGpsStatusText" + " ".repeat(spaceAfter)
                     
-                    if (activeType > 0) {
-                        json.put("szTBTMainText", outputText)
+                    // Kakao 경로안내 중 실제 TBT 값이 존재하면 해당 값을 사용 (단, 텍스트는 무조건 GPS 정보로 고정)
+                    if (kakaoTbtDist >= 0 && activeNavi == "kakao") {
+                        json.put("nTBTDist", kakaoTbtDist)
+                        json.put("nTBTTurnType", kakaoTbtTurnType)
                     } else {
-                        if (textOutputTarget == "szTBTMainText") {
-                            json.put("szTBTMainText", outputText)
-                            json.put("szPosRoadName", "")
+                        if (overrideTurnType <= 0) {
+                            // 끄기 모드: 팝업이 뜨지 않도록 무효화
+                            json.put("nTBTTurnType", -1)
+                            json.put("nTBTDist", 9999)
                         } else {
-                            json.put("szTBTMainText", "")
-                            json.put("szPosRoadName", outputText)
+                            if (overrideTurnType > 0) {
+                                tbtTurnType = overrideTurnType
+                            }
+                            json.put("nTBTDist", tbtDist)
+                            json.put("nTBTTurnType", tbtTurnType)
                         }
+                    }
+                    
+                    if (textOutputTarget == "szTBTMainText") {
+                        json.put("szTBTMainText", outputText)
+                        json.put("szPosRoadName", "")
+                    } else {
+                        json.put("szTBTMainText", "")
+                        json.put("szPosRoadName", outputText)
                     }
 
                     latestPayload = json.toString()
@@ -398,7 +442,12 @@ class UdpSenderService : Service() {
 
     private fun startObservingEDC() {
         CoroutineScope(Dispatchers.Main).launch {
-            TmapUISDK.observableEDCData.observeForever(edcObserver)
+            try {
+                TmapUISDK.observableEDCData.observeForever(edcObserver)
+            } catch (e: Exception) { e.printStackTrace() }
+            try {
+                KakaoSdiRepository.observableKakaoData.observeForever(edcObserver)
+            } catch (e: Exception) { e.printStackTrace() }
         }
     }
 
@@ -445,6 +494,7 @@ class UdpSenderService : Service() {
     }
 
     private fun sendSdiData() {
+        android.util.Log.d("UdpSender", "sendSdiData called. payload=" + latestPayload)
         if (latestPayload == "{}") return
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         if (sharedPref.getBoolean("IS_DEBUG_MODE", false)) return

@@ -17,10 +17,8 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                 val editor = prefs.edit()
                 params["TARGET_UDP_IP"]?.firstOrNull()?.let { editor.putString("TARGET_UDP_IP", it) }
                 params["TARGET_UDP_PORT"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("TARGET_UDP_PORT", it) }
-                params["OVERRIDE_TBT_TURN_TYPE"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("OVERRIDE_TBT_TURN_TYPE", it) }
-                params["TEXT_OUTPUT_TARGET"]?.firstOrNull()?.let { editor.putString("TEXT_OUTPUT_TARGET", it) }
-                params["TBT_SPACE_BEFORE"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("TBT_SPACE_BEFORE", it) }
-                params["TBT_SPACE_AFTER"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("TBT_SPACE_AFTER", it) }
+                val debugVisible = params["DEBUG_OVERLAY_VISIBLE"]?.firstOrNull() == "true"
+                editor.putBoolean("DEBUG_OVERLAY_VISIBLE", debugVisible)
                 params["BLOCK_SPEED_OFFSET"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("BLOCK_SPEED_OFFSET", it) }
                 params["BLOCK_SPEED_FAKE_DROP"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("BLOCK_SPEED_FAKE_DROP", it) }
                 params["BLOCK_SPEED_BOOST_MODE"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("BLOCK_SPEED_BOOST_MODE", it) }
@@ -39,10 +37,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         // Handle GET Request
         val targetIp = prefs.getString("TARGET_UDP_IP", "255.255.255.255")
         val targetPort = prefs.getInt("TARGET_UDP_PORT", 7706)
-        val overrideTurnType = prefs.getInt("OVERRIDE_TBT_TURN_TYPE", -1)
-        val textOutputTarget = prefs.getString("TEXT_OUTPUT_TARGET", "szTBTMainText")
-        val spaceBefore = prefs.getInt("TBT_SPACE_BEFORE", 0)
-        val spaceAfter = prefs.getInt("TBT_SPACE_AFTER", 0)
+        val isDebugOverlayVisible = prefs.getBoolean("DEBUG_OVERLAY_VISIBLE", false)
         val blockSpeedOffset = prefs.getInt("BLOCK_SPEED_OFFSET", 0)
         val blockSpeedFakeDrop = prefs.getInt("BLOCK_SPEED_FAKE_DROP", 10)
         val blockSpeedBoostMode = prefs.getInt("BLOCK_SPEED_BOOST_MODE", 0)
@@ -86,40 +81,12 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                         </div>
 
                         <div class="form-group">
-                            <label>TurnType 강제 지정</label>
-                            <select name="OVERRIDE_TBT_TURN_TYPE">
-                                <option value="-1" ${if(overrideTurnType == -1) "selected" else ""}>끄기 (알림 끄기)</option>
-                                <option value="201" ${if(overrideTurnType == 201) "selected" else ""}>목적지 도착 / 경고 팝업 (201)</option>
-                                <option value="12" ${if(overrideTurnType == 12) "selected" else ""}>좌회전 (12)</option>
-                                <option value="13" ${if(overrideTurnType == 13) "selected" else ""}>우회전 (13)</option>
-                                <option value="14" ${if(overrideTurnType == 14) "selected" else ""}>유턴 (14)</option>
-                                <option value="7" ${if(overrideTurnType == 7) "selected" else ""}>좌측 분기점 (7)</option>
-                                <option value="6" ${if(overrideTurnType == 6) "selected" else ""}>우측 분기점 (6)</option>
-                                <option value="102" ${if(overrideTurnType == 102) "selected" else ""}>좌측 램프 진출 (102)</option>
-                                <option value="101" ${if(overrideTurnType == 101) "selected" else ""}>우측 램프 진출 (101)</option>
-                                <option value="51" ${if(overrideTurnType == 51) "selected" else ""}>직진 / 단순 알림 (51)</option>
-                                <option value="153" ${if(overrideTurnType == 153) "selected" else ""}>톨게이트 (153)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>안내 텍스트 출력 위치</label>
+                            <label>디버그 오버레이 표시</label>
                             <div class="radio-group">
-                                <input type="radio" id="mainText" name="TEXT_OUTPUT_TARGET" value="szTBTMainText" ${if(textOutputTarget == "szTBTMainText") "checked" else ""}>
-                                <label for="mainText">메인 팝업 (szTBTMainText)</label><br>
-                                <input type="radio" id="roadName" name="TEXT_OUTPUT_TARGET" value="szPosRoadName" ${if(textOutputTarget == "szPosRoadName") "checked" else ""}>
-                                <label for="roadName">도로명 영역 (szPosRoadName)</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="display:flex; gap:16px;">
-                            <div style="flex:1;">
-                                <label>앞 여백 (칸 수)</label>
-                                <input type="number" name="TBT_SPACE_BEFORE" value="$spaceBefore">
-                            </div>
-                            <div style="flex:1;">
-                                <label>뒤 여백 (칸 수)</label>
-                                <input type="number" name="TBT_SPACE_AFTER" value="$spaceAfter">
+                                <input type="radio" id="debugOn" name="DEBUG_OVERLAY_VISIBLE" value="true" ${if(isDebugOverlayVisible) "checked" else ""}>
+                                <label for="debugOn">켜기</label><br>
+                                <input type="radio" id="debugOff" name="DEBUG_OVERLAY_VISIBLE" value="false" ${if(!isDebugOverlayVisible) "checked" else ""}>
+                                <label for="debugOff">끄기</label>
                             </div>
                         </div>
 

@@ -20,19 +20,29 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 class MapActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMapBinding
-    private var navigationFragment: NavigationFragment? = null
-    private var isEditMode = false
-    private var isOverlayVisible = true
+    private lateinit var hudBinding: com.example.carrotnavi.databinding.LayoutHudOverlaysBinding
+    private lateinit var hudOverlayManager: HudOverlayManager
+
+    private val searchRetrofit: retrofit2.Retrofit by lazy {
+        retrofit2.Retrofit.Builder()
+            .baseUrl("https://dapi.kakao.com/")
+            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
+            .build()
+    }
+    private val kakaoSearchApi: KakaoSearchApi by lazy {
+        searchRetrofit.create(KakaoSearchApi::class.java)
+    }
+
+private var navigationFragment: NavigationFragment? = null
+        private var isOverlayVisible = true
 
     private val preferenceChangeListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
         when (key) {
             "BLOCK_SPEED_OFFSET" -> {
                 runOnUiThread {
                     val currentOffset = sharedPreferences.getInt(key, 0)
-                    binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
-                }
+                                    }
             }
             "OVERRIDE_TBT_TURN_TYPE" -> {
                 runOnUiThread {
@@ -42,18 +52,21 @@ class MapActivity : AppCompatActivity() {
                         0 -> "끄기"
                         else -> turnTypeOverride.toString()
                     }
-                    binding.tvTurnTypeOverride?.text = displayText
                 }
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE).edit().putBoolean("IS_DEBUG_MODE", false).apply()
         super.onCreate(savedInstanceState)
         binding = ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // 자동 업데이트 체크
+        
+        hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
+        hudOverlayManager = HudOverlayManager(this, hudBinding, this)
+        hudOverlayManager.binding.btnSearchAddress.setOnClickListener { showSearchDialog() }
+// 자동 업데이트 체크
         AutoUpdater.checkForUpdates(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -62,9 +75,7 @@ class MapActivity : AppCompatActivity() {
             insets
         }
 
-        binding.tvAppVersion?.text = "v${BuildConfig.VERSION_NAME}"
-        
-        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+                val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         val appKey = sharedPref.getString("APP_KEY", "") ?: ""
         
         sharedPref.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
@@ -78,340 +89,12 @@ class MapActivity : AppCompatActivity() {
             return
         }
 
-        binding.btnEditKey.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.putExtra("auto_start", false)
-            startActivity(intent)
-            finish()
-        }
-
-        binding.btnExitApp.setOnClickListener {
-            finishAffinity()
-        }
-
-        // 여유가속(마진) 조절 로직
-        var currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
-        binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
-
-        binding.btnOffsetInfo?.setOnClickListener {
-            val currentMode = sharedPref.getInt("BLOCK_SPEED_BOOST_MODE", 0)
-            var fakeDrop = sharedPref.getInt("BLOCK_SPEED_FAKE_DROP", 10)
-            
-            val layout = android.widget.LinearLayout(this).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(50, 40, 50, 0)
-            }
-            
-            val rg = android.widget.RadioGroup(this)
-            val rbProgressive = android.widget.RadioButton(this).apply { text = "점진적 가속 (기본: 목표속도 도달 시 정지)" }
-            val rbFixed = android.widget.RadioButton(this).apply { text = "고정 가속 (강제 풀가속)" }
-            rg.addView(rbProgressive)
-            rg.addView(rbFixed)
-            rg.check(if (currentMode == 0) rbProgressive.id else rbFixed.id)
-            
-            val tvDrop = android.widget.TextView(this).apply { 
-                text = "목표 평균속도 상향값 (km/h): $fakeDrop"
-                setPadding(0, 30, 0, 10)
-            }
-            val sbDrop = android.widget.SeekBar(this).apply {
-                max = 20 // 목표 상향값이므로 최대치를 20 정도로 설정 (사용자 편의)
-                progress = fakeDrop
-                setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-                    override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
-                        fakeDrop = progress
-                        tvDrop.text = "목표 평균속도 상향값 (km/h): $fakeDrop"
-                    }
-                    override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
-                    override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
-                })
-            }
-            
-            rg.setOnCheckedChangeListener { _, _ ->
-                // 속임값 설정은 이제 두 모드 모두에서 지원됨
-                tvDrop.visibility = android.view.View.VISIBLE
-                sbDrop.visibility = android.view.View.VISIBLE
-            }
-            
-            tvDrop.visibility = android.view.View.VISIBLE
-            sbDrop.visibility = android.view.View.VISIBLE
-            
-            layout.addView(rg)
-            layout.addView(tvDrop)
-            layout.addView(sbDrop)
-            
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("보상가속 모드 설정")
-                .setView(layout)
-                .setPositiveButton("저장") { _, _ ->
-                    val mode = if (rg.checkedRadioButtonId == rbProgressive.id) 0 else 1
-                    sharedPref.edit()
-                        .putInt("BLOCK_SPEED_BOOST_MODE", mode)
-                        .putInt("BLOCK_SPEED_FAKE_DROP", fakeDrop)
-                        .apply()
-                    android.widget.Toast.makeText(this@MapActivity, "설정이 저장되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
-                }
-                .setNeutralButton("도움말") { _, _ ->
-                    androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("안내")
-                        .setMessage("- 메인 화면 위젯(+/-): 최대 가속력(초기 펀치력)을 조절합니다.\n- 팝업 슬라이더: 목표로 하는 최종 평균속도를 제한속도 대비 얼마나 상향할지 조절합니다.")
-                        .setPositiveButton("확인", null)
-                        .show()
-                }
-                .setNegativeButton("취소", null)
-                .show()
-        }
-
-        setAutoRepeatButton(binding.btnDecreaseOffset) {
-            var currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
-            if (currentOffset > 0) { // 음수 방지
-                currentOffset--
-                binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
-                sharedPref.edit().putInt("BLOCK_SPEED_OFFSET", currentOffset).apply()
-            }
-        }
-
-        setAutoRepeatButton(binding.btnIncreaseOffset) {
-            var currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
-            if (currentOffset < 50) { // 최대 50km/h 제한
-                currentOffset++
-                binding.tvOffsetValue?.text = if (currentOffset > 0) "+$currentOffset" else currentOffset.toString()
-                sharedPref.edit().putInt("BLOCK_SPEED_OFFSET", currentOffset).apply()
-            }
-        }
-
-        val turnTypeOverride = sharedPref.getInt("OVERRIDE_TBT_TURN_TYPE", -1)
-        val displayText = when (turnTypeOverride) {
-            -1 -> "끄기"
-            0 -> "끄기" // 기존 자동 사용자들은 끄기로 일괄 변경
-            else -> turnTypeOverride.toString()
-        }
-        binding.tvTurnTypeOverride?.text = displayText
-        binding.llTurnTypeOverride?.setOnClickListener {
-            if (isEditMode) return@setOnClickListener
-            
-            val dialogView = layoutInflater.inflate(R.layout.dialog_tbt_settings, null)
-            val spinnerTurnType = dialogView.findViewById<android.widget.Spinner>(R.id.spinnerTurnType)
-            val rgTextOutput = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgTextOutput)
-            val rbPosRoadName = dialogView.findViewById<android.widget.RadioButton>(R.id.rbPosRoadName)
-            val rbTbtMainText = dialogView.findViewById<android.widget.RadioButton>(R.id.rbTbtMainText)
-            
-            val etSpaceBefore = dialogView.findViewById<android.widget.EditText>(R.id.etSpaceBefore)
-            val etSpaceAfter = dialogView.findViewById<android.widget.EditText>(R.id.etSpaceAfter)
-            
-            val options = arrayOf(
-                "끄기 (알림 끄기)",
-                "목적지 도착 / 경고 팝업 (201)",
-                "좌회전 (12)",
-                "우회전 (13)",
-                "유턴 (14)",
-                "좌측 분기점 (7)",
-                "우측 분기점 (6)",
-                "좌측 램프 진출 (102)",
-                "우측 램프 진출 (101)",
-                "직진 / 단순 알림 (51)",
-                "톨게이트 (153)"
-            )
-            val values = intArrayOf(-1, 201, 12, 13, 14, 7, 6, 102, 101, 51, 153)
-            val currentVal = sharedPref.getInt("OVERRIDE_TBT_TURN_TYPE", -1)
-            val checkedItem = values.indexOf(currentVal).let { if (it == -1) 0 else it }
-            
-            val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, options)
-            spinnerTurnType.adapter = adapter
-            spinnerTurnType.setSelection(checkedItem)
-            
-            val textOutputTarget = sharedPref.getString("TEXT_OUTPUT_TARGET", "szTBTMainText")
-            if (textOutputTarget == "szTBTMainText") {
-                rbTbtMainText.isChecked = true
-            } else {
-                rbPosRoadName.isChecked = true
-            }
-
-            etSpaceBefore.setText(sharedPref.getInt("TBT_SPACE_BEFORE", 0).toString())
-            etSpaceAfter.setText(sharedPref.getInt("TBT_SPACE_AFTER", 0).toString())
-
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("TBT 알림 및 UI 설정")
-                .setView(dialogView)
-                .setPositiveButton("저장") { dialog, _ ->
-                    val selectedPosition = spinnerTurnType.selectedItemPosition
-                    val value = values[selectedPosition]
-                    val newTextOutputTarget = if (rbTbtMainText.isChecked) "szTBTMainText" else "szPosRoadName"
-                    val spaceBefore = etSpaceBefore.text.toString().toIntOrNull() ?: 0
-                    val spaceAfter = etSpaceAfter.text.toString().toIntOrNull() ?: 0
-                    
-                    sharedPref.edit()
-                        .putInt("OVERRIDE_TBT_TURN_TYPE", value)
-                        .putString("TEXT_OUTPUT_TARGET", newTextOutputTarget)
-                        .putInt("TBT_SPACE_BEFORE", spaceBefore)
-                        .putInt("TBT_SPACE_AFTER", spaceAfter)
-                        .apply()
-                        
-                    val dialogDisplayText = when (value) {
-                        -1 -> "끄기"
-                        else -> value.toString()
-                    }
-                    binding.tvTurnTypeOverride?.text = dialogDisplayText
-                    Toast.makeText(this, "설정이 저장되었습니다.", Toast.LENGTH_SHORT).show()
-                }
-                .setNegativeButton("취소", null)
-                .show()
-        }
-
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         
-        val draggables = listOfNotNull(
-            binding.llSpeedGroup,
-            binding.llStatusGroup,
-            binding.llOffset
-        )
-
-        draggables.forEach { view ->
-            view.post {
-                val others = draggables.filter { it != view }
-                val viewIdName = resources.getResourceEntryName(view.id)
-                restorePosition(view, viewIdName, isLandscape, others)
-            }
-        }
-
-        draggables.forEach { view ->
-            val others = draggables.filter { it != view }
-            val viewIdName = resources.getResourceEntryName(view.id)
-            makeDraggable(view, viewIdName, isLandscape, others)
-        }
-
-        isOverlayVisible = sharedPref.getBoolean("OVERLAY_VISIBLE", true)
-        updateOverlayVisibility()
-
-        binding.llDebugOverlay?.setOnClickListener {
-            val intent = android.content.Intent(this, DebugSenderActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnToggleVisibility?.setOnClickListener {
-            isOverlayVisible = !isOverlayVisible
-            sharedPref.edit().putBoolean("OVERLAY_VISIBLE", isOverlayVisible).apply()
-            updateOverlayVisibility()
-            val msg = if (isOverlayVisible) "오버레이 켜짐" else "오버레이 꺼짐"
-            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-        }
-
-        binding.btnEditMode?.setOnClickListener {
-            isEditMode = !isEditMode
-            updateEditModeForegrounds()
-            if (isEditMode) {
-                binding.btnEditMode?.setBackgroundResource(R.drawable.shape_circle_green)
-                binding.btnRestoreDefaults?.visibility = android.view.View.VISIBLE
-                Toast.makeText(this, "오버레이 편집 모드 켜짐", Toast.LENGTH_SHORT).show()
-            } else {
-                binding.btnEditMode?.setBackgroundResource(R.drawable.shape_circle_gray)
-                binding.btnRestoreDefaults?.visibility = android.view.View.GONE
-                Toast.makeText(this, "오버레이 편집 모드 꺼짐", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        binding.btnRestoreDefaults?.setOnClickListener {
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("오버레이 배치 초기화")
-                .setMessage("모든 위젯의 배치를 기본값으로 복원하시겠습니까?")
-                .setPositiveButton("복원") { _, _ ->
-                    val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-                    sharedPref.edit()
-                        .remove("llSpeedGroup_x_port")
-                        .remove("llSpeedGroup_y_port")
-                        .remove("llSpeedGroup_x_land")
-                        .remove("llSpeedGroup_y_land")
-                        .remove("llStatusGroup_x_port")
-                        .remove("llStatusGroup_y_port")
-                        .remove("llStatusGroup_x_land")
-                        .remove("llStatusGroup_y_land")
-                        .remove("llOffset_x_port")
-                        .remove("llOffset_y_port")
-                        .remove("llOffset_x_land")
-                        .remove("llOffset_y_land")
-                        .remove("llSpeedGroup_scale_port")
-                        .remove("llSpeedGroup_scale_land")
-                        .remove("llStatusGroup_scale_port")
-                        .remove("llStatusGroup_scale_land")
-                        .remove("llOffset_scale_port")
-                        .remove("llOffset_scale_land")
-                        .apply()
-
-                    // Reset views to layout defaults immediately
-                    binding.llSpeedGroup.translationX = 0f
-                    binding.llSpeedGroup.translationY = 0f
-                    binding.llStatusGroup.translationX = 0f
-                    binding.llStatusGroup.translationY = 0f
-                    binding.llOffset.translationX = 0f
-                    binding.llOffset.translationY = 0f
-                    binding.llTurnTypeOverride?.translationX = 0f
-                    binding.llTurnTypeOverride?.translationY = 0f
-
-                    Toast.makeText(this, "기본값으로 복원되었습니다.", Toast.LENGTH_SHORT).show()
-                }
-                .setNegativeButton("취소", null)
-                .show()
-        }
-
-        OpenpilotStateRepository.state.observe(this) { state ->
-            binding.tvCarrotVersion.text = "Ver: ${state.carrot2}"
-            binding.tvCarrotIp.text = "IP: ${state.ip}"
-            
-            // Connection
-            if (state.ip != "-" && state.ip.isNotEmpty()) {
-                binding.vConnectionDot.setBackgroundResource(R.drawable.shape_circle_green)
-                binding.tvConnectionStatus.text = "OP 연결됨"
-                binding.tvConnectionStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
-            } else {
-                binding.vConnectionDot.setBackgroundResource(R.drawable.shape_circle_gray)
-                binding.tvConnectionStatus.text = "OP 연결 대기"
-                binding.tvConnectionStatus.setTextColor(android.graphics.Color.parseColor("#AAAAAA"))
-            }
-            
-            // Active
-            if (state.active) {
-                binding.tvActiveStatus.text = "ON"
-                binding.tvActiveStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
-                binding.ivOpIcon?.setColorFilter(android.graphics.Color.parseColor("#4CAF50"))
-            } else {
-                binding.tvActiveStatus.text = "OFF"
-                binding.tvActiveStatus.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
-                binding.ivOpIcon?.setColorFilter(android.graphics.Color.parseColor("#AAAAAA"))
-            }
-
-            // Traffic
-            when (state.trafficState) {
-                1 -> binding.vTrafficLight.setBackgroundResource(R.drawable.shape_circle_red)
-                2 -> binding.vTrafficLight.setBackgroundResource(R.drawable.shape_circle_green)
-                else -> binding.vTrafficLight.setBackgroundResource(R.drawable.shape_circle_gray)
-            }
-
-            // xState
-            val (xText, xColor) = when (state.xState) {
-                0 -> "LEAD" to "#2196F3"
-                1 -> "CRUISE" to "#4CAF50"
-                2 -> "E2E CRZ" to "#00BCD4"
-                3 -> "E2E STP" to "#F44336"
-                4 -> "PREPARE" to "#FFC107"
-                5 -> "STOPPED" to "#B71C1C"
-                else -> "-" to "#AAAAAA"
-            }
-            binding.tvXStateBadge.text = xText
-            binding.tvXStateBadge.setTextColor(android.graphics.Color.parseColor(xColor))
-        }
 
         initTmapSdk(appKey)
     }
 
-    private fun updateOverlayVisibility() {
-        val visibility = if (isOverlayVisible) android.view.View.VISIBLE else android.view.View.GONE
-        binding.llSpeedGroup.visibility = visibility
-        binding.llStatusGroup.visibility = visibility
-        binding.llOffset.visibility = visibility
-        binding.llTurnTypeOverride?.visibility = visibility
-        binding.llDebugOverlay?.visibility = visibility
-        binding.btnToggleVisibility?.alpha = if (isOverlayVisible) 1.0f else 0.5f
-    }
-
+    
     private fun initTmapSdk(appKey: String) {
         // TmapUISDK 초기화
         initialize(this, "", appKey, "", "", object : TmapUISDK.InitializeListener {
@@ -487,6 +170,20 @@ class MapActivity : AppCompatActivity() {
                 }
             }, 1000)
 
+            frag.setNavigationScreenStateListener(object : com.tmapmobility.tmap.tmapsdk.ui.data.NavigationScreenStateListener {
+                override fun onChanged(state: com.tmapmobility.tmap.tmapsdk.ui.data.NavigationScreenState) {
+                    Log.d("MapActivity", "NavigationScreenState changed: ${state.javaClass.simpleName}")
+                    if (state.javaClass.simpleName.contains("DefaultScreen")) {
+                        // TMap Safe Driving has ended (probably user clicked X).
+                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                            if (!isFinishing) {
+                                frag.startSafeDrive()
+                            }
+                        }, 500)
+                    }
+                }
+            })
+
             /* 
             // TODO: Use ObservableRouteData instead of DriveStatusListener
             */
@@ -508,8 +205,8 @@ class MapActivity : AppCompatActivity() {
                     val realRoadLimit = getRoadLimitSpeedFromEngine()
                     runOnUiThread {
                         if (realRoadLimit >= 30) {
-                            binding.llRoadSpeedLimit?.visibility = android.view.View.VISIBLE
-                            binding.tvRoadSpeedLimit?.text = realRoadLimit.toString()
+                            hudBinding.llRoadSpeedLimit?.visibility = android.view.View.VISIBLE
+                            hudBinding.tvRoadSpeedLimit?.text = realRoadLimit.toString()
                         }
                     }
 
@@ -524,19 +221,19 @@ class MapActivity : AppCompatActivity() {
                 val locationManager = getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
                 locationManager.registerGnssStatusCallback(object : android.location.GnssStatus.Callback() {
                     override fun onStarted() {
-                        binding.ivGpsIcon?.setColorFilter(android.graphics.Color.YELLOW)
-                        binding.tvGpsStatus.text = "탐색 중"
-                        binding.tvGpsStatus.setTextColor(android.graphics.Color.YELLOW)
+                        hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.YELLOW)
+                        hudBinding.tvGpsStatus?.text = "탐색 중"
+                        hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.YELLOW)
                     }
                     override fun onStopped() {
-                        binding.ivGpsIcon?.setColorFilter(android.graphics.Color.RED)
-                        binding.tvGpsStatus.text = "끊김 (NO)"
-                        binding.tvGpsStatus.setTextColor(android.graphics.Color.RED)
+                        hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.RED)
+                        hudBinding.tvGpsStatus?.text = "끊김 (NO)"
+                        hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.RED)
                     }
                     override fun onFirstFix(ttffMillis: Int) {
-                        binding.ivGpsIcon?.setColorFilter(android.graphics.Color.GREEN)
-                        binding.tvGpsStatus.text = "수신 양호"
-                        binding.tvGpsStatus.setTextColor(android.graphics.Color.GREEN)
+                        hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.GREEN)
+                        hudBinding.tvGpsStatus?.text = "수신 양호"
+                        hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.GREEN)
                     }
                     override fun onSatelliteStatusChanged(status: android.location.GnssStatus) {
                         var usedInFix = 0
@@ -544,13 +241,13 @@ class MapActivity : AppCompatActivity() {
                             if (status.usedInFix(i)) usedInFix++
                         }
                         if (usedInFix >= 4) {
-                            binding.ivGpsIcon?.setColorFilter(android.graphics.Color.GREEN)
-                            binding.tvGpsStatus.text = "GOOD (위성 $usedInFix)"
-                            binding.tvGpsStatus.setTextColor(android.graphics.Color.GREEN)
+                            hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.GREEN)
+                            hudBinding.tvGpsStatus?.text = "GOOD (위성 $usedInFix)"
+                            hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.GREEN)
                         } else {
-                            binding.ivGpsIcon?.setColorFilter(android.graphics.Color.RED)
-                            binding.tvGpsStatus.text = "BAD (위성 $usedInFix)"
-                            binding.tvGpsStatus.setTextColor(android.graphics.Color.RED)
+                            hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.RED)
+                            hudBinding.tvGpsStatus?.text = "BAD (위성 $usedInFix)"
+                            hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.RED)
                         }
                     }
                 }, android.os.Handler(android.os.Looper.getMainLooper()))
@@ -617,26 +314,19 @@ class MapActivity : AppCompatActivity() {
                 }
                 
                 runOnUiThread {
-                    binding.tvOffsetTitle?.text = if (isBoosting) "추가가속중" else "구간단속"
-                    if (isBoosting) {
-                        binding.ivSpeedometerIcon?.setColorFilter(android.graphics.Color.parseColor("#FFEB3B"))
-                    } else {
-                        binding.ivSpeedometerIcon?.setColorFilter(android.graphics.Color.parseColor("#FFFFFF"))
-                    }
+                                        if (isBoosting) {
+                                            } else {
+                                            }
                     
                     if (isBlockSection && blockDist > 0) {
-                        binding.llBlockInfo?.visibility = android.view.View.VISIBLE
-                        binding.tvBlockAvgSpeed?.text = "평균: ${blockAvgSpeed}km/h"
-                        binding.tvBlockDistTime?.text = String.format("남은: %s (%d:%02d)", formatDistance(blockDist), blockTime / 60, blockTime % 60)
+                        hudBinding.llBlockInfo?.visibility = android.view.View.VISIBLE
+                        hudBinding.tvBlockAvgSpeed?.text = "평균: ${blockAvgSpeed}km/h"
+                        hudBinding.tvBlockDistTime?.text = String.format("남은: %s (%d:%02d)", formatDistance(blockDist), blockTime / 60, blockTime % 60)
                     } else {
-                        binding.llBlockInfo?.visibility = android.view.View.GONE
+                        hudBinding.llBlockInfo?.visibility = android.view.View.GONE
                     }
                     
-                    binding.llSdiEvent.visibility = android.view.View.VISIBLE
                     if (sdiType > 0 || (sdiSpeedLimit > 0 && sdiDist > 0)) {
-                        binding.ivCameraIcon?.setColorFilter(android.graphics.Color.parseColor("#F44336"))
-                        binding.tvEventSpeedLimit.text = if (sdiSpeedLimit > 0) sdiSpeedLimit.toString() else "-"
-                        binding.tvEventDist.text = formatDistance(sdiDist)
                         
                         val typeName = when (sdiType) {
                             1 -> "과속 단속"
@@ -648,22 +338,12 @@ class MapActivity : AppCompatActivity() {
                             33 -> "어린이보호구역"
                             else -> if (sdiSpeedLimit > 0) "단속 카메라" else "주의 구간"
                         }
-                        binding.tvEventType.text = typeName
                     } else {
-                        binding.ivCameraIcon?.setColorFilter(android.graphics.Color.parseColor("#AAAAAA"))
-                        binding.tvEventSpeedLimit.text = "-"
-                        binding.tvEventDist.text = "0m"
-                        binding.tvEventType.text = "이벤트 없음"
                     }
                 }
             } else {
                 runOnUiThread {
-                    binding.tvOffsetTitle?.text = "구간단속"
-                    binding.llBlockInfo?.visibility = android.view.View.GONE
-                    binding.llSdiEvent.visibility = android.view.View.VISIBLE
-                    binding.tvEventSpeedLimit.text = "-"
-                    binding.tvEventDist.text = "0m"
-                    binding.tvEventType.text = "이벤트 없음"
+                                        hudBinding.llBlockInfo?.visibility = android.view.View.GONE
                 }
             }
         } catch (e: Exception) {
@@ -777,243 +457,123 @@ class MapActivity : AppCompatActivity() {
         return Pair(x, y)
     }
 
-    private var resizingView: View? = null
-    private var resizeInitialRawX = 0f
-    private var resizeInitialRawY = 0f
-    private var resizeInitialScale = 1f
-    private var resizeCornerSignX = 1f
-    private var resizeCornerSignY = 1f
 
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        if (!isEditMode) return super.dispatchTouchEvent(ev)
 
-        val touchX = ev.rawX
-        val touchY = ev.rawY
-
-        when (ev.action) {
-            MotionEvent.ACTION_DOWN -> {
-                val views = listOfNotNull(binding.llSpeedGroup, binding.llStatusGroup, binding.llOffset)
-                for (v in views) {
-                    if (v.visibility != View.VISIBLE) continue
-
-                    val loc = IntArray(2)
-                    v.getLocationOnScreen(loc)
-                    val vX = loc[0].toFloat()
-                    val vY = loc[1].toFloat()
-                    val scaledW = v.width * v.scaleX
-                    val scaledH = v.height * v.scaleY
-
-                    val left = vX + (v.width - scaledW) / 2f
-                    val top = vY + (v.height - scaledH) / 2f
-                    val right = left + scaledW
-                    val bottom = top + scaledH
-
-                    val margin = 80f // 80 screen pixels physical touch margin
-
-                    val isTopLeft = touchX in (left - margin)..(left + margin) && touchY in (top - margin)..(top + margin)
-                    val isTopRight = touchX in (right - margin)..(right + margin) && touchY in (top - margin)..(top + margin)
-                    val isBottomLeft = touchX in (left - margin)..(left + margin) && touchY in (bottom - margin)..(bottom + margin)
-                    val isBottomRight = touchX in (right - margin)..(right + margin) && touchY in (bottom - margin)..(bottom + margin)
-
-                    if (isTopLeft || isTopRight || isBottomLeft || isBottomRight) {
-                        resizingView = v
-                        resizeInitialScale = v.scaleX
-                        resizeInitialRawX = touchX
-                        resizeInitialRawY = touchY
-                        resizeCornerSignX = if (isTopLeft || isBottomLeft) -1f else 1f
-                        resizeCornerSignY = if (isTopLeft || isTopRight) -1f else 1f
-                        return true // Intercept touch and start resizing
-                    }
-                }
-            }
-            MotionEvent.ACTION_MOVE -> {
-                val v = resizingView
-                if (v != null) {
-                    val deltaX = touchX - resizeInitialRawX
-                    val deltaY = touchY - resizeInitialRawY
-                    
-                    val diagX = resizeCornerSignX * (v.width / 2f)
-                    val diagY = resizeCornerSignY * (v.height / 2f)
-                    val diagLen = Math.hypot(diagX.toDouble(), diagY.toDouble()).toFloat()
-                    
-                    if (diagLen > 0) {
-                        val unitX = diagX / diagLen
-                        val unitY = diagY / diagLen
-                        val projectedDelta = deltaX * unitX + deltaY * unitY
-                        
-                        var newScale = resizeInitialScale + (projectedDelta / diagLen)
-                        newScale = Math.max(0.5f, Math.min(newScale, 2.5f))
-                        
-                        v.scaleX = newScale
-                        v.scaleY = newScale
-                    }
-                    return true
-                }
-            }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                val v = resizingView
-                if (v != null) {
-                    val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-                    val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-                    val suffix = if (isLandscape) "land" else "port"
-                    val keyPrefix = when (v) {
-                        binding.llSpeedGroup -> "llSpeedGroup"
-                        binding.llStatusGroup -> "llStatusGroup"
-                        binding.llOffset -> "llOffset"
-                        else -> ""
-                    }
-                    if (keyPrefix.isNotEmpty()) {
-                        sharedPref.edit().putFloat("${keyPrefix}_scale_${suffix}", v.scaleX).apply()
-                    }
-                    resizingView = null
-                    return true
-                }
-            }
+    private fun showSearchDialog() {
+        val prefs = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+        val restApiKey = prefs.getString("KAKAO_REST_API_KEY", "") ?: ""
+        val appKey = prefs.getString("APP_KEY", "") ?: ""
+        
+        val keyToUse = if (restApiKey.isNotEmpty()) restApiKey else appKey
+        if (keyToUse.isEmpty()) {
+            Toast.makeText(this@MapActivity, "App Key 또는 REST API Key가 설정되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+            return
         }
-        return super.dispatchTouchEvent(ev)
-    }
+        val authorizationHeader = "KakaoAK $keyToUse" 
 
-    private fun makeDraggable(view: View, keyPrefix: String, isLandscape: Boolean, otherViews: List<View> = emptyList()) {
-        var dX = 0f
-        var dY = 0f
+        val dialogView = layoutInflater.inflate(R.layout.dialog_address_search, null)
+        val etKeyword = dialogView.findViewById<android.widget.EditText>(R.id.etSearchKeyword)
+        val rbSortDistance = dialogView.findViewById<android.widget.RadioButton>(R.id.rbSortDistance)
+        val rgSort = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgSort)
+        val btnSearch = dialogView.findViewById<android.widget.Button>(R.id.btnSearch)
+        val rvResults = dialogView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvSearchResults)
+        val pbLoading = dialogView.findViewById<android.widget.ProgressBar>(R.id.pbLoading)
+        val tvEmpty = dialogView.findViewById<android.widget.TextView>(R.id.tvEmptyResult)
 
-        view.setOnTouchListener { v, event ->
-            if (!isEditMode) return@setOnTouchListener false
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this@MapActivity)
+            .setTitle("목적지 검색")
+            .setView(dialogView)
+            .setNegativeButton("닫기", null)
+            .create()
+
+        val adapter = AddressSearchAdapter { doc ->
+            dialog.dismiss()
             
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    dX = v.x - event.rawX
-                    dY = v.y - event.rawY
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val rawX = event.rawX + dX
-                    val rawY = event.rawY + dY
-                    val (clampedX, clampedY) = clampAndPreventOverlap(v, rawX, rawY, otherViews)
-                    
-                    v.animate()
-                        .x(clampedX)
-                        .y(clampedY)
-                        .setDuration(0)
-                        .start()
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-                    val suffix = if (isLandscape) "land" else "port"
-                    sharedPref.edit()
-                        .putFloat("${keyPrefix}_x_${suffix}", v.x)
-                        .putFloat("${keyPrefix}_y_${suffix}", v.y)
-                        .apply()
-                    true
-                }
-                else -> false
+            // Launch KakaoMapActivity with the selected destination
+            val intent = Intent(this@MapActivity, KakaoMapActivity::class.java).apply {
+                putExtra("dest_place_name", doc.place_name)
+                putExtra("dest_road_address_name", doc.road_address_name)
+                putExtra("dest_address_name", doc.address_name)
+                putExtra("dest_x", doc.x)
+                putExtra("dest_y", doc.y)
+            }
+            startActivity(intent)
+        }
+        rvResults.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this@MapActivity)
+        rvResults.adapter = adapter
+
+        rgSort.setOnCheckedChangeListener { _, _ ->
+            if (etKeyword.text.toString().trim().isNotEmpty()) {
+                btnSearch.performClick()
             }
         }
-    }
 
-    private fun restorePosition(view: View, keyPrefix: String, isLandscape: Boolean, otherViews: List<View> = emptyList()) {
-        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val suffix = if (isLandscape) "land" else "port"
-        val x = sharedPref.getFloat("${keyPrefix}_x_${suffix}", -1f)
-        val y = sharedPref.getFloat("${keyPrefix}_y_${suffix}", -1f)
-        val scale = sharedPref.getFloat("${keyPrefix}_scale_${suffix}", 1f)
-        
-        view.scaleX = scale
-        view.scaleY = scale
+        btnSearch.setOnClickListener {
+            val query = etKeyword.text.toString().trim()
+            if (query.isEmpty()) return@setOnClickListener
 
-        if (x != -1f && y != -1f) {
-            val (clampedX, clampedY) = clampAndPreventOverlap(view, x, y, otherViews)
-            view.x = clampedX
-            view.y = clampedY
+            pbLoading.visibility = android.view.View.VISIBLE
+            tvEmpty.visibility = android.view.View.GONE
+            rvResults.visibility = android.view.View.GONE
+
+            var sortParam: String? = null
+            var xParam: String? = null
+            var yParam: String? = null
+            var radiusParam: Int? = null
+
+            if (rbSortDistance.isChecked) {
+                sortParam = "distance"
+                try {
+                    val locationManager = getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+                    val location = locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER)
+                        ?: locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER)
+                    
+                    if (location != null) {
+                        xParam = location.longitude.toString()
+                        yParam = location.latitude.toString()
+                        radiusParam = 20000
+                    } else {
+                        Toast.makeText(this@MapActivity, "현재 위치를 알 수 없어 거리순 정렬을 사용할 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                } catch (e: SecurityException) {
+                    Toast.makeText(this@MapActivity, "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+            }
+
+            kakaoSearchApi.searchKeyword(authorizationHeader, query, sortParam, xParam, yParam, radiusParam).enqueue(object : retrofit2.Callback<KakaoSearchResponse> {
+                override fun onResponse(call: retrofit2.Call<KakaoSearchResponse>, response: retrofit2.Response<KakaoSearchResponse>) {
+                    pbLoading.visibility = android.view.View.GONE
+                    if (response.isSuccessful && response.body() != null) {
+                        val docs = response.body()!!.documents
+                        if (docs.isEmpty()) {
+                            tvEmpty.visibility = android.view.View.VISIBLE
+                        } else {
+                            rvResults.visibility = android.view.View.VISIBLE
+                            adapter.submitList(docs)
+                        }
+                    } else {
+                        if (response.code() == 401) {
+                            Toast.makeText(this@MapActivity, "API 인증 실패 (401). REST API 키를 확인해주세요.", Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(this@MapActivity, "검색 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                        tvEmpty.text = "검색 오류 발생"
+                        tvEmpty.visibility = android.view.View.VISIBLE
+                    }
+                }
+
+                override fun onFailure(call: retrofit2.Call<KakaoSearchResponse>, t: Throwable) {
+                    pbLoading.visibility = android.view.View.GONE
+                    Toast.makeText(this@MapActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    tvEmpty.text = "네트워크 오류 발생"
+                    tvEmpty.visibility = android.view.View.VISIBLE
+                }
+            })
         }
+
+        dialog.show()
     }
 
-    private fun updateEditModeForegrounds() {
-        if (isEditMode) {
-            binding.llSpeedGroup.foreground = HatchedDrawable(binding.llSpeedGroup)
-            binding.llStatusGroup.foreground = HatchedDrawable(binding.llStatusGroup)
-            binding.llOffset.foreground = HatchedDrawable(binding.llOffset)
-        } else {
-            binding.llSpeedGroup.foreground = null
-            binding.llStatusGroup.foreground = null
-            binding.llOffset.foreground = null
-        }
-    }
 }
-
-private class HatchedDrawable(private val targetView: View, baseColor: Int = android.graphics.Color.parseColor("#33FFC107")) : android.graphics.drawable.Drawable() {
-    private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        color = android.graphics.Color.parseColor("#80FFC107") // Semi-transparent yellow stripes
-        style = android.graphics.Paint.Style.STROKE
-    }
-    private val bgPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        color = baseColor
-        style = android.graphics.Paint.Style.FILL
-    }
-    private val cornerPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        color = android.graphics.Color.parseColor("#FF5722") // Deep orange color for corners
-        style = android.graphics.Paint.Style.STROKE
-    }
-
-    override fun draw(canvas: android.graphics.Canvas) {
-        val bounds = bounds
-        val width = bounds.width()
-        val height = bounds.height()
-
-        // Get view scales to keep physical rendering size constant
-        val scaleX = Math.max(0.1f, targetView.scaleX)
-        val scaleY = Math.max(0.1f, targetView.scaleY)
-
-        // Draw semi-transparent background
-        canvas.drawRect(bounds, bgPaint)
-
-        // Draw diagonal stripes (lines at 45 degrees)
-        paint.strokeWidth = 6f / scaleX
-        val step = 30f / scaleX // Distance between stripes
-        var x = -height.toFloat()
-        while (x < width) {
-            canvas.drawLine(x, 0f, (x + height), height.toFloat(), paint)
-            x += step
-        }
-
-        // Draw corner brackets (always around 80 screen pixels size)
-        cornerPaint.strokeWidth = 20f / scaleX
-        val cornerSizeX = 80f / scaleX
-        val cornerSizeY = 80f / scaleY
-        
-        // Top-left
-        canvas.drawLine(0f, 0f, cornerSizeX, 0f, cornerPaint)
-        canvas.drawLine(0f, 0f, 0f, cornerSizeY, cornerPaint)
-        
-        // Top-right
-        canvas.drawLine(width - cornerSizeX, 0f, width.toFloat(), 0f, cornerPaint)
-        canvas.drawLine(width.toFloat(), 0f, width.toFloat(), cornerSizeY, cornerPaint)
-        
-        // Bottom-left
-        canvas.drawLine(0f, height.toFloat(), cornerSizeX, height.toFloat(), cornerPaint)
-        canvas.drawLine(0f, height - cornerSizeY, 0f, height.toFloat(), cornerPaint)
-        
-        // Bottom-right
-        canvas.drawLine(width - cornerSizeX, height.toFloat(), width.toFloat(), height.toFloat(), cornerPaint)
-        canvas.drawLine(width.toFloat(), height - cornerSizeY, width.toFloat(), height.toFloat(), cornerPaint)
-    }
-
-    override fun setAlpha(alpha: Int) {
-        paint.alpha = alpha
-        bgPaint.alpha = alpha
-        cornerPaint.alpha = alpha
-    }
-
-    override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {
-        paint.colorFilter = colorFilter
-        bgPaint.colorFilter = colorFilter
-        cornerPaint.colorFilter = colorFilter
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun getOpacity(): Int {
-        return android.graphics.PixelFormat.TRANSLUCENT
-    }
-}
-

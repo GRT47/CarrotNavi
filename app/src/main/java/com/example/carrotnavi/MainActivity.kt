@@ -5,6 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.lifecycle.Observer
+import android.graphics.Color
+import android.app.AlertDialog
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,6 +22,17 @@ import androidx.core.view.WindowInsetsCompat
 import android.view.View
 
 class MainActivity : AppCompatActivity() {
+
+    private val searchRetrofit by lazy {
+        retrofit2.Retrofit.Builder()
+            .baseUrl("https://dapi.kakao.com/")
+            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
+            .build()
+    }
+    private val kakaoSearchApi: KakaoSearchApi by lazy {
+        searchRetrofit.create(KakaoSearchApi::class.java)
+    }
+
 
     private lateinit var binding: ActivityMainBinding
 
@@ -39,44 +56,66 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        checkAndHandleSharedIntent()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE).edit().putBoolean("IS_DEBUG_MODE", false).apply()
         super.onCreate(savedInstanceState)
-        
-        dumpTmapAudioSettings()
-        
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-        
-        // 자동 업데이트 체크
-        AutoUpdater.checkForUpdates(this)
-
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val savedAppKey = sharedPref.getString("APP_KEY", "")
-        val savedTargetIp = sharedPref.getString("TARGET_IP", "255.255.255.255")
-        val savedReqBackground = sharedPref.getBoolean("REQ_BACKGROUND", false)
-        val savedBlockSpeedOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
-        val savedDistanceFormatKm = sharedPref.getBoolean("USE_KM_DISTANCE_FORMAT", true)
-        
-        binding.etAppKey.setText(savedAppKey)
-        binding.etTargetIp.setText(savedTargetIp)
-        binding.cbBackgroundLocation.isChecked = savedReqBackground
-        binding.etBlockSpeedOffset.setText(savedBlockSpeedOffset.toString())
-        binding.cbDistanceFormatKm.isChecked = savedDistanceFormatKm
 
-        try {
-            val pInfo = packageManager.getPackageInfo(packageName, 0)
-            binding.tvAppVersion.text = "버전: ${pInfo.versionName}"
-        } catch (e: Exception) {
-            binding.tvAppVersion.text = "버전: -"
+        // Load saved values
+        val savedAppKey = sharedPref.getString("APP_KEY", "")
+        binding.etAppKey.setText(savedAppKey)
+        binding.etKakaoNativeAppKey.setText(sharedPref.getString("KAKAO_NATIVE_APP_KEY", ""))
+        binding.etKakaoRestApiKey.setText(sharedPref.getString("KAKAO_REST_API_KEY", ""))
+        binding.cbBackgroundLocation.isChecked = sharedPref.getBoolean("REQ_BACKGROUND", false)
+        binding.cbDistanceFormatKm.isChecked = sharedPref.getBoolean("USE_KM_DISTANCE_FORMAT", true)
+        
+        
+        // Load and setup Offset Slider
+        val currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
+        binding.sliderOffset.value = currentOffset.toFloat()
+        binding.tvOffsetValue.text = if (currentOffset > 0) "+$currentOffset km/h" else "$currentOffset km/h"
+        
+        binding.sliderOffset.addOnChangeListener { _, value, _ ->
+            val intValue = value.toInt()
+            binding.tvOffsetValue.text = if (intValue > 0) "+$intValue km/h" else "$intValue km/h"
+            sharedPref.edit().putInt("BLOCK_SPEED_OFFSET", intValue).apply()
         }
 
-        // Start Web Server Service
+        // Load and setup Boost Mode
+        val currentBoostMode = sharedPref.getInt("BLOCK_SPEED_BOOST_MODE", 0)
+        if (currentBoostMode == 0) {
+            binding.rbBoostProgressive.isChecked = true
+        } else {
+            binding.rbBoostFixed.isChecked = true
+        }
+        binding.rgBoostMode.setOnCheckedChangeListener { _, checkedId ->
+            val mode = if (checkedId == binding.rbBoostProgressive.id) 0 else 1
+            sharedPref.edit().putInt("BLOCK_SPEED_BOOST_MODE", mode).apply()
+        }
+
+        // Load and setup Fake Drop Slider
+        val currentFakeDrop = sharedPref.getInt("BLOCK_SPEED_FAKE_DROP", 10)
+        binding.sliderFakeDrop.value = currentFakeDrop.toFloat()
+        binding.tvFakeDropValue.text = "$currentFakeDrop km/h"
+        
+        binding.sliderFakeDrop.addOnChangeListener { _, value, _ ->
+            val intValue = value.toInt()
+            binding.tvFakeDropValue.text = "$intValue km/h"
+            sharedPref.edit().putInt("BLOCK_SPEED_FAKE_DROP", intValue).apply()
+        }
+
+
+        // Start WebServer Service for IP reporting
         val webServerIntent = Intent(this, WebServerService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(webServerIntent)
@@ -86,6 +125,17 @@ class MainActivity : AppCompatActivity() {
 
         // Show IP Address
         updateWebServerInfo(sharedPref)
+        
+        // OP Connection State Observer
+        OpenpilotStateRepository.state.observe(this, Observer { state ->
+            if (state.ip.isNotEmpty() && state.carrot2.isNotEmpty()) {
+                binding.tvOpStatus.text = "연결됨 (${state.ip})"
+                binding.tvOpStatus.setTextColor(Color.parseColor("#4CAF50"))
+            } else {
+                binding.tvOpStatus.text = "연결 안됨"
+                binding.tvOpStatus.setTextColor(Color.parseColor("#FF5252"))
+            }
+        })
 
         // 자동 실행 로직
         val shouldAutoStart = intent.getBooleanExtra("auto_start", true)
@@ -95,10 +145,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnStartNavi.setOnClickListener {
             val appKey = binding.etAppKey.text.toString().trim()
-            val targetIp = binding.etTargetIp.text.toString().trim()
             val reqBackground = binding.cbBackgroundLocation.isChecked
             val distanceFormatKm = binding.cbDistanceFormatKm.isChecked
-            val blockSpeedOffset = binding.etBlockSpeedOffset.text.toString().toIntOrNull() ?: 0
 
             if (appKey.isEmpty()) {
                 Toast.makeText(this, "App Key를 입력하세요.", Toast.LENGTH_SHORT).show()
@@ -108,9 +156,9 @@ class MainActivity : AppCompatActivity() {
             // Save to SharedPreferences
             sharedPref.edit().apply {
                 putString("APP_KEY", appKey)
-                putString("TARGET_IP", targetIp)
+                putString("KAKAO_NATIVE_APP_KEY", binding.etKakaoNativeAppKey.text.toString().trim())
+                putString("KAKAO_REST_API_KEY", binding.etKakaoRestApiKey.text.toString().trim())
                 putBoolean("REQ_BACKGROUND", reqBackground)
-                putInt("BLOCK_SPEED_OFFSET", blockSpeedOffset)
                 putBoolean("USE_KM_DISTANCE_FORMAT", distanceFormatKm)
                 apply()
             }
@@ -118,50 +166,88 @@ class MainActivity : AppCompatActivity() {
             checkPermissionsAndStart()
         }
 
-        binding.btnRemoteServer.setOnClickListener {
-            val layout = android.widget.LinearLayout(this).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(50, 40, 50, 0)
+
+
+    }
+
+    
+        private fun checkAndHandleSharedIntent() {
+        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+            val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return
+            
+            // Extract keyword
+            val cleanText = sharedText.replace(Regex("\\[.*?\\]"), "")
+                .replace(Regex("http[s]?://\\S+"), "")
+                .trim()
+                
+            val lines = cleanText.lines().map { it.trim() }.filter { it.isNotEmpty() }
+            if (lines.isEmpty()) return
+            
+            // Search only the address (usually the last line before URL)
+            val keyword = lines.last()
+            
+            val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+            val restApiKey = sharedPref.getString("KAKAO_REST_API_KEY", "") ?: ""
+            if (restApiKey.isEmpty()) {
+                Toast.makeText(this, "Kakao REST API 키가 설정되지 않았습니다.", Toast.LENGTH_SHORT).show()
+                return
             }
 
-            val etServerUrl = android.widget.EditText(this).apply {
-                hint = "서버 주소 (예: http://192.168.0.10:5000)"
-                setText(sharedPref.getString("IP_REPORT_SERVER_URL", ""))
-                inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
-            }
-
-            val etDeviceId = android.widget.EditText(this).apply {
-                hint = "기기 ID (예: carrot)"
-                setText(sharedPref.getString("DEVICE_ID", "carrot"))
-                inputType = android.text.InputType.TYPE_CLASS_TEXT
-            }
-
-            val tvInfo = android.widget.TextView(this).apply {
-                text = "Docker 리다이렉트 서버를 구축한 경우에만 사용하세요.\n서버 주소가 비어있으면 이 기능은 비활성화됩니다."
-                textSize = 12f
-                setTextColor(android.graphics.Color.GRAY)
-                setPadding(0, 20, 0, 0)
-            }
-
-            layout.addView(etServerUrl)
-            layout.addView(etDeviceId)
-            layout.addView(tvInfo)
-
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("외부 리다이렉트 서버 설정")
-                .setView(layout)
-                .setPositiveButton("저장") { _, _ ->
-                    val serverUrl = etServerUrl.text.toString().trim()
-                    val deviceId = etDeviceId.text.toString().trim()
-                    sharedPref.edit()
-                        .putString("IP_REPORT_SERVER_URL", serverUrl)
-                        .putString("DEVICE_ID", if (deviceId.isEmpty()) "carrot" else deviceId)
-                        .apply()
-                    updateWebServerInfo(sharedPref)
-                    Toast.makeText(this, "설정이 저장되었습니다.", Toast.LENGTH_SHORT).show()
+            binding.tvOpStatus.text = "공유된 주소 검색중..."
+            val authorizationHeader = "KakaoAK $restApiKey"
+            
+            kakaoSearchApi.searchKeyword(authorizationHeader, keyword).enqueue(object : retrofit2.Callback<KakaoSearchResponse> {
+                override fun onResponse(call: retrofit2.Call<KakaoSearchResponse>, response: retrofit2.Response<KakaoSearchResponse>) {
+                    val docs = response.body()?.documents
+                    if (!docs.isNullOrEmpty()) {
+                        val doc = docs[0]
+                        Toast.makeText(this@MainActivity, "'${doc.place_name.ifEmpty { doc.road_address_name }}' (으)로 바로 안내를 시작합니다.", Toast.LENGTH_SHORT).show()
+                        val newIntent = Intent(this@MainActivity, KakaoMapActivity::class.java).apply {
+                            putExtra("dest_place_name", doc.place_name)
+                            putExtra("dest_road_address_name", doc.road_address_name)
+                            putExtra("dest_address_name", doc.address_name)
+                            putExtra("dest_x", doc.x)
+                            putExtra("dest_y", doc.y)
+                        }
+                        startActivity(newIntent)
+                    } else if (lines.size > 1) {
+                        // Retry with the first line if address search failed
+                        kakaoSearchApi.searchKeyword(authorizationHeader, lines[0]).enqueue(object : retrofit2.Callback<KakaoSearchResponse> {
+                            override fun onResponse(call: retrofit2.Call<KakaoSearchResponse>, response: retrofit2.Response<KakaoSearchResponse>) {
+                                val retryDocs = response.body()?.documents
+                                if (!retryDocs.isNullOrEmpty()) {
+                                    val doc = retryDocs[0]
+                                    Toast.makeText(this@MainActivity, "'${doc.place_name.ifEmpty { doc.road_address_name }}' (으)로 설정합니다.", Toast.LENGTH_SHORT).show()
+                                    val newIntent = Intent(this@MainActivity, KakaoMapActivity::class.java).apply {
+                                        putExtra("dest_place_name", doc.place_name)
+                                        putExtra("dest_road_address_name", doc.road_address_name)
+                                        putExtra("dest_address_name", doc.address_name)
+                                        putExtra("dest_x", doc.x)
+                                        putExtra("dest_y", doc.y)
+                                    }
+                                    startActivity(newIntent)
+                                } else {
+                                    Toast.makeText(this@MainActivity, "공유된 주소를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                    binding.tvOpStatus.text = "검색 실패"
+                                }
+                            }
+                            override fun onFailure(call: retrofit2.Call<KakaoSearchResponse>, t: Throwable) {
+                                binding.tvOpStatus.text = "검색 오류"
+                            }
+                        })
+                    } else {
+                        Toast.makeText(this@MainActivity, "공유된 주소를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        binding.tvOpStatus.text = "검색 실패"
+                    }
                 }
-                .setNegativeButton("취소", null)
-                .show()
+                override fun onFailure(call: retrofit2.Call<KakaoSearchResponse>, t: Throwable) {
+                    Toast.makeText(this@MainActivity, "검색 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+                    binding.tvOpStatus.text = "검색 오류"
+                }
+            })
+            
+            // clear intent action so it doesn't trigger again on rotation
+            intent.action = Intent.ACTION_MAIN
         }
     }
 
@@ -203,6 +289,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, MapActivity::class.java)
         startActivity(intent)
     }
+
 
     private fun dumpTmapAudioSettings() {
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager

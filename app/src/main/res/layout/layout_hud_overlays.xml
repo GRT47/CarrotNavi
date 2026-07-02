@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='utf-8'?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 상단 UI 그룹 (오버레이) -->
+    <LinearLayout
+        android:id="@+id/llTopUiGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="16dp"
+        android:layout_gravity="top|end"
+        android:padding="8dp"
+        android:elevation="6dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+            
+            <View
+                android:id="@+id/vConnectionDot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/shape_circle_gray"
+                android:layout_marginEnd="6dp"/>
+            <TextView
+                android:id="@+id/tvConnectionStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OP 연결 대기"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDx="1" android:shadowDy="1" android:shadowRadius="2" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvCarrotVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ver: -"
+            android:textColor="#EEEEEE"
+            android:textSize="10sp"
+            android:shadowColor="#000000"
+            android:shadowDx="1" android:shadowDy="1" android:shadowRadius="2" />
+        <TextView
+            android:id="@+id/tvCarrotIp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="IP: -"
+            android:textColor="#CCCCCC"
+            android:textSize="10sp"
+            android:shadowColor="#000000"
+            android:shadowDx="1" android:shadowDy="1" android:shadowRadius="2" />
+    </LinearLayout>
+
+
+    
+    <LinearLayout android:id="@+id/llSpeedGroup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_margin="16dp" android:layout_gravity="top|start" android:paddingHorizontal="12dp" android:paddingVertical="8dp" android:elevation="6dp">
+
+        
+        <LinearLayout android:id="@+id/llRoadSpeedLimit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center">
+
+            
+            
+
+            
+            <FrameLayout android:layout_width="72dp" android:layout_height="72dp" android:layout_marginBottom="6dp">
+                
+                <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/bg_speed_limit_blue" />
+                    
+                <TextView android:id="@+id/tvRoadSpeedLimit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="-" android:textColor="#000000" android:textSize="28sp" android:textStyle="bold" />
+            </FrameLayout>
+
+            
+            
+        </LinearLayout>
+
+        
+
+    </LinearLayout>
+
+    
+    
+    <!-- 구간단속 정보 -->
+    <LinearLayout
+        android:id="@+id/llBlockInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:visibility="gone">
+        
+        <TextView
+            android:id="@+id/tvBlockAvgSpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textColor="#FFEB3B"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+            
+        <TextView
+            android:id="@+id/tvBlockDistTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="남은 0m"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/llStatusGroup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="80dp" android:layout_marginEnd="16dp" android:layout_gravity="top|end" android:elevation="6dp">
+        <LinearLayout android:id="@+id/llGpsInfo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:gravity="center" android:background="@drawable/bg_text_pill">
+            <ImageView android:id="@+id/ivGpsIcon" android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/ic_satellite" android:layout_marginEnd="6dp" android:contentDescription="GPS Status Icon" />
+            <TextView android:id="@+id/tvGpsStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="GPS 상태" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    
+    
+
+    
+    <LinearLayout android:id="@+id/llBottomLeftOverlays" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_gravity="bottom|start" android:layout_marginStart="16dp" android:layout_marginBottom="32dp" android:elevation="6dp">
+
+        
+
+
+        
+
+    </LinearLayout>
+
+    
+    <ImageButton android:id="@+id/btnRestoreDefaults" android:layout_width="48dp" android:layout_height="48dp" android:layout_gravity="bottom|end" android:layout_marginEnd="16dp" android:layout_marginBottom="92dp" android:src="@android:drawable/ic_menu_revert" android:background="@drawable/shape_circle_gray" android:scaleType="center" android:elevation="6dp" android:visibility="gone" />
+
+    
+    <ImageButton
+        android:id="@+id/btnSearchAddress"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="196dp"
+        android:layout_marginBottom="32dp"
+        android:src="@android:drawable/ic_menu_search"
+        android:background="@drawable/shape_circle_gray"
+        android:scaleType="center"
+        android:elevation="6dp"
+        android:visibility="visible" />
+    
+    
+    <ImageButton android:id="@+id/btnSettings" android:layout_width="48dp" android:layout_height="48dp" android:layout_gravity="bottom|end" android:layout_marginEnd="136dp" android:layout_marginBottom="32dp" android:src="@android:drawable/ic_menu_preferences" android:background="@drawable/shape_circle_gray" android:scaleType="center" android:elevation="6dp" />
+
+    <ImageButton android:id="@+id/btnToggleVisibility" android:layout_width="48dp" android:layout_height="48dp" android:layout_gravity="bottom|end" android:layout_marginEnd="76dp" android:layout_marginBottom="32dp" android:src="@android:drawable/ic_menu_view" android:background="@drawable/shape_circle_gray" android:scaleType="center" android:elevation="6dp" />
+
+    
+    <ImageButton android:id="@+id/btnEditMode" android:layout_width="48dp" android:layout_height="48dp" android:layout_gravity="bottom|end" android:layout_marginEnd="16dp" android:layout_marginBottom="32dp" android:src="@android:drawable/ic_menu_edit" android:background="@drawable/shape_circle_gray" android:scaleType="center" android:elevation="6dp" />
+
+</merge>
