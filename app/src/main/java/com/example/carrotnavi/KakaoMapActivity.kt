@@ -582,25 +582,18 @@ class KakaoMapActivity : AppCompatActivity(),
         com.kakaomobility.knsdk.KNSDK.makeTripWithStart(startPoi, goalPoi, null) { error, trip ->
             runOnUiThread {
             if (error != null || trip == null) {
-                Toast.makeText(this@KakaoMapActivity, "경로 탐색 실패: ${error?.msg ?: "?????녿뒗 ?ㅻ쪟"}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@KakaoMapActivity, "경로 탐색 실패: ${error?.msg ?: "알 수 없는 오류"}", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this@KakaoMapActivity, "경로 안내를 시작합니다.", Toast.LENGTH_SHORT).show()
                 val guidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance()!!
-                try { guidance.stop() } catch(e: Exception) {}
                 
-                guidance.guideStateDelegate = this@KakaoMapActivity
-                guidance.routeGuideDelegate = this@KakaoMapActivity
-                guidance.safetyGuideDelegate = this@KakaoMapActivity
-                guidance.voiceGuideDelegate = this@KakaoMapActivity
-                guidance.citsGuideDelegate = this@KakaoMapActivity
-                guidance.locationGuideDelegate = this@KakaoMapActivity
-
-                binding.naviView.initWithGuidance(
-                    guidance,
+                guidance.startWithTrip(
                     trip,
                     com.kakaomobility.knsdk.KNRoutePriority.KNRoutePriority_Recommand,
                     com.kakaomobility.knsdk.KNRouteAvoidOption.KNRouteAvoidOption_None.value
                 )
+                
+                intent.removeExtra("dest_place_name")
             }
         }
     }
