@@ -138,9 +138,13 @@ class MainActivity : AppCompatActivity() {
         })
 
         // 자동 실행 로직
-        val shouldAutoStart = intent.getBooleanExtra("auto_start", true)
-        if (!savedAppKey.isNullOrEmpty() && shouldAutoStart) {
-            checkPermissionsAndStart()
+        if (intent?.action == Intent.ACTION_SEND) {
+            checkAndHandleSharedIntent()   // 공유로 진입: 자동실행 금지
+        } else {
+            val shouldAutoStart = intent.getBooleanExtra("auto_start", true)
+            if (!savedAppKey.isNullOrEmpty() && shouldAutoStart) {
+                checkPermissionsAndStart()
+            }
         }
 
         binding.btnStartNavi.setOnClickListener {

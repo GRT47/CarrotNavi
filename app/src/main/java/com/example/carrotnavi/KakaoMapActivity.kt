@@ -88,10 +88,13 @@ class KakaoMapActivity : AppCompatActivity(),
 
     
         
+    companion object {
+        private var knsdkInitialized = false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE).edit().putBoolean("IS_DEBUG_MODE", false).apply()
         super.onCreate(savedInstanceState)
-        
         
         ActivityCompat.requestPermissions(
             this,
@@ -105,93 +108,91 @@ class KakaoMapActivity : AppCompatActivity(),
         sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         sharedPref.edit().putString("ACTIVE_NAVI", "kakao").apply()
 
+        val dbPath = filesDir.absolutePath + "/knsdk"
+        val nativeAppKey = sharedPref.getString("KAKAO_NATIVE_APP_KEY", "") ?: ""
+        if (nativeAppKey.isEmpty()) {
+            Toast.makeText(this, "Kakao Native App Key가 설정되지 않았습니다.", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
         try {
-            val dbPath = filesDir.absolutePath + "/knsdk"
-            Log.d("CarrotNavi", "Installing KNSDK to: $dbPath")
-            KNSDK.install(application, dbPath)
-            
-            val nativeAppKey = sharedPref.getString("KAKAO_NATIVE_APP_KEY", "") ?: ""
-            if (nativeAppKey.isEmpty()) {
-                Toast.makeText(this, "Kakao Native App Key媛 ?ㅼ젙?섏? ?딆븯?듬땲??", Toast.LENGTH_SHORT).show()
-                finish()
-                return
-            }
-
-            KNSDK.initializeWithAppKey(
-                nativeAppKey,
-                "1.0",
-                "user_001",
-                "ko",
-                com.kakaomobility.knsdk.KNLanguageType.KNLanguageType_KOREAN
-            ) { error ->
-                if (error == null) {
-                    Log.d("CarrotNavi", "KNSDK Init Success")
-                    runOnUiThread { 
-                        binding = ActivityKakaoMapBinding.inflate(layoutInflater)
-                        setContentView(binding.root)
-                        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
-                        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
-                            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-                            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-                            insets
+            if (knsdkInitialized) {
+                setupContentAndStart()
+            } else {
+                Log.d("CarrotNavi", "Installing KNSDK to: $dbPath")
+                KNSDK.install(application, dbPath)
+                KNSDK.initializeWithAppKey(
+                    nativeAppKey,
+                    "1.0",
+                    "user_001",
+                    "ko",
+                    com.kakaomobility.knsdk.KNLanguageType.KNLanguageType_KOREAN
+                ) { error ->
+                    runOnUiThread {
+                        if (error == null) {
+                            Log.d("CarrotNavi", "KNSDK Init Success")
+                            knsdkInitialized = true
+                            setupContentAndStart()
+                        } else {
+                            Log.e("CarrotNavi", "KNSDK Init Failed: ${error.code} / ${error.msg}")
+                            Toast.makeText(this@KakaoMapActivity, "지도 초기화 실패: ${error.msg}", Toast.LENGTH_LONG).show()
+                            finish()
                         }
-                        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
-                        naviView = binding.naviView
-                        
-                        val hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
-                        hudOverlayManager = HudOverlayManager(this@KakaoMapActivity, hudBinding, this@KakaoMapActivity)
-                        
-                        setupUI()
-                        setupObservers()
-                        
-                        startSafeDrivingMode()
-                        
-                        val destPlaceName = intent.getStringExtra("dest_place_name")
-                        if (destPlaceName != null) {
-                            binding.llLoadingOverlay.visibility = android.view.View.VISIBLE
-                            val destRoadAddressName = intent.getStringExtra("dest_road_address_name") ?: ""
-                            val destAddressName = intent.getStringExtra("dest_address_name") ?: ""
-                            val destX = intent.getStringExtra("dest_x") ?: ""
-                            val destY = intent.getStringExtra("dest_y") ?: ""
-                            
-                            val doc = KakaoDocument(destPlaceName, destRoadAddressName, destAddressName, destX, destY)
-                            
-                            if (intent.getBooleanExtra("auto_start_navi", false)) {
-                                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                                    binding.llLoadingOverlay.visibility = android.view.View.GONE
-                                    startRouteGuidance(doc)
-                                }, 1000)
-                            } else {
-                                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                                    binding.llLoadingOverlay.visibility = android.view.View.GONE
-                                    val destName = destPlaceName.ifEmpty { destRoadAddressName.ifEmpty { destAddressName } }
-                                    showPreviewOverlay(doc, destName)
-                                }, 1000)
-                            }
-                        }
- 
-                        startUdpSenderService()
-
-
                     }
-                } else {
-                    Log.e("CarrotNavi", "KNSDK Init Failed: ${error.code} / ${error.msg}")
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
 
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                locationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER, 0L, 0f, this)
-            }
-        } catch (e: SecurityException) {
-            e.printStackTrace()
+    private fun setupContentAndStart() {
+        binding = ActivityKakaoMapBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
+        naviView = binding.naviView
+        
+        val hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
+        hudOverlayManager = HudOverlayManager(this@KakaoMapActivity, hudBinding, this@KakaoMapActivity)
+        
+        setupUI()
+        setupObservers()
+        
+        startSafeDrivingMode()
+        
+        val destPlaceName = intent.getStringExtra("dest_place_name")
+        if (destPlaceName != null) {
+            binding.llLoadingOverlay.visibility = android.view.View.VISIBLE
+            val destRoadAddressName = intent.getStringExtra("dest_road_address_name") ?: ""
+            val destAddressName = intent.getStringExtra("dest_address_name") ?: ""
+            val destX = intent.getStringExtra("dest_x") ?: ""
+            val destY = intent.getStringExtra("dest_y") ?: ""
+            
+            val doc = KakaoDocument(destPlaceName, destRoadAddressName, destAddressName, destX, destY)
+            
+            if (intent.getBooleanExtra("auto_start_navi", false)) {
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    binding.llLoadingOverlay.visibility = android.view.View.GONE
+                    startRouteGuidance(doc)
+                }, 1000)
+            } else {
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    binding.llLoadingOverlay.visibility = android.view.View.GONE
+                    val destName = destPlaceName.ifEmpty { destRoadAddressName.ifEmpty { destAddressName } }
+                    showPreviewOverlay(doc, destName)
+                }, 1000)
+            }
+        }
+
+        startUdpSenderService()
+
     }
 
     private fun setupUI() {
