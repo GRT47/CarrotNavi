@@ -599,11 +599,18 @@ class KakaoMapActivity : AppCompatActivity(),
                 Toast.makeText(this@KakaoMapActivity, "경로 안내를 시작합니다.", Toast.LENGTH_SHORT).show()
                 val guidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance()!!
                 
-                guidance.startWithTrip(
+                binding.naviView.guideNewDestinations(
                     trip,
                     com.kakaomobility.knsdk.KNRoutePriority.KNRoutePriority_Recommand,
                     com.kakaomobility.knsdk.KNRouteAvoidOption.KNRouteAvoidOption_None.value
                 )
+
+                guidance.guideStateDelegate = this@KakaoMapActivity
+                guidance.routeGuideDelegate = this@KakaoMapActivity
+                guidance.safetyGuideDelegate = this@KakaoMapActivity
+                guidance.voiceGuideDelegate = this@KakaoMapActivity
+                guidance.citsGuideDelegate = this@KakaoMapActivity
+                guidance.locationGuideDelegate = this@KakaoMapActivity
                 
                 intent.removeExtra("dest_place_name")
             }
