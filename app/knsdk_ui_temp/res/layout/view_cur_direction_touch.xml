@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cur_direction_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:background="@color/primary_800"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/cur_direction_img"
+        android:layout_width="@dimen/size_36"
+        android:layout_height="@dimen/size_36"
+        android:layout_marginStart="@dimen/size_8"
+        android:layout_marginTop="@dimen/size_5"
+        android:scaleType="fitXY"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/cur_direction_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_8"
+        style="@style/NaviRobotoBold.White.Size25"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@id/cur_direction_img"
+        app:layout_constraintTop_toTopOf="@id/cur_direction_img"
+        app:layout_constraintBottom_toBottomOf="@id/cur_direction_img">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/cur_direction_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_2"
+        style="@style/NaviRobotoBold.White.Size32"
+        android:importantForAccessibility="no"
+        app:layout_constraintBaseline_toBaselineOf="@id/cur_direction_distance"
+        app:layout_constraintStart_toEndOf="@id/cur_direction_distance">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNMarqueeTextView
+        android:id="@+id/cur_direction_marquee_name"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_12"
+        android:layout_marginEnd="@dimen/size_16"
+        android:gravity="start|center_vertical"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@id/cur_direction_unit"
+        app:layout_constraintTop_toTopOf="@id/cur_direction_distance"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/cur_direction_distance">
+
+    </com.kakaomobility.knsdk.ui.view.KNMarqueeTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/cur_direction_name"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_12"
+        android:layout_marginEnd="@dimen/size_16"
+        android:maxLines="2"
+        android:ellipsize="end"
+        style="@style/NaviNotoRegular.White.Size17"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@id/cur_direction_unit"
+        app:layout_constraintTop_toTopOf="@id/cur_direction_distance"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/cur_direction_distance">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <View
+        android:id="@+id/cur_direction_bottom_line"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0_5"
+        android:layout_marginTop="@dimen/size_5"
+        android:background="@color/color_33000000"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cur_direction_img"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </View>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

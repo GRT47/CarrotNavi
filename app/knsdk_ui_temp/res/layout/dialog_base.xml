@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- dialog default layout -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dialog_navi_ll_rootview"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:importantForAccessibility="no"
+    android:background="@android:color/white">
+
+    <!-- content layout : scrollView -->
+    <LinearLayout
+        android:id="@+id/dialog_navi_ll_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:minHeight="@dimen/size_64"
+        android:importantForAccessibility="no"
+        android:orientation="vertical">
+
+        <ScrollView
+            android:id="@+id/dialog_navi_sv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            android:clipToPadding="false">
+        </ScrollView>
+
+    </LinearLayout>
+
+    <!-- custom content layout panel : custom view add -->
+    <FrameLayout
+        android:id="@+id/dialog_navi_fl_custom_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
+        android:layout_weight="1">
+
+        <ScrollView
+            android:id="@+id/dialog_navi_sv_custom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no">
+
+        </ScrollView>
+
+    </FrameLayout>
+
+    <!-- buttons layout -->
+    <LinearLayout
+        android:id="@+id/dialog_navi_ll_btns_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:importantForAccessibility="no">
+
+        <!-- negative -->
+        <com.kakaomobility.knsdk.ui.view.KNNaviButton
+            android:id="@+id/dialog_navi_btn_negative"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/size_55"
+            android:layout_weight="1"
+            android:focusable="false"
+            android:background="@drawable/kn_dialog_base_bg_rect_white_with_stroke"
+            android:textColor="#000000"
+            style="@style/text_middle_black_1">
+
+        </com.kakaomobility.knsdk.ui.view.KNNaviButton>
+
+        <!-- positive -->
+        <com.kakaomobility.knsdk.ui.view.KNNaviButton
+            android:id="@+id/dialog_navi_btn_positive"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/size_55"
+            android:layout_weight="1"
+            android:focusable="false"
+            android:background="@drawable/kn_dialog_base_selector_btn_rect_blue"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            style="@style/text_middle_white_1">
+
+        </com.kakaomobility.knsdk.ui.view.KNNaviButton>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,470 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:importantForAccessibility="no"
+    android:background="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_safety_constraint_layout"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/size_48"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/bottom_safety_address_layout"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0"
+            android:gravity="center"
+            android:focusable="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/bottom_safety_btn_finish_layout">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/bottom_safety_address_img"
+                android:layout_width="@dimen/size_24"
+                android:layout_height="@dimen/size_24"
+                android:layout_marginStart="@dimen/size_17"
+                android:importantForAccessibility="no"
+                android:src="@drawable/drive_now_me"
+                android:scaleType="fitXY" >
+
+            </androidx.appcompat.widget.AppCompatImageView>
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/bottom_safety_address_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                style="@style/NaviNotoRegular.Gray900.Size18"
+                android:singleLine="true"
+                android:gravity="center_vertical"
+                android:layout_marginStart="@dimen/size_4"
+                android:layout_marginEnd="@dimen/size_17"
+                android:importantForAccessibility="no"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@id/bottom_safety_address_img"
+                app:layout_constraintHorizontal_chainStyle="packed">
+
+            </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_safety_btn_finish_layout"
+            android:layout_width="@dimen/size_88"
+            android:layout_height="@dimen/size_48"
+            android:focusable="true"
+            android:contentDescription="길안내종료"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent" >
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/bottom_safety_btn_finish"
+                android:layout_width="@dimen/size_88"
+                android:layout_height="@dimen/size_48"
+                android:src="@drawable/ic_drive_close"
+                android:padding="@dimen/size_12"
+                android:importantForAccessibility="no"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <View
+            android:id="@+id/bottom_safety_line"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0_5"
+            android:background="@color/gray_250"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+        </View>
+
+        <View
+            android:id="@+id/bottom_safety_line_finish"
+            android:layout_width="@dimen/size_0_5"
+            android:layout_height="@dimen/size_0"
+            android:background="@color/gray_250"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/bottom_safety_btn_finish_layout">
+
+        </View>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_drive_constraint_layout"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_48"
+        android:visibility="gone"
+        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <View
+            android:id="@+id/bottom_drive_line_top"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0_5"
+            android:background="@color/gray_250"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+        </View>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/bottom_drive_btn_refresh"
+            android:layout_width="@dimen/size_76"
+            android:layout_height="@dimen/size_0"
+            android:src="@drawable/ic_drive_refresh"
+            android:padding="@dimen/size_12"
+            android:focusable="true"
+            android:contentDescription="경로 새로고침"
+            android:accessibilityTraversalBefore="@id/bottom_talkback"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
+        <View
+            android:id="@+id/bottom_drive_line_refresh"
+            android:layout_width="@dimen/size_0_5"
+            android:layout_height="@dimen/size_0"
+            android:background="@color/gray_250"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/bottom_drive_btn_refresh">
+
+        </View>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_drive_remain_time_constraint_layout"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/bottom_drive_btn_refresh"
+            app:layout_constraintEnd_toStartOf="@id/bottom_drive_remain_dist_constraint_layout"
+            app:layout_constraintHorizontal_weight="0.3">
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/bottom_drive_remain_time_ampm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:visibility="visible"
+                android:textStyle="bold"
+                android:importantForAccessibility="no"
+                style="@style/NaviNotoBold.Gray900.Size18"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/bottom_drive_remain_time_arrival_text"
+                app:layout_constraintBaseline_toBaselineOf="@id/bottom_drive_remain_time_arrival_text"
+                app:layout_constraintHorizontal_chainStyle="packed">
+
+            </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/bottom_drive_remain_time_arrival_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginStart="@dimen/size_4"
+                android:layout_marginEnd="@dimen/size_4"
+                android:singleLine="true"
+                android:visibility="visible"
+                android:importantForAccessibility="no"
+                style="@style/NaviRobotoBold.Gray900.Size28"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/bottom_drive_remain_time_ampm"
+                app:layout_constraintHorizontal_chainStyle="packed">
+
+            </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/bottom_drive_remain_time_duration_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginStart="@dimen/size_4"
+                android:layout_marginEnd="@dimen/size_4"
+                android:singleLine="true"
+                android:visibility="gone"
+                android:importantForAccessibility="no"
+                style="@style/NaviRobotoBold.Gray900.Size28"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/bottom_drive_remain_time_unit"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_chainStyle="packed">
+
+            </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/bottom_drive_remain_time_unit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:text="@string/bottom_remain_time_take"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:importantForAccessibility="no"
+                style="@style/NaviNotoBold.Gray900.Size18"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/bottom_drive_remain_time_duration_text"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintBaseline_toBaselineOf="@id/bottom_drive_remain_time_duration_text">
+
+            </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_drive_remain_dist_constraint_layout"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/bottom_drive_remain_time_constraint_layout"
+            app:layout_constraintEnd_toStartOf="@id/bottom_drive_goal_layout"
+            app:layout_constraintHorizontal_weight="0.2">
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/bottom_drive_remain_dist_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/NaviRobotoBold.Gray900.Size28"
+                android:textStyle="bold"
+                android:layout_gravity="center"
+                android:singleLine="true"
+                android:importantForAccessibility="no"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/bottom_drive_remain_dist_unit"
+                app:layout_constraintHorizontal_chainStyle="packed">
+
+            </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/bottom_drive_remain_dist_unit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/NaviNotoBold.Gray900.Size18"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/size_4"
+                android:singleLine="true"
+                android:textStyle="bold"
+                android:importantForAccessibility="no"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/bottom_drive_remain_dist_value"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintBaseline_toBaselineOf="@id/bottom_drive_remain_dist_value">
+
+            </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <View
+            android:id="@+id/bottom_talkback"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0"
+            android:accessibilityTraversalBefore="@id/bottom_drive_btn_menu"
+            app:layout_constraintStart_toStartOf="@+id/bottom_drive_remain_time_constraint_layout"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/bottom_drive_remain_dist_constraint_layout"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:focusable="true" />
+
+        <RelativeLayout
+            android:id="@+id/bottom_drive_indoor_remain_dist_constraint_layout"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0"
+            android:visibility="gone"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/bottom_drive_btn_refresh"
+            app:layout_constraintEnd_toStartOf="@id/bottom_drive_goal_layout"
+            app:layout_constraintHorizontal_weight="0.5">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:importantForAccessibility="no"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/bottom_drive_indoor_remain_dist_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    style="@style/NaviNotoRegular.Gray900.Size18"
+                    android:singleLine="true"
+                    android:gravity="center_vertical"
+                    android:includeFontPadding="true"
+                    android:importantForAccessibility="no"
+                    android:text="남은거리" />
+
+                <com.kakaomobility.knsdk.ui.view.KNTextView
+                    android:id="@+id/bottom_drive_indoor_remain_dist_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="400"
+                    style="@style/NaviRobotoBold.Gray900.Size28"
+                    android:textStyle="bold"
+                    android:layout_gravity="center"
+                    android:singleLine="true"
+                    android:importantForAccessibility="no"
+                    android:layout_marginLeft="@dimen/size_16"
+                    app:layout_constraintHorizontal_chainStyle="packed" />
+
+                <com.kakaomobility.knsdk.ui.view.KNTextView
+                    android:id="@+id/bottom_drive_indoor_remain_dist_unit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/NaviNotoBold.Gray900.Size18"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/size_2"
+                    android:singleLine="true"
+                    android:textStyle="bold"
+                    android:text="m"
+                    android:importantForAccessibility="no"
+                    app:layout_constraintHorizontal_chainStyle="packed"
+                    app:layout_constraintBaseline_toBaselineOf="@id/bottom_drive_indoor_remain_dist_value" />
+
+            </LinearLayout>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/bottom_drive_goal_layout"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:focusable="true"
+            android:accessibilityTraversalBefore="@id/bottom_drive_btn_refresh"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/bottom_drive_remain_dist_constraint_layout"
+            app:layout_constraintEnd_toStartOf="@id/bottom_drive_btn_menu"
+            app:layout_constraintHorizontal_weight="0.5">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/bottom_drive_goal_img"
+                android:layout_width="@dimen/size_24"
+                android:layout_height="@dimen/size_24"
+                android:src="@drawable/drive_now_me"
+                android:scaleType="fitXY"
+                android:importantForAccessibility="no"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/bottom_drive_goal_text"
+                app:layout_constraintHorizontal_chainStyle="packed">
+
+            </androidx.appcompat.widget.AppCompatImageView>
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/bottom_drive_goal_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/NaviNotoRegular.Gray900.Size16"
+                android:singleLine="true"
+                android:importantForAccessibility="no"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/bottom_drive_goal_img"
+                app:layout_constraintHorizontal_chainStyle="packed">
+
+            </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/bottom_drive_line_menu"
+            android:layout_width="@dimen/size_0_5"
+            android:layout_height="@dimen/size_0"
+            android:importantForAccessibility="no"
+            android:background="@color/gray_250"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/bottom_drive_btn_menu">
+
+        </View>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/bottom_drive_btn_menu"
+            android:layout_width="@dimen/size_76"
+            android:layout_height="@dimen/size_0"
+            android:src="@drawable/ic_drive_menu"
+            android:padding="@dimen/size_12"
+            android:focusable="true"
+            android:contentDescription="메뉴"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
+        <View
+            android:id="@+id/bottom_drive_line_middle"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0"
+            android:background="@color/gray_250"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bottom_drive_goal_layout">
+
+        </View>
+
+        <View
+            android:id="@+id/bottom_drive_line_bottom"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0_5"
+            android:background="@color/gray_250"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </View>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

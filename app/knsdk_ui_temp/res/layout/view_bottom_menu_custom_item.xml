@@ -1,0 +1,54 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:importantForAccessibility="no"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:id="@+id/item_layout"
+        android:layout_width="@dimen/size_66"
+        android:layout_height="@dimen/size_66"
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/size_7"
+        android:paddingBottom="@dimen/size_7"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/item_icon"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_32"
+            android:layout_alignParentTop="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_drive_menu_3"
+            android:visibility="visible"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:id="@+id/item_text"
+            style="@style/NaviRobotoBold.BlueGray950.Size14"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_20"
+            android:layout_below="@+id/item_icon"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:text="다른경로"
+            android:importantForAccessibility="no"/>
+
+    </RelativeLayout>
+
+    <View
+        android:id="@+id/item_click_bg"
+        android:layout_width="@dimen/size_66"
+        android:layout_height="@dimen/size_66"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@color/color_transparent"
+        android:importantForAccessibility="no"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

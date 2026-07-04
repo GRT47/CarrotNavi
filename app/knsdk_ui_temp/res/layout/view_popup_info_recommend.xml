@@ -1,0 +1,184 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="@dimen/size_0_5"
+    android:paddingTop="@dimen/size_0_5"
+    android:paddingEnd="@dimen/size_0_5"
+    android:paddingBottom="@dimen/size_1_5"
+    android:background="@drawable/shape_aroundinfo"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/popup_info_recommend_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_16"
+        android:layout_marginTop="@dimen/size_20"
+        android:text="@string/recommendinfo_title"
+        android:importantForAccessibility="no"
+        style="@style/NaviNotoBold.Primary800.Size15"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/popup_info_recommend_page_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/size_16"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="@id/popup_info_recommend_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/popup_info_recommend_title">
+
+        <View
+            android:id="@+id/popup_info_recommend_page_indicator_dot3"
+            android:layout_width="@dimen/size_8"
+            android:layout_height="@dimen/size_8"
+            android:importantForAccessibility="no"
+            android:background="@drawable/selector_recommendinfo_dot"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <View
+            android:id="@+id/popup_info_recommend_page_indicator_dot2"
+            android:layout_width="@dimen/size_8"
+            android:layout_height="@dimen/size_8"
+            android:layout_marginEnd="@dimen/size_8"
+            android:background="@drawable/selector_recommendinfo_dot"
+            android:importantForAccessibility="no"
+            app:layout_goneMarginEnd="@dimen/size_0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/popup_info_recommend_page_indicator_dot3"/>
+
+        <View
+            android:id="@+id/popup_info_recommend_page_indicator_dot1"
+            android:layout_width="@dimen/size_8"
+            android:layout_height="@dimen/size_8"
+            android:layout_marginEnd="@dimen/size_8"
+            android:background="@drawable/selector_recommendinfo_dot"
+            android:importantForAccessibility="no"
+            app:layout_goneMarginEnd="@dimen/size_0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/popup_info_recommend_page_indicator_dot2"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/popup_info_recommend_view_pager"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/popup_info_recommend_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/popup_info_recommend_btn_constraint_layout">
+
+    </androidx.viewpager2.widget.ViewPager2>
+
+    <View
+        android:id="@+id/popup_info_recommend_talkback_layout"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/popup_info_recommend_btn_constraint_layout" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/popup_info_recommend_btn_constraint_layout"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_48"
+        android:background="@color/gray_250"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/popup_info_recommend_btn_add_via"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0"
+            android:layout_marginTop="@dimen/size_0_5"
+            android:gravity="center"
+            android:text="@string/aroundinfo_navigate_via"
+            android:background="@drawable/selector_via_close_bg"
+            android:focusable="true"
+            style="@style/NaviNotoRegular.Gray900.Size18"
+            app:layout_constraintHorizontal_weight="0.61"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/popup_info_recommend_btn_close"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/popup_info_recommend_btn_close"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0"
+            android:layout_marginStart="@dimen/size_0_5"
+            android:layout_marginTop="@dimen/size_0_5"
+            android:gravity="center"
+            android:text="@string/aroundinfo_navigate_close"
+            android:background="@drawable/selector_via_close_bg"
+            android:focusable="true"
+            style="@style/NaviNotoRegular.Gray900.Size18"
+            app:layout_constraintHorizontal_weight="0.39"
+            app:layout_constraintStart_toEndOf="@id/popup_info_recommend_btn_add_via"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/popup_info_recommend_empty_layout"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:background="@color/white"
+        android:visibility="gone"
+        android:focusable="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/popup_info_recommend_empty_icon"
+            android:layout_width="@dimen/size_32"
+            android:layout_height="@dimen/size_32"
+            android:layout_marginBottom="@dimen/size_5"
+            android:src="@drawable/ic_popup_notice_grey"
+            android:importantForAccessibility="no"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/popup_info_recommend_empty_title">
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/popup_info_recommend_empty_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/size_5"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            style="@style/NaviNotoRegular.Black.Size18"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/popup_info_recommend_empty_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

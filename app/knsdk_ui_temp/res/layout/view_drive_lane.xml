@@ -1,0 +1,60 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lane_view_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:importantForAccessibility="no"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.kakaomobility.knsdk.ui.view.KNDriveLaneCodeView
+        android:id="@+id/lane_code"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_46"
+        android:layout_marginTop="@dimen/size_21_5"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/lane_dist_text"
+        android:layout_width="@dimen/size_57"
+        android:layout_height="@dimen/size_26"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/size_4"
+        android:importantForAccessibility="no"
+        app:strokeEnable="true"
+        app:strokeWidth="@dimen/size_5"
+        app:strokeColor="@color/black"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="@id/lane_code"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/lane_code"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        style="@style/NaviRobotoBold.White.Size19">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <!-- 가로모드 자차 위치 기준으로 남은 거리 위치 잡기 위한 뷰 -->
+    <View
+        android:id="@+id/lane_dummy_car"
+        android:layout_width="@dimen/size_52"
+        android:layout_height="@dimen/size_0"
+        android:layout_centerHorizontal="true"
+        android:clickable="false"
+        android:visibility="invisible"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" >
+
+    </View>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

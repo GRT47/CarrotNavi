@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="@dimen/tmap_14dp"
+        android:height="@dimen/tmap_14dp"
+        android:drawable="@drawable/ic_road_bold" />
+</layer-list>

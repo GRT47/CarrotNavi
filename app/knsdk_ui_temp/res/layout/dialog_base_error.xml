@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- dialog error layout -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:importantForAccessibility="no"
+    android:background="@android:color/transparent">
+
+    <!-- dialog 상단 공간 -->
+    <View
+        android:id="@+id/dialog_error_iv_dialog_topspace"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/size_58"
+        android:importantForAccessibility="no"
+        android:background="@android:color/transparent"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/size_20"
+        android:focusable="true"
+        android:id="@+id/dialog_root_layout"
+        android:background="@android:color/white"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_error_iv_dialog_topspace"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <!-- dialog content 상단 공간 -->
+        <View
+            android:id="@+id/dialog_error_iv_content_topspace"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_20"
+            android:background="@android:color/transparent"
+            android:importantForAccessibility="no"
+            android:visibility="gone"/>
+
+        <!-- 경고 아이콘 -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/dialog_error_iv_warning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="@dimen/size_20_5"
+            android:src="@drawable/icon_error_dialog_warning"
+            android:importantForAccessibility="no"
+            android:visibility="gone" >
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
+        <!-- 오류 메시지 -->
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/dialog_error_tv_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/size_0_5"
+            android:textStyle="normal"
+            android:gravity="center"
+            android:textSize="@dimen/size_16"
+            android:importantForAccessibility="no"
+            android:textColor="@color/black" >
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        <!-- 오류 코드 -->
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/dialog_error_tv_errorcode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="normal"
+            android:gravity="center"
+            android:visibility="gone"
+            android:textSize="@dimen/size_14"
+            android:importantForAccessibility="no"
+            android:textColor="@color/text_grey_666666" >
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        <!-- 유고정보 -->
+        <ScrollView
+            android:id="@+id/dialog_error_sv_rei_layout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_96"
+            android:minHeight="@dimen/size_20"
+            android:layout_marginTop="@dimen/size_17"
+            android:background="@color/bg_grey_7ff1f2f4"
+            android:importantForAccessibility="no"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/size_14"
+                android:importantForAccessibility="no">
+                <!-- 유고정보 제목 -->
+                <com.kakaomobility.knsdk.ui.view.KNTextView
+                    android:id="@+id/dialog_error_iv_rei_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/size_16"
+                    android:importantForAccessibility="no"
+                    android:textColor="@color/text_blue_2988ff">
+
+                </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+                <!-- 유고정보 내용 -->
+                <com.kakaomobility.knsdk.ui.view.KNTextView
+                    android:id="@+id/dialog_error_iv_rei_desc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/size_5"
+                    android:textSize="@dimen/size_16"
+                    android:importantForAccessibility="no"
+                    android:textColor="@android:color/black">
+
+                </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+        <!-- 라인 -->
+        <View
+            android:id="@+id/dialog_error_v_line"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_0_5"
+            android:layout_marginTop="@dimen/size_17_5"
+            android:importantForAccessibility="no"
+            android:background="@color/stroke_grey_e3e2e5"
+            android:visibility="gone">
+
+        </View>
+
+        <!-- 부가 설명 -->
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/dialog_error_tv_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/size_19"
+            android:textStyle="normal"
+            android:gravity="center"
+            android:visibility="gone"
+            android:textSize="@dimen/size_15"
+            android:importantForAccessibility="no"
+            android:textColor="@android:color/black">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </LinearLayout>
+
+    <!-- 카카오 프랜즈 아이콘 -->
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/dialog_error_iv_kakao_friends"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:importantForAccessibility="no"
+        android:src="@drawable/icon_error_dialog_apech"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

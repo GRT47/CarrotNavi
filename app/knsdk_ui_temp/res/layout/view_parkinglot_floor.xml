@@ -1,0 +1,38 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/component_parkinglot_location_btn"
+        android:layout_width="@dimen/size_48"
+        android:layout_height="@dimen/size_48"
+        android:padding="@dimen/size_7"
+        android:layout_marginTop="@dimen/size_12"
+        android:background="@drawable/drawable_button_with_shadow"
+        android:src="@drawable/ic_indoor_location"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <RelativeLayout
+        android:id="@+id/component_parkinglot_floor_list_layout"
+        android:layout_width="@dimen/size_48"
+        android:layout_height="@dimen/size_144"
+        android:layout_marginTop="@dimen/size_12"
+        android:padding="@dimen/size_2"
+        android:background="@drawable/drawable_button_with_shadow"
+        app:layout_constraintTop_toBottomOf="@+id/component_parkinglot_location_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/component_parkinglot_floor_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/view_parkinglot_list_item" />
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

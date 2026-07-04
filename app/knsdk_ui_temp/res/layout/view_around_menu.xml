@@ -1,0 +1,128 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:importantForAccessibility="no"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/around_menu_list"
+        android:layout_width="@dimen/size_137"
+        android:layout_height="@dimen/size_161"
+        android:background="@drawable/bg_near_menu"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/around_menu_btn_layout">
+
+        <include
+            android:id="@+id/around_menu_oil"
+            layout="@layout/view_around_menu_oil"
+            android:layout_width="@dimen/size_68"
+            android:layout_height="@dimen/size_76"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        </include>
+
+        <include
+            android:id="@+id/around_menu_electric"
+            layout="@layout/view_around_menu_electric"
+            android:importantForAccessibility="no"
+            android:layout_width="@dimen/size_68"
+            android:layout_height="@dimen/size_76"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        </include>
+
+        <include
+            android:id="@+id/around_menu_food"
+            layout="@layout/view_around_menu_food"
+            android:importantForAccessibility="no"
+            android:layout_width="@dimen/size_68"
+            android:layout_height="@dimen/size_76"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+        </include>
+
+        <include
+            android:id="@+id/around_menu_convenience"
+            layout="@layout/view_around_menu_convenience"
+            android:importantForAccessibility="no"
+            android:layout_width="@dimen/size_68"
+            android:layout_height="@dimen/size_76"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/around_menu_h_line">
+
+        </include>
+
+        <include
+            android:id="@+id/around_menu_parking"
+            layout="@layout/view_around_menu_parking"
+            android:importantForAccessibility="no"
+            android:layout_width="@dimen/size_68"
+            android:layout_height="@dimen/size_76"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/around_menu_h_line">
+
+        </include>
+
+        <View
+            android:id="@+id/around_menu_h_line"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="@dimen/size_0_5"
+            android:background="@color/gray_250"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/around_menu_food"
+            app:layout_constraintEnd_toEndOf="parent">
+
+        </View>
+
+        <View
+            android:id="@+id/around_menu_v_line"
+            android:layout_width="@dimen/size_0_5"
+            android:layout_height="@dimen/size_0"
+            android:background="@color/gray_250"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toEndOf="@id/around_menu_convenience"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/around_menu_convenience"
+            app:layout_constraintEnd_toStartOf="@id/around_menu_parking">
+
+        </View>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/around_menu_btn_layout"
+        android:layout_width="@dimen/size_48"
+        android:layout_height="@dimen/size_48"
+        android:focusable="true"
+        android:layout_marginEnd="@dimen/size_8"
+        android:background="@drawable/drawable_button_with_shadow"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/around_menu_list"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" >
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/around_menu_btn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="@dimen/size_7"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_near_oil"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

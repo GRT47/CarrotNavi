@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/shape_traffic_light"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/traffic_light_red_bg"
+        android:layout_width="@dimen/size_20"
+        android:layout_height="@dimen/size_20"
+        android:layout_marginLeft="@dimen/size_8"
+        android:src="@drawable/phone_traffic_light_dimmed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/traffic_light_yellow_bg"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/traffic_light_red"
+        android:layout_width="@dimen/size_20"
+        android:layout_height="@dimen/size_20"
+        android:src="@drawable/phone_traffic_light_red"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/traffic_light_red_bg"
+        app:layout_constraintTop_toTopOf="@id/traffic_light_red_bg">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/traffic_light_yellow_bg"
+        android:layout_width="@dimen/size_20"
+        android:layout_height="@dimen/size_20"
+        android:layout_marginLeft="@dimen/size_6"
+        android:src="@drawable/phone_traffic_light_dimmed"
+        app:layout_constraintStart_toEndOf="@id/traffic_light_red_bg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/traffic_light_left_bg"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/traffic_light_yellow"
+        android:layout_width="@dimen/size_20"
+        android:layout_height="@dimen/size_20"
+        android:src="@drawable/phone_traffic_light_yellow"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/traffic_light_yellow_bg"
+        app:layout_constraintTop_toTopOf="@id/traffic_light_yellow_bg">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/traffic_light_left_bg"
+        android:layout_width="@dimen/size_20"
+        android:layout_height="@dimen/size_20"
+        android:layout_marginLeft="@dimen/size_6"
+        android:src="@drawable/phone_traffic_light_left_dimmed"
+        app:layout_constraintStart_toEndOf="@id/traffic_light_yellow_bg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/traffic_light_straight_bg"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/traffic_light_left"
+        android:layout_width="@dimen/size_20"
+        android:layout_height="@dimen/size_20"
+        android:src="@drawable/phone_traffic_light_left"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/traffic_light_left_bg"
+        app:layout_constraintTop_toTopOf="@id/traffic_light_left_bg">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/traffic_light_straight_bg"
+        android:layout_width="@dimen/size_20"
+        android:layout_height="@dimen/size_20"
+        android:layout_marginLeft="@dimen/size_6"
+        android:src="@drawable/phone_traffic_light_dimmed"
+        app:layout_constraintStart_toEndOf="@id/traffic_light_left_bg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/traffic_light_time"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/traffic_light_straight"
+        android:layout_width="@dimen/size_20"
+        android:layout_height="@dimen/size_20"
+        android:src="@drawable/phone_traffic_light_green"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/traffic_light_straight_bg"
+        app:layout_constraintTop_toTopOf="@id/traffic_light_straight_bg">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/traffic_light_time"
+        android:layout_width="@dimen/size_31"
+        android:layout_height="@dimen/size_20"
+        android:layout_marginStart="@dimen/size_5"
+        android:layout_marginEnd="@dimen/size_7"
+        android:gravity="center_vertical|right"
+        android:maxLines="1"
+        style="@style/NaviRobotoBold.Gray800.Size16"
+        app:layout_constraintStart_toEndOf="@id/traffic_light_straight_bg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

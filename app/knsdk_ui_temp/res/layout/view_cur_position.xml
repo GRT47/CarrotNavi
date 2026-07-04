@@ -1,0 +1,46 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/img_drive_shadow"
+    android:focusable="true"
+    android:contentDescription="현위치로"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:id="@+id/cur_position_btn_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_margin="@dimen/size_2"
+        android:gravity="center"
+        android:background="@drawable/selector_current_position"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="@dimen/size_24"
+            android:layout_height="@dimen/size_24"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_drive_nowme">
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/size_7"
+            android:text="@string/current_position_title"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:importantForAccessibility="no"
+            style="@style/NaviNotoRegular.Black.Size17">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

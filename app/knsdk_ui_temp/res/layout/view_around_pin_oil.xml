@@ -1,0 +1,74 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/kn_navi_view_around_bubble"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/size_2"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/size_1">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/around_pin_oil_type"
+                android:layout_width="@dimen/size_22"
+                android:layout_height="@dimen/size_22"
+                android:src="@drawable/ic_bubble_oil"
+                android:layout_marginLeft="@dimen/size_1"
+                android:layout_marginRight="@dimen/size_1"
+                android:visibility="visible">
+
+            </androidx.appcompat.widget.AppCompatImageView>
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/around_pin_oil_self"
+                android:layout_width="@dimen/size_22"
+                android:layout_height="@dimen/size_22"
+                android:src="@drawable/kn_navi_view_around_self"
+                android:layout_marginLeft="@dimen/size_1"
+                android:layout_marginRight="@dimen/size_1"
+                android:visibility="gone">
+
+            </androidx.appcompat.widget.AppCompatImageView>
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/around_pin_oil_wash"
+                android:layout_width="@dimen/size_22"
+                android:layout_height="@dimen/size_22"
+                android:src="@drawable/kn_navi_view_component_around_info_view_wash_land"
+                android:layout_marginLeft="@dimen/size_1"
+                android:layout_marginRight="@dimen/size_1"
+                android:visibility="gone">
+
+            </androidx.appcompat.widget.AppCompatImageView>
+
+        </LinearLayout>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/around_pin_oil_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/size_72"
+            android:textColor="@color/primary_600"
+            android:textSize="@dimen/size_16"
+            android:gravity="center_horizontal"
+            android:includeFontPadding="false"
+            android:visibility="visible"
+            app:naviFontType="NOTO_REGULAR">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item format="float" name="device_multiply_margin_value" type="dimen">0.75</item>
+    <item format="float" name="device_screen_margin_value" type="dimen">1.25</item>
+</resources>

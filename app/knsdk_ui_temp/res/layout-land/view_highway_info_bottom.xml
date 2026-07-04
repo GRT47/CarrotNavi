@@ -1,0 +1,161 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_gray_900"
+    android:id="@+id/highway_info_bottom_item_layout"
+    android:focusable="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/highway_info_bottom_ic"
+        android:layout_width="@dimen/size_24"
+        android:layout_height="@dimen/size_24"
+        android:layout_marginStart="@dimen/size_8"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/highway_info_bottom_name">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/highway_info_bottom_name"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_8"
+        android:layout_marginEnd="@dimen/size_8"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:importantForAccessibility="no"
+        style="@style/NaviNotoRegular.White.Size18"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintStart_toEndOf="@id/highway_info_bottom_ic"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/highway_info_bottom_traffic"
+        app:layout_constraintBottom_toTopOf="@id/highway_info_bottom_distance">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/highway_info_bottom_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_8"
+        android:layout_marginTop="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_7"
+        android:importantForAccessibility="no"
+        style="@style/NaviRobotoBold.White.Size24"
+        app:layout_goneMarginBottom="@dimen/size_7"
+        app:layout_constraintStart_toEndOf="@id/highway_info_bottom_ic"
+        app:layout_constraintTop_toBottomOf="@id/highway_info_bottom_name"
+        app:layout_constraintBottom_toTopOf="@id/highway_info_bottom_layout">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/highway_info_bottom_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_2"
+        android:importantForAccessibility="no"
+        style="@style/NaviRobotoBold.White.Size22"
+        app:layout_constraintBaseline_toBaselineOf="@id/highway_info_bottom_distance"
+        app:layout_constraintStart_toEndOf="@id/highway_info_bottom_distance">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/highway_info_bottom_remain_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/size_4"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        style="@style/NaviNotoRegular.Gray400.Size14"
+        app:layout_constraintTop_toTopOf="@id/highway_info_bottom_distance"
+        app:layout_constraintEnd_toStartOf="@id/highway_info_bottom_distance"
+        app:layout_constraintBottom_toBottomOf="@id/highway_info_bottom_distance">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/highway_info_bottom_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/size_10"
+        android:layout_marginBottom="@dimen/size_6"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="@+id/highway_info_bottom_distance"
+        app:layout_constraintTop_toBottomOf="@id/highway_info_bottom_distance"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/highway_info_bottom_tollFare"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/size_20"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="@dimen/size_4"
+            android:importantForAccessibility="no"
+            style="@style/NaviNotoRegular.PrimaryDark300.Size14"
+            app:layout_constraintEnd_toStartOf="@id/highway_info_bottom_option"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/highway_info_bottom_oil_brand"
+            android:layout_width="@dimen/size_20"
+            android:layout_height="@dimen/size_20"
+            android:layout_marginEnd="@dimen/size_4"
+            android:visibility="gone"
+            android:importantForAccessibility="no"
+            app:layout_constraintEnd_toStartOf="@id/highway_info_bottom_tollFare"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/highway_info_bottom_option"
+            android:layout_width="@dimen/size_32"
+            android:layout_height="@dimen/size_20"
+            android:layout_marginEnd="@dimen/size_4"
+            android:visibility="gone"
+            android:importantForAccessibility="no"
+            app:layout_constraintEnd_toStartOf="@id/highway_info_bottom_repair"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/highway_info_bottom_repair"
+            android:layout_width="@dimen/size_20"
+            android:layout_height="@dimen/size_20"
+            android:layout_marginEnd="@dimen/size_4"
+            android:visibility="gone"
+            android:importantForAccessibility="no"
+            app:layout_constraintEnd_toStartOf="@+id/highway_info_bottom_next_dist"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/highway_info_bottom_next_dist"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/size_20"
+            android:layout_marginEnd="@dimen/size_4"
+            android:gravity="center_vertical"
+            android:importantForAccessibility="no"
+            style="@style/NaviNotoRegular.Yellow.Size12"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/highway_info_bottom_traffic"
+        android:layout_width="@dimen/size_8"
+        android:layout_height="@dimen/size_0"
+        android:layout_marginTop="@dimen/size_16"
+        android:layout_marginEnd="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_16"
+        android:scaleType="fitXY"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

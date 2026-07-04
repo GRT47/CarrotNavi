@@ -1,0 +1,73 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/size_10"
+    android:importantForAccessibility="no"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cur_direction_img_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" >
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/cur_direction_popup_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/cur_direction_arrow_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/cur_direction_popup_distance"
+        android:layout_width="@dimen/size_150"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="@dimen/size_2"
+        android:importantForAccessibility="no"
+        style="@style/NaviRobotoMedium.Black.Size35"
+        app:strokeEnable="true"
+        app:strokeShadowEnable="true"
+        app:strokeWidth="@dimen/size_5"
+        app:strokeColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/cur_direction_img_layout"
+        app:layout_constraintStart_toStartOf="@id/cur_direction_img_layout"
+        app:layout_constraintEnd_toEndOf="@id/cur_direction_img_layout"
+        app:layout_constraintBottom_toBottomOf="@+id/cur_direction_popup_guideline">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/cur_direction_popup_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:importantForAccessibility="no"
+        app:layout_constraintGuide_percent="0.5">
+
+    </androidx.constraintlayout.widget.Guideline>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

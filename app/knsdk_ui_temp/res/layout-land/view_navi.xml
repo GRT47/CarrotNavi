@@ -1,0 +1,451 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Layer 0 : Map -->
+    <com.kakaomobility.knsdk.ui.component.KNComponentMapView
+        android:id="@+id/component_map"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentMapView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentMapAroundPinListView
+        android:id="@+id/component_map_around_pin_list"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentMapAroundPinListView>
+
+    <!-- Layer 1 : Float (고속도로정보) -->
+    <com.kakaomobility.knsdk.ui.component.KNComponentHighwayModeBgView
+        android:id="@+id/component_highway_mode_bg"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentHighwayModeBgView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentHighwayInfoView
+        android:id="@+id/component_highway_info"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/size_0"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/component_bottom" >
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentHighwayInfoView>
+
+    <!-- Layer 2 : Raised (주행버튼, 교통정보, 나침반, 주변정보버튼, AR버튼, 블랙박스) -->
+    <com.kakaomobility.knsdk.ui.component.KNComponentCompassView
+        android:id="@+id/component_compass"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_8"
+        android:layout_marginTop="@dimen/size_8"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@+id/component_cur_direction"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentCompassView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentYugoView
+        android:id="@+id/component_yugo"
+        android:layout_width="@dimen/size_48"
+        android:layout_height="@dimen/size_48"
+        android:layout_marginEnd="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_54"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintEnd_toStartOf="@+id/component_highway_info"
+        app:layout_constraintBottom_toBottomOf="@id/component_highway_mode">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentYugoView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentAccidentView
+        android:id="@+id/component_accident"
+        android:layout_width="@dimen/size_48"
+        android:layout_height="@dimen/size_48"
+        android:layout_marginEnd="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_54"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintEnd_toStartOf="@+id/component_highway_info"
+        app:layout_constraintBottom_toBottomOf="@id/component_highway_mode" />
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentEmergencyView
+        android:id="@+id/component_emergency"
+        android:layout_width="@dimen/size_48"
+        android:layout_height="@dimen/size_48"
+        android:layout_marginEnd="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_54"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintEnd_toStartOf="@id/component_highway_info"
+        app:layout_constraintBottom_toBottomOf="@id/component_highway_mode">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentEmergencyView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentTrafficView
+        android:id="@+id/component_traffic"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:layout_marginTop="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_58"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/component_highway_info"
+        app:layout_constraintBottom_toBottomOf="@id/component_highway_mode">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentTrafficView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentHighwayModeView
+        android:id="@+id/component_highway_mode"
+        android:layout_width="@dimen/size_48"
+        android:layout_height="@dimen/size_48"
+        android:layout_marginEnd="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_56"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintEnd_toStartOf="@id/component_highway_info"
+        app:layout_constraintBottom_toBottomOf="@id/component_around_menu">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentHighwayModeView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentMapCameraModeView
+        android:id="@+id/component_mapmode"
+        android:layout_width="@dimen/size_48"
+        android:layout_height="@dimen/size_48"
+        android:layout_marginEnd="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_8"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes" >
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentMapCameraModeView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentZoomView
+        android:id="@+id/component_zoom"
+        android:layout_width="@dimen/size_92"
+        android:layout_height="@dimen/size_48"
+        android:layout_marginEnd="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_8"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintEnd_toStartOf="@id/component_mapmode"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentZoomView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentTrafficLightView
+        android:id="@+id/component_traffic_light"
+        android:layout_width="@dimen/size_169"
+        android:layout_height="@dimen/size_34"
+        android:layout_marginTop="@dimen/size_5"
+        android:layout_marginEnd="@dimen/size_5"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentTrafficLightView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentParkingLotFloorView
+        android:id="@+id/component_parkinglot_button"
+        android:layout_width="@dimen/size_48"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/size_8"
+        android:layout_marginRight="@dimen/size_8"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Layer 3 : Overlay (주행팝업, 차선정보, 일반차선 > 하이패스) -->
+    <com.kakaomobility.knsdk.ui.component.KNComponentPopupInfoView
+        android:id="@+id/component_popup_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentPopupInfoView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentAroundMenuView
+        android:id="@+id/component_around_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/size_8"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintEnd_toStartOf="@id/component_highway_info"
+        app:layout_constraintBottom_toTopOf="@id/component_bottom">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentAroundMenuView>
+
+    <!-- 하이패스 관련 -->
+    <!--    <com.kakaomobility.knsdk.ui.component.KNComponentHipassInfoView-->
+    <com.kakaomobility.knsdk.ui.drive.KNDriveHipassInfoView
+        android:id="@+id/component_hipass_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
+        android:layout_marginBottom="@dimen/size_2"
+        app:layout_constraintBottom_toBottomOf="@id/component_around_menu"
+        app:layout_constraintStart_toEndOf="@id/component_cur_direction"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 차선 관련 -->
+    <!--    <com.kakaomobility.knsdk.ui.component.KNComponentLaneView-->
+    <com.kakaomobility.knsdk.ui.component.KNDriveLaneView
+        android:id="@+id/component_lane"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_73"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="@id/component_around_menu"
+        app:layout_constraintStart_toEndOf="@id/component_cur_direction"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Layer 4 : Sticky Nav (RG, 속도/표지판, 주행 하단 바 + 메뉴) -->
+    <com.kakaomobility.knsdk.ui.component.KNComponentCurDirectionView
+        android:id="@+id/component_cur_direction"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/size_0"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/component_next_direction">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentCurDirectionView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentNextDirectionView
+        android:id="@+id/component_next_direction"
+        android:layout_width="@dimen/size_140"
+        android:layout_height="@dimen/size_64"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/component_bottom">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentNextDirectionView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentBottomView
+        android:id="@+id/component_bottom"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_48"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" >
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentBottomView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentOverSpeedView
+        android:id="@+id/component_over_speed"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentOverSpeedView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentSpeedView
+        android:id="@+id/component_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_8"
+        android:layout_marginTop="@dimen/size_12"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintStart_toEndOf="@id/component_cur_direction"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentSpeedView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentSignView
+        android:id="@+id/component_sign_first"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_8"
+        android:layout_marginTop="@dimen/size_8"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:index="0"
+        app:layout_constraintStart_toEndOf="@id/component_cur_direction"
+        app:layout_constraintTop_toBottomOf="@id/component_speed">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentSignView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentSignView
+        android:id="@+id/component_sign_second"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_16"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:index="1"
+        app:layout_constraintStart_toEndOf="@id/component_sign_first"
+        app:layout_constraintTop_toTopOf="@id/component_sign_first">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentSignView>
+
+<!--    <com.kakaomobility.knsdk.ui.component.KNComponentSignView-->
+<!--        android:id="@+id/component_sign_third"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="@dimen/size_16"-->
+<!--        app:index="2"-->
+<!--        app:layout_constraintStart_toEndOf="@id/component_sign_second"-->
+<!--        app:layout_constraintTop_toTopOf="@id/component_sign_second">-->
+
+<!--    </com.kakaomobility.knsdk.ui.component.KNComponentSignView>-->
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentCurDirectionPopupView
+        android:id="@+id/component_cur_direction_popup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_8"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@id/component_cur_direction"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/component_bottom">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentCurDirectionPopupView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentRouteInfoView
+        android:id="@+id/component_route_info_container"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintWidth_percent="0.375"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/component_cur_direction"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" >
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentRouteInfoView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentSectionInfoView
+        android:id="@+id/component_section_info_container"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintWidth_percent="0.370"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/component_cur_direction"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentSectionInfoView>
+
+    <!-- Layer 5 : Pop-Out (알림, 주행 완료 팝업) -->
+    <com.kakaomobility.knsdk.ui.component.KNComponentCurPositionView
+        android:id="@+id/component_cur_position"
+        android:layout_width="@dimen/size_128"
+        android:layout_height="@dimen/size_54"
+        android:layout_marginBottom="@dimen/size_8"
+        android:layout_marginStart="@dimen/size_8"
+        android:visibility="gone"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/component_route_info_container">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentCurPositionView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentInfoView
+        android:id="@+id/component_info"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_48"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentInfoView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentBottomMenuView
+        android:id="@+id/component_bottom_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.component.KNComponentBottomMenuView>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentSimulDriveView
+        android:id="@+id/component_simul_drive_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <com.kakaomobility.knsdk.ui.component.KNComponentSimulDriveCloseView
+        android:id="@+id/component_simul_drive_close_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <com.kakaomobility.knsdk.ui.view.KNCustomToastView
+        android:id="@+id/component_custom_toast"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/size_12"
+        android:layout_marginRight="@dimen/size_12"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

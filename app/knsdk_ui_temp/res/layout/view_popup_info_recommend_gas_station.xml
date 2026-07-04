@@ -1,0 +1,115 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:importantForAccessibility="no"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/popup_info_recommend_gas_station_title"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_16"
+        android:layout_marginTop="@dimen/size_5"
+        android:layout_marginEnd="@dimen/size_16"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:importantForAccessibility="no"
+        style="@style/NaviNotoBold.Black.Size18"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/popup_info_recommend_gas_station_dist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/size_6"
+        android:importantForAccessibility="no"
+        style="@style/NaviRobotoBold.Red.Size19"
+        app:layout_constraintStart_toStartOf="@id/popup_info_recommend_gas_station_title"
+        app:layout_constraintTop_toBottomOf="@id/popup_info_recommend_gas_station_title">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/popup_info_recommend_gas_station_nearby_ic"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/size_18"
+        android:layout_marginStart="@dimen/size_5"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@id/popup_info_recommend_gas_station_dist"
+        app:layout_constraintTop_toTopOf="@id/popup_info_recommend_gas_station_dist"
+        app:layout_constraintBottom_toBottomOf="@id/popup_info_recommend_gas_station_dist">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/popup_info_recommend_gas_station_lowest_ic"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/size_18"
+        android:layout_marginStart="@dimen/size_4"
+        android:importantForAccessibility="no"
+        app:layout_goneMarginStart="@dimen/size_5"
+        app:layout_constraintStart_toEndOf="@id/popup_info_recommend_gas_station_nearby_ic"
+        app:layout_constraintTop_toTopOf="@id/popup_info_recommend_gas_station_nearby_ic"
+        app:layout_constraintBottom_toBottomOf="@id/popup_info_recommend_gas_station_nearby_ic">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/popup_info_recommend_gas_station_lowest_20_ic"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/size_18"
+        android:layout_marginStart="@dimen/size_4"
+        android:importantForAccessibility="no"
+        app:layout_goneMarginStart="@dimen/size_5"
+        app:layout_constraintStart_toEndOf="@id/popup_info_recommend_gas_station_lowest_ic"
+        app:layout_constraintTop_toTopOf="@id/popup_info_recommend_gas_station_lowest_ic"
+        app:layout_constraintBottom_toBottomOf="@id/popup_info_recommend_gas_station_lowest_ic">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/popup_info_recommend_gas_station_oil_ic"
+        android:layout_width="@dimen/size_24"
+        android:layout_height="@dimen/size_24"
+        android:layout_marginStart="@dimen/size_16"
+        android:importantForAccessibility="no"
+        app:layout_constraintVertical_bias="0.4"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/popup_info_recommend_gas_station_dist"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/popup_info_recommend_gas_station_oil_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_8"
+        app:layout_goneMarginStart="@dimen/size_16"
+        android:importantForAccessibility="no"
+        style="@style/NaviNotoRegular.Gray800.Size15"
+        app:layout_constraintVertical_bias="0.4"
+        app:layout_constraintStart_toEndOf="@id/popup_info_recommend_gas_station_oil_ic"
+        app:layout_constraintTop_toBottomOf="@id/popup_info_recommend_gas_station_dist"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/popup_info_recommend_gas_station_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_3"
+        android:importantForAccessibility="no"
+        style="@style/NaviRobotoBold.Gray800.Size15"
+        app:layout_constraintBaseline_toBaselineOf="@id/popup_info_recommend_gas_station_oil_type"
+        app:layout_constraintStart_toEndOf="@id/popup_info_recommend_gas_station_oil_type">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

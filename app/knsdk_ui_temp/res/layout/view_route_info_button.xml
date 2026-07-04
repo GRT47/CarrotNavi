@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
+    android:focusable="true"
+    android:accessibilityTraversalBefore="@+id/destinfo_route_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/path_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/size_14"
+        android:includeFontPadding="false"
+        android:enabled="true"
+        android:layout_marginLeft="@dimen/size_12_5"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/destinfo_distance"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="현재경로"/>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/destinfo_time"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/size_16"
+        android:includeFontPadding="false"
+        android:enabled="true"
+        android:layout_marginLeft="@dimen/size_12_5"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/path_name"
+        app:layout_constraintLeft_toRightOf="@+id/path_name"
+        app:layout_constraintEnd_toStartOf="@+id/destinfo_route_layout"
+        app:layout_constraintRight_toLeftOf="@+id/destinfo_route_layout"
+        app:layout_constraintBaseline_toBaselineOf="@+id/path_name"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="1시간 30분" />
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/destinfo_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#6f6f6f"
+        android:textSize="@dimen/size_14"
+        android:includeFontPadding="false"
+        android:layout_marginLeft="@dimen/size_12_5"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toBottomOf="@+id/path_name"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/path_name"
+        app:layout_constraintLeft_toRightOf="@+id/path_name"
+        app:layout_constraintEnd_toStartOf="@+id/destinfo_separator"
+        app:layout_constraintRight_toLeftOf="@+id/destinfo_separator"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="123km" />
+
+    <!-- 구분선 -->
+    <View
+        android:id="@+id/destinfo_separator"
+        android:layout_width="@dimen/size_0_5"
+        android:layout_height="@dimen/size_11_5"
+        android:background="#94949d"
+        android:layout_marginEnd="@dimen/size_10"
+        android:layout_marginStart="@dimen/size_10"
+        android:layout_marginTop="@dimen/size_5"
+        android:visibility="visible"
+        android:importantForAccessibility="no"
+        app:layout_constraintLeft_toRightOf="@+id/destinfo_distance"
+        app:layout_constraintStart_toEndOf="@+id/destinfo_distance"
+        app:layout_constraintRight_toLeftOf="@+id/destinfo_cost"
+        app:layout_constraintEnd_toStartOf="@+id/destinfo_cost"
+        app:layout_constraintTop_toBottomOf="@+id/path_name"/>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/destinfo_cost"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="#6f6f6f"
+        android:textSize="@dimen/size_14"
+        android:includeFontPadding="false"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toBottomOf="@+id/path_name"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/destinfo_separator"
+        app:layout_constraintLeft_toRightOf="@+id/destinfo_separator"
+        app:layout_constraintEnd_toStartOf="@+id/destinfo_route_layout"
+        app:layout_constraintRight_toLeftOf="@+id/destinfo_route_layout"
+        app:layout_constraintBaseline_toBaselineOf="@+id/destinfo_distance"
+        tools:text="통행료 12,300원" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/destinfo_route_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/size_17_5"
+        android:layout_marginRight="@dimen/size_17_5"
+        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" >
+
+        <ImageView
+            android:id="@+id/destinfo_route"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            android:src="@drawable/kn_navi_view_component_destinfo_gugan"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/destinfo_border"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/size_0_5"
+        android:alpha="0.12"
+        android:background="@android:color/black"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

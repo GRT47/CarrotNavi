@@ -1,0 +1,42 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/around_menu_parking_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/selector_around_menu_parking_bg"
+    android:focusable="true"
+    android:contentDescription="주차장"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/around_menu_parking_icon"
+        android:layout_width="@dimen/size_34"
+        android:layout_height="@dimen/size_34"
+        android:layout_marginTop="@dimen/size_2"
+        android:src="@drawable/selector_around_menu_parking_ic"
+        android:duplicateParentState="true"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/around_menu_parking_title">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/around_menu_parking_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/around_menu_parking"
+        android:textColor="@drawable/selector_text_gray900_white"
+        android:importantForAccessibility="no"
+        style="@style/NaviRobotoMedium.Size15"
+        android:duplicateParentState="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/around_menu_parking_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

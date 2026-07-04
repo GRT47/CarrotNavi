@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/size_40">
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/item_map_around_poi_list_title"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_10"
+        android:layout_marginEnd="@dimen/size_9"
+        android:maxLines="1"
+        android:ellipsize="end"
+        style="@style/NaviNotoRegular.Black.Size13"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <View
+        android:id="@+id/item_map_around_poi_list_bottom_line"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/size_1"
+        android:background="@color/gray_150"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </View>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

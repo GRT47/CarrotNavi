@@ -1,0 +1,65 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/size_8"
+    android:paddingTop="@dimen/size_11"
+    android:paddingEnd="@dimen/size_8"
+    android:paddingBottom="@dimen/size_11"
+    android:background="@drawable/multiroute_bg"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/multi_route_popup_direction"
+        android:layout_width="@dimen/size_34"
+        android:layout_height="@dimen/size_34"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <LinearLayout
+        android:id="@+id/multi_route_popup_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="end|center_vertical"
+        android:layout_marginStart="@dimen/size_8"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/multi_route_popup_direction">
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/multi_route_popup_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
+            android:includeFontPadding="false"
+            style="@style/NaviRobotoRegular.Black.Size14">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/multi_route_popup_dist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
+            android:includeFontPadding="false"
+            style="@style/NaviRobotoRegular.Black.Size14">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/multi_route_popup_cost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
+            android:includeFontPadding="false"
+            style="@style/NaviRobotoRegular.Black.Size14">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,62 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:id="@+id/around_pin_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/kn_navi_view_around_bubble"
+        android:paddingLeft="@dimen/size_5"
+        android:paddingRight="@dimen/size_5"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent">
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/around_pin_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="@dimen/size_13"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:includeFontPadding="false"
+            android:visibility="gone"
+            app:naviFontType="NOTO_REGULAR">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/around_pin_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary_600"
+            android:textSize="@dimen/size_12"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:includeFontPadding="false"
+            android:visibility="gone"
+            app:naviFontType="NOTO_REGULAR">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </LinearLayout>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/around_pin_image"
+        android:layout_width="@dimen/size_33"
+        android:layout_height="@dimen/size_40"
+        android:src="@drawable/kn_navi_view_around_pin_beer"
+        app:layout_constraintTop_toBottomOf="@+id/around_pin_info"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

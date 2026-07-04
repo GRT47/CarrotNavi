@@ -1,0 +1,74 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/next_direction_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:background="@drawable/shape_next_rg"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <View
+        android:id="@+id/next_direction_mid_line"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0_5"
+        android:background="@color/color_0f3470"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" >
+
+    </View>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/next_direction_img"
+        android:layout_width="@dimen/size_36"
+        android:layout_height="@dimen/size_36"
+        android:layout_marginStart="@dimen/size_8"
+        android:scaleType="fitXY"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/next_direction_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_8"
+        style="@style/NaviRobotoBold.White80.Size26"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@id/next_direction_img"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/next_direction_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_2"
+        android:importantForAccessibility="no"
+        style="@style/NaviRobotoBold.White80.Size20"
+        app:layout_constraintBaseline_toBaselineOf="@id/next_direction_distance"
+        app:layout_constraintStart_toEndOf="@id/next_direction_distance">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <View
+        android:id="@+id/next_direction_end_line"
+        android:layout_width="@dimen/size_1"
+        android:layout_height="@dimen/size_0"
+        android:importantForAccessibility="no"
+        android:background="@color/color_33000000"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </View>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

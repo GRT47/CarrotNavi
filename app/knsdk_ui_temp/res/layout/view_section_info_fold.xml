@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    android:id="@+id/btn_fold_layout"
+    android:focusable="true"
+    android:contentDescription="접기"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/size_37_5"
+    android:background="#ffffff">
+
+    <View
+        android:id="@+id/sectioninfo_fold_border_top"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:importantForAccessibility="no"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/size_0_5"
+        android:background="@color/gray_200" />
+
+    <!-- 접기 텍스트 -->
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/sectioninfo_fold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/sectioninfo_fold_arrow"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/sectioninfo_fold_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sectioninfo_fold_border_top"
+        android:importantForAccessibility="no"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:singleLine="true"
+        android:text="@string/kn_sectioninfo_fold"
+        android:textColor="#7d848d"
+        android:textSize="@dimen/size_14" />
+
+    <!-- 아래 화살표 -->
+    <ImageView
+        android:id="@+id/sectioninfo_fold_arrow"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintLeft_toRightOf="@+id/sectioninfo_fold"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/sectioninfo_fold"
+        app:layout_constraintTop_toTopOf="parent"
+        android:importantForAccessibility="no"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/size_12_5"
+        android:src="@drawable/kn_navi_sectioninfo_view_down_arrow" />
+
+    <!-- 하단 경계선 -->
+    <View
+        android:id="@+id/sectioninfo_fold_border_bottom"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:importantForAccessibility="no"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/size_0_5"
+        android:background="@color/gray_200" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

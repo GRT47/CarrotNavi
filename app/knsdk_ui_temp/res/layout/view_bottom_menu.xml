@@ -1,0 +1,302 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <View
+        android:id="@+id/bottom_menu_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_menu_main_layer"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/size_340"
+        android:background="@drawable/kn_menu_layout_round_rect"
+        android:importantForAccessibility="no"
+        android:paddingTop="@dimen/size_9"
+        android:paddingBottom="@dimen/size_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ScrollView
+            android:id="@+id/bottom_menu_main_scroll"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/size_0"
+            android:layout_above="@+id/bottom_menu_guide_end_layout"
+            android:importantForAccessibility="no"
+            android:scrollbars="none"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_menu_guide_end_layout">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:importantForAccessibility="no">
+
+                <RelativeLayout
+                    android:id="@+id/bottom_menu_phone_snd_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/size_52"
+                    android:layout_marginTop="@dimen/size_14"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginLeft="@dimen/size_20"
+                    android:layout_marginRight="@dimen/size_20"
+                    android:importantForAccessibility="no">
+
+                    <TextView
+                        android:id="@+id/bottom_menu_phone_snd_txt"
+                        android:layout_width="@dimen/size_85"
+                        android:layout_height="@dimen/size_24"
+                        android:layout_marginTop="@dimen/size_8"
+                        android:includeFontPadding="true"
+                        android:text="@string/drive_device_volume"
+                        android:focusable="true"
+                        android:accessibilityTraversalAfter="@+id/bottom_menu_guide_end_layout"
+                        android:accessibilityTraversalBefore="@+id/bottom_menu_guide_snd_txt"
+                        style="@style/NaviRobotoBold.BlueGray950.Size16" />
+
+                    <ImageView
+                        android:id="@+id/bottom_menu_phone_volum_down"
+                        android:layout_width="@dimen/size_24"
+                        android:layout_height="@dimen/size_24"
+                        android:src="@drawable/bottom_menu_volume_down"
+                        android:importantForAccessibility="no"
+                        android:layout_marginTop="@dimen/size_8"
+                        android:layout_marginLeft="@dimen/size_10"
+                        android:layout_toRightOf="@+id/bottom_menu_phone_snd_txt" />
+
+                    <androidx.appcompat.widget.AppCompatSeekBar
+                        android:id="@+id/bottom_menu_phone_volume_seek_bar"
+                        android:layout_width="@dimen/size_0"
+                        android:layout_height="@dimen/size_24"
+                        android:paddingStart="@dimen/size_13"
+                        android:paddingEnd="@dimen/size_13"
+                        android:thumbOffset="@dimen/size_13"
+                        android:importantForAccessibility="no"
+                        android:thumb="@drawable/shape_seekbar_thumb"
+                        android:progressDrawable="@drawable/selector_seekbar_progress"
+                        android:max="15"
+                        android:progress="15"
+                        android:layout_marginRight="@dimen/size_12"
+                        android:layout_marginLeft="@dimen/size_12"
+                        android:layout_alignTop="@+id/bottom_menu_phone_volum_down"
+                        android:layout_alignBottom="@+id/bottom_menu_phone_volum_down"
+                        android:layout_toRightOf="@+id/bottom_menu_phone_volum_down"
+                        android:layout_toLeftOf="@+id/bottom_menu_phone_volum_up" />
+
+                    <ImageView
+                        android:id="@+id/bottom_menu_phone_volum_up"
+                        android:layout_width="@dimen/size_24"
+                        android:layout_height="@dimen/size_24"
+                        android:src="@drawable/bottom_menu_volume_up"
+                        android:importantForAccessibility="no"
+                        android:layout_marginTop="@dimen/size_8"
+                        android:layout_alignParentRight="true" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/bottom_menu_guide_snd_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/size_52"
+                    android:layout_below="@+id/bottom_menu_phone_snd_layout"
+                    android:importantForAccessibility="no"
+                    android:layout_marginLeft="@dimen/size_20"
+                    android:layout_marginRight="@dimen/size_20">
+
+                    <TextView
+                        android:id="@+id/bottom_menu_guide_snd_txt"
+                        style="@style/NaviRobotoBold.BlueGray950.Size16"
+                        android:focusable="true"
+                        android:accessibilityTraversalAfter="@+id/bottom_menu_phone_snd_txt"
+                        android:accessibilityTraversalBefore="@+id/bottom_menu_darkmode_text"
+                        android:layout_width="@dimen/size_85"
+                        android:layout_height="@dimen/size_24"
+                        android:layout_marginTop="@dimen/size_8"
+                        android:includeFontPadding="true"
+                        android:text="@string/drive_sound_volume" />
+
+                    <ImageView
+                        android:id="@+id/bottom_menu_guide_volum_down"
+                        android:layout_width="@dimen/size_24"
+                        android:layout_height="@dimen/size_24"
+                        android:layout_marginLeft="@dimen/size_10"
+                        android:layout_marginTop="@dimen/size_8"
+                        android:layout_toRightOf="@+id/bottom_menu_guide_snd_txt"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/bottom_menu_volume_down" />
+
+                    <androidx.appcompat.widget.AppCompatSeekBar
+                        android:id="@+id/bottom_menu_guide_volum_volume_seek_bar"
+                        android:layout_width="@dimen/size_0"
+                        android:layout_height="@dimen/size_24"
+                        android:layout_alignTop="@+id/bottom_menu_guide_volum_down"
+                        android:layout_alignBottom="@+id/bottom_menu_guide_volum_down"
+                        android:layout_marginLeft="@dimen/size_12"
+                        android:layout_marginRight="@dimen/size_12"
+                        android:layout_toLeftOf="@+id/bottom_menu_guide_volum_up"
+                        android:layout_toRightOf="@+id/bottom_menu_guide_volum_down"
+                        android:max="10"
+                        android:paddingStart="@dimen/size_13"
+                        android:paddingEnd="@dimen/size_13"
+                        android:progress="10"
+                        android:progressDrawable="@drawable/selector_seekbar_progress"
+                        android:importantForAccessibility="no"
+                        android:thumb="@drawable/shape_seekbar_thumb"
+                        android:thumbOffset="@dimen/size_13" />
+
+                    <ImageView
+                        android:id="@+id/bottom_menu_guide_volum_up"
+                        android:layout_width="@dimen/size_24"
+                        android:layout_height="@dimen/size_24"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginTop="@dimen/size_8"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/bottom_menu_volume_up" />
+
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/bottom_menu_mid_h_line_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/size_1"
+                    android:background="@color/blue_gray_150"
+                    android:layout_marginLeft="@dimen/size_20"
+                    android:layout_marginRight="@dimen/size_20"
+                    android:importantForAccessibility="no"
+                    android:layout_below="@+id/bottom_menu_guide_snd_layout" />
+
+                <RelativeLayout
+                    android:id="@+id/bottom_menu_darkmode_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/size_56"
+                    android:layout_marginLeft="@dimen/size_20"
+                    android:layout_marginRight="@dimen/size_20"
+                    android:importantForAccessibility="no"
+                    android:layout_below="@+id/bottom_menu_guide_snd_layout">
+
+                    <TextView
+                        android:id="@+id/bottom_menu_darkmode_text"
+                        style="@style/NaviRobotoBold.BlueGray950.Size16"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/size_24"
+                        android:layout_centerVertical="true"
+                        android:focusable="true"
+                        android:accessibilityTraversalAfter="@+id/bottom_menu_guide_snd_txt"
+                        android:accessibilityTraversalBefore="@+id/bottom_menu_darkmode_switch_layout"
+                        android:gravity="center"
+                        android:text="야간 주행 모드" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/bottom_menu_darkmode_switch_layout"
+                        android:layout_width="@dimen/size_60"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:focusable="true"
+                        android:accessibilityTraversalAfter="@+id/bottom_menu_darkmode_text" >
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/bottom_menu_darkmode_switch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/size_20"
+                            android:theme="@style/SwitchCompatStyle"
+                            android:importantForAccessibility="no"
+                            android:thumb="@drawable/selector_bottom_menu_darkmode_thumb"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintRight_toRightOf="parent"/>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/bottom_menu_mid_h_line_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/size_1"
+                    android:background="@color/blue_gray_150"
+                    android:layout_marginLeft="@dimen/size_20"
+                    android:layout_marginRight="@dimen/size_20"
+                    android:importantForAccessibility="no"
+                    android:layout_below="@+id/bottom_menu_darkmode_layout" />
+
+                <HorizontalScrollView
+                    android:id="@+id/bottom_menu_mid_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/size_84"
+                    android:layout_below="@+id/bottom_menu_darkmode_layout"
+                    android:layout_marginLeft="@dimen/size_20"
+                    android:layout_marginRight="@dimen/size_20"
+                    android:importantForAccessibility="no"
+                    android:overScrollMode="never"
+                    android:scrollbars="none">
+
+                    <RelativeLayout
+                        android:id="@+id/bottom_menu_mid_custom_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:importantForAccessibility="no">
+
+                        <LinearLayout
+                            android:id="@+id/bottom_menu_mid_custom"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_centerInParent="true"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:importantForAccessibility="no"/>
+
+                    </RelativeLayout>
+
+                </HorizontalScrollView>
+                <!-- 커스텀 메뉴 layout -->
+
+            </RelativeLayout>
+
+        </ScrollView>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_menu_guide_end_layout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_48"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="@dimen/size_20"
+            android:layout_marginRight="@dimen/size_20"
+            android:background="@drawable/kn_menu_button_end_round_rect"
+            android:focusable="true"
+            android:contentDescription="안내종료"
+            android:accessibilityTraversalBefore="@+id/bottom_menu_phone_snd_txt"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bottom_menu_main_scroll"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" >
+
+            <TextView
+                android:id="@+id/bottom_menu_guide_end"
+                style="@style/NaviRobotoMedium.White.Size16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="안내종료"
+                android:importantForAccessibility="no"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,63 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/img_drive_shadow"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/zoom_btn_in_layout"
+        android:layout_width="@dimen/size_44"
+        android:layout_height="@dimen/size_44"
+        android:focusable="true"
+        android:contentDescription="확대"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/zoom_btn_out_layout"
+        app:layout_constraintVertical_chainStyle="packed" >
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/zoom_btn_in"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/selector_button_left"
+            android:src="@drawable/ic_drive_zoomin"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/zoom_btn_out_layout"
+        android:layout_width="@dimen/size_44_5"
+        android:layout_height="@dimen/size_44"
+        android:focusable="true"
+        android:contentDescription="축소"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/zoom_btn_in_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"  >
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/zoom_btn_out"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/selector_button_right"
+            android:src="@drawable/ic_drive_zoomout"
+            android:translationX="@dimen/minus_size_0_5"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

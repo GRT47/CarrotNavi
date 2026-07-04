@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:drawable="@drawable/img_drive_shadow" />
+    <item android:drawable="@drawable/selector_button_n"
+        android:bottom="@dimen/size_2"
+        android:left="@dimen/size_2"
+        android:right="@dimen/size_2"
+        android:top="@dimen/size_2"
+        />
+
+</layer-list>

@@ -1,0 +1,10 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="@dimen/tmap_14dp"
+        android:gravity="center">
+        <shape>
+            <solid android:color="@color/deprecated_w_b_transparent_0" />
+            <corners android:radius="@dimen/tmap_7dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RelativeLayout
+        android:id="@+id/driving_simulation_seekbar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/tmap_5dp">
+
+        <ImageView
+            android:id="@+id/driving_simulation_destination_icon"
+            android:layout_width="@dimen/simulation_icon_width"
+            android:layout_height="@dimen/simulation_icon_height"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/simulation_icon_margin_top"
+            android:src="@drawable/btn_drive_simulate_destination" />
+
+        <!-- click시 thumb의 grey highlighting을 없애기 위해 background는 null로 지정한다. -->
+        <com.tmapmobility.tmap.tmapsdk.ui.view.VerticalSeekBar
+            android:id="@+id/driving_simulation_seekbark"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/simulation_seekbar_height"
+            android:layout_below="@id/driving_simulation_destination_icon"
+            android:layout_marginTop="@dimen/simulation_seekbar_margin_top"
+            android:background="@null"
+            android:clickable="false"
+            android:max="100"
+            android:maxHeight="@dimen/tmap_4dp"
+            android:paddingLeft="@dimen/simulation_seekbar_padding_left"
+            android:paddingTop="@dimen/tmap_1dp"
+            android:paddingRight="@dimen/simulation_seekbar_padding_right"
+            android:progress="30"
+            android:progressDrawable="@drawable/highway_seekbar_progress"
+            android:thumb="@drawable/btn_drive_simulate_current_position"
+            android:thumbOffset="@dimen/tmap_3dp" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/driving_simulation_speed_btn"
+        android:layout_width="@dimen/simulation_button_width"
+        android:layout_height="@dimen/simulation_button_height"
+        android:layout_marginLeft="@dimen/tmap_5dp"
+        android:layout_marginTop="@dimen/tmap_2dp"
+        android:layout_marginRight="@dimen/tmap_2dp"
+        android:layout_toRightOf="@id/driving_simulation_seekbar"
+        android:background="@drawable/selector_driving_menu_popup_panel_btn"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="@string/tag_driving_simulation_speed4x"
+        android:textColor="@color/color_525258"
+        android:textSize="@dimen/simulation_speed_btn_text_size" />
+
+    <TextView
+        android:id="@+id/driving_simulation_next_btn"
+        android:layout_width="@dimen/simulation_button_width"
+        android:layout_height="@dimen/simulation_button_height"
+        android:layout_below="@id/driving_simulation_speed_btn"
+        android:layout_marginLeft="@dimen/tmap_5dp"
+        android:layout_marginTop="@dimen/tmap_2dp"
+        android:layout_marginRight="@dimen/tmap_2dp"
+        android:layout_toRightOf="@id/driving_simulation_seekbar"
+        android:background="@drawable/selector_driving_menu_popup_panel_btn"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="@string/tag_driving_simulation_next"
+        android:textColor="@color/color_525258"
+        android:textSize="@dimen/simulation_next_prev_btn_text_size" />
+
+    <TextView
+        android:id="@+id/driving_simulation_before_btn"
+        android:layout_width="@dimen/simulation_button_width"
+        android:layout_height="@dimen/simulation_button_height"
+        android:layout_below="@id/driving_simulation_next_btn"
+        android:layout_marginLeft="@dimen/tmap_5dp"
+        android:layout_marginTop="@dimen/tmap_2dp"
+        android:layout_marginRight="@dimen/tmap_2dp"
+        android:layout_toRightOf="@id/driving_simulation_seekbar"
+        android:background="@drawable/selector_driving_menu_popup_panel_btn"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="@string/tag_driving_simulation_before"
+        android:textColor="@color/color_525258"
+        android:textSize="@dimen/simulation_next_prev_btn_text_size" />
+
+    <ImageButton
+        android:id="@+id/driving_simulation_play_btn"
+        android:layout_width="@dimen/tmap_86dp"
+        android:layout_height="@dimen/simulation_button_width"
+        android:layout_below="@id/driving_simulation_before_btn"
+        android:layout_margin="@dimen/tmap_2dp"
+        android:background="@drawable/selector_driving_menu_popup_panel_btn" />
+
+</merge>

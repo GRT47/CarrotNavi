@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/simul_menu_main_layer"
+        android:layout_width="@dimen/size_105"
+        android:layout_height="@dimen/size_211"
+        android:layout_marginTop="@dimen/size_12"
+        android:layout_marginEnd="@dimen/size_12"
+        android:weightSum="2"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" >
+        
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" 
+            android:background="@drawable/kn_simul_menu_bg_left">
+
+            <com.kakaomobility.knsdk.ui.view.KNSimulDriveSeekbar
+                android:id="@+id/simul_menu_seek_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true" />
+            
+        </RelativeLayout>
+        
+        <View
+            android:layout_width="@dimen/size_1"
+            android:layout_height="match_parent"
+            android:background="@color/gray_200" />
+        
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:weightSum="4"
+            android:background="@drawable/kn_simul_menu_bg_right">
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/simul_menu_next"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="다음"
+                android:textSize="@dimen/size_16"
+                android:textColor="@color/black"
+                android:gravity="center" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/size_1"
+                android:background="@color/gray_200" />
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/simul_menu_prev"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="이전"
+                android:textSize="@dimen/size_16"
+                android:textColor="@color/black"
+                android:gravity="center" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/size_1"
+                android:background="@color/gray_200" />
+
+            <com.kakaomobility.knsdk.ui.view.KNTextView
+                android:id="@+id/simul_menu_speed"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="1X"
+                android:textSize="@dimen/size_16"
+                android:textColor="@color/black"
+                android:gravity="center" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/size_1"
+                android:background="@color/gray_200" />
+
+            <RelativeLayout
+                android:id="@+id/simul_menu_button_layer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" >
+
+                <ImageView
+                    android:id="@+id/simul_menu_button_toggle"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/ic_simul_drive_pause"/>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,40 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="@dimen/size_0_5"
+    android:paddingTop="@dimen/size_0_5"
+    android:paddingEnd="@dimen/size_0_5"
+    android:paddingBottom="@dimen/size_1_5"
+    android:focusable="true"
+    android:contentDescription="방면 이미지"
+    android:background="@drawable/shape_aroundinfo"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/img_direction_image"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <View
+        android:id="@+id/img_direction_btn_close"
+        android:layout_width="@dimen/size_60"
+        android:layout_height="@dimen/size_40"
+        android:layout_marginEnd="@dimen/size_8"
+        android:layout_marginBottom="@dimen/size_8"
+        android:focusable="true"
+        android:contentDescription="방면 이미지 닫기"
+        android:background="@drawable/bg_popup_close"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </View>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

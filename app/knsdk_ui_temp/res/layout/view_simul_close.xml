@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/view_simul_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <RelativeLayout
+        android:id="@+id/view_simul_main_layer"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/size_154"
+        android:background="@drawable/kn_menu_layout_round_rect"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/view_simul_txt"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_24"
+            android:layout_marginTop="@dimen/size_30"
+            android:gravity="center_horizontal"
+            android:includeFontPadding="true"
+            android:textSize="@dimen/size_19"
+            android:text="모의주행을 종료 하시겠습니까?" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_48"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="@dimen/size_20"
+            android:layout_marginLeft="@dimen/size_20"
+            android:layout_marginRight="@dimen/size_20"
+            android:weightSum="2">
+
+            <TextView
+                android:id="@+id/view_simul_guide_end_cancel"
+                style="@style/NaviRobotoBold.BlueGray900.Size16"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="@dimen/size_48"
+                android:layout_alignParentBottom="true"
+                android:background="@drawable/kn_menu_button_end_round_rect_cancel"
+                android:gravity="center"
+                android:layout_marginRight="@dimen/size_4"
+                android:text="아니오" />
+
+            <TextView
+                android:id="@+id/view_simul_guide_end"
+                style="@style/NaviRobotoBold.White.Size16"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="@dimen/size_48"
+                android:layout_marginLeft="@dimen/size_4"
+                android:layout_alignParentBottom="true"
+                android:background="@drawable/kn_menu_button_end_round_rect"
+                android:gravity="center"
+                android:text="네" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/NavigationEta.CardView.Day"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:theme="@style/Theme.MaterialComponents.Light"
+    app:cardElevation="@dimen/tmap_4dp"
+    app:cardPreventCornerOverlap="false">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/tmap_16dp"
+        android:paddingEnd="@dimen/tmap_16dp">
+
+        <!-- 좌측: 안내종료 버튼 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_end_safe_drive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/tmap_18dp"
+            android:layout_marginBottom="@dimen/tmap_18dp"
+            android:background="@drawable/navigation_eta_end_of_drive_button_background"
+            android:fontFamily="@font/tmobi_bold"
+            android:minWidth="@dimen/tmap_0dp"
+            android:minHeight="@dimen/tmap_0dp"
+            android:paddingStart="@dimen/tmap_12dp"
+            android:paddingTop="@dimen/tmap_7dp"
+            android:paddingEnd="@dimen/tmap_12dp"
+            android:paddingBottom="@dimen/tmap_7dp"
+            android:stateListAnimator="@null"
+            android:text="@string/navigation_eta_end_of_drive"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tmap_13dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_current_address"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 중앙: 현재 주소 텍스트 -->
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_current_address"
+            style="@style/NavigationEta.NameText.Day"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/tmap_10dp"
+            android:layout_marginEnd="@dimen/tmap_10dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/tmobi_medium"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:textSize="@dimen/navigation_eta_name_text_size"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toBottomOf="@id/btn_end_safe_drive"
+            app:layout_constraintEnd_toStartOf="@id/btn_menu"
+            app:layout_constraintHeight_min="@dimen/navigation_eta_name_text_min_height"
+            app:layout_constraintStart_toEndOf="@id/btn_end_safe_drive"
+            app:layout_constraintTop_toTopOf="@id/btn_end_safe_drive"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:drawablePadding="@dimen/tmap_2dp"
+            tools:drawableStart="@drawable/navigation_eta_current_position_icon"
+            tools:text="서울시 중구 을지로" />
+
+        <!-- 우측: 메뉴 버튼 -->
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/btn_menu"
+            style="@style/NavigationEta.IconButton.Day"
+            android:layout_width="@dimen/navigation_eta_icon_button_size"
+            android:layout_height="@dimen/navigation_eta_icon_button_size"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_menu_bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tv_current_address"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:importantForAccessibility="no"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/size_70">
+
+    <!-- 화살표 -->
+    <ImageView
+        android:id="@+id/sectioninfo_image"
+        android:layout_width="@dimen/size_70"
+        android:layout_height="0dp"
+        android:scaleType="centerInside"
+        android:background="#f6f6f6"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:src="@drawable/arrow_section_1"/>
+
+    <!-- 구분선 -->
+    <View
+        android:id="@+id/sectioninfo_item_border"
+        android:layout_width="0dp"
+        android:layout_height="0.5dp"
+        android:background="@android:color/black"
+        android:alpha="0.08"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/sectioninfo_image"
+        app:layout_constraintLeft_toRightOf="@+id/sectioninfo_image"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <!-- 교통정보 -->
+    <com.kakaomobility.knsdk.ui.view.KNTrafficLineView
+        android:id="@+id/sectioninfo_state"
+        android:layout_width="@dimen/size_12"
+        android:layout_height="0dp"
+        android:layout_marginRight="@dimen/size_14"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/sectioninfo_text"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="@dimen/size_10"
+        android:layout_marginRight="@dimen/size_10"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/sectioninfo_image"
+        app:layout_constraintLeft_toRightOf="@+id/sectioninfo_image"
+        app:layout_constraintEnd_toStartOf="@+id/sectioninfo_state"
+        app:layout_constraintRight_toLeftOf="@+id/sectioninfo_state">
+        <!-- Number -->
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/sectioninfo_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@drawable/selector_section_info_item_text"
+            android:textSize="@dimen/size_16"
+            android:importantForAccessibility="no"
+            android:includeFontPadding="false"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/sectioninfo_road"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="10."/>
+
+        <!-- 방향 -->
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/sectioninfo_direction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@drawable/selector_section_info_item_text"
+            android:textSize="@dimen/size_16"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:importantForAccessibility="no"
+            app:layout_constraintBaseline_toBaselineOf="@+id/sectioninfo_number"
+            app:layout_constraintStart_toEndOf="@+id/sectioninfo_number"
+            app:layout_constraintLeft_toRightOf="@+id/sectioninfo_number"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            tools:text="대왕판교IC"/>
+
+        <!-- 도로명 -->
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/sectioninfo_road"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="#94949d"
+            android:textSize="@dimen/size_13"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toBottomOf="@+id/sectioninfo_number"
+            app:layout_constraintStart_toEndOf="@+id/sectioninfo_number"
+            app:layout_constraintLeft_toRightOf="@+id/sectioninfo_number"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/sectioninfo_speed"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="수도권제2순환도로"/>
+
+        <!-- 구분선 -->
+        <View
+            android:id="@+id/sectioninfo_separator"
+            android:layout_width="@dimen/size_0_5"
+            android:layout_height="@dimen/size_11_5"
+            android:background="#94949d"
+            android:layout_marginEnd="@dimen/size_10"
+            android:layout_marginStart="@dimen/size_10"
+            android:layout_marginTop="@dimen/size_5"
+            android:visibility="gone"
+            android:importantForAccessibility="no"
+            app:layout_constraintLeft_toRightOf="@+id/sectioninfo_road"
+            app:layout_constraintStart_toEndOf="@+id/sectioninfo_road"
+            app:layout_constraintTop_toBottomOf="@+id/sectioninfo_number"/>
+
+        <!-- 평균속도 -->
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/sectioninfo_speed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="#94949d"
+            android:textSize="@dimen/size_13"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toBottomOf="@+id/sectioninfo_road"
+            app:layout_constraintStart_toEndOf="@+id/sectioninfo_number"
+            app:layout_constraintLeft_toRightOf="@+id/sectioninfo_number"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="28km/h"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

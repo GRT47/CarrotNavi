@@ -1,0 +1,10 @@
+﻿<resources>
+    <string name="auto_network_error" formatted="false">%1$s %2$s</string>
+    <string name="favorite_route_auto_create_text" formatted="false">%1$s %2$s</string>
+    <string name="gnb_drive_score_distance_info" formatted="false">%1$s %2$s</string>
+    <string name="kakao_common_header_text" formatted="false">%1$s %2$s</string>
+    <string name="tag_driving_popup_notification_cits_behind" formatted="false">%1$s %2$s</string>
+    <string name="tag_driving_popup_notification_cits_front" formatted="false">%1$s %2$s</string>
+    <string name="tag_time_predict_result_start_time" formatted="false">%1$s %2$s</string>
+    <string name="tmap_setting_membership_expiration" formatted="false">%1$s %2$s</string>
+</resources>

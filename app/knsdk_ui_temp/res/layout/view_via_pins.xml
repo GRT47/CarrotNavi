@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/map_pin_via_bg">
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/via_pins_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/size_7"
+        android:layout_gravity="center"
+        style="@style/NaviNotoBold.White.Size14">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+</FrameLayout>

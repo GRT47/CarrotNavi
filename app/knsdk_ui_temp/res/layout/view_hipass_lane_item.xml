@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="@dimen/size_30"
+    android:layout_height="@dimen/size_35">
+
+    <ImageView
+        android:id="@+id/hipass_lane_item_arrow_img"
+        android:layout_width="@dimen/size_21"
+        android:layout_height="@dimen/size_26"
+        android:layout_marginTop="@dimen/size_3"
+        android:src="@drawable/kn_navi_view_component_hipass_arrow"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+    </ImageView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/hipass_lane_item_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:layout_marginBottom="@dimen/size_1"
+        style="@style/NaviNotoBold.White.Size15"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <ImageView
+        android:id="@+id/hipass_lane_item_dot_img"
+        android:layout_width="@dimen/size_21"
+        android:layout_height="@dimen/size_26"
+        android:src="@drawable/kn_navi_view_component_hipass_dot"
+        android:layout_marginTop="@dimen/size_3"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+    </ImageView>
+
+    <View
+        android:id="@+id/hipass_lane_item_divider"
+        android:layout_width="@dimen/size_0_5"
+        android:layout_height="@dimen/size_0"
+        android:background="#306ac9"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent">
+
+    </View>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

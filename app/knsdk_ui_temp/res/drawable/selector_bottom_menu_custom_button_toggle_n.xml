@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_pressed="false" android:state_activated="false" android:drawable="@drawable/kn_bottom_menu_button_clicked_default" />
+
+    <item android:state_pressed="false" android:state_activated="true" android:drawable="@drawable/kn_bottom_menu_button_clicked_n" />
+
+    <item android:state_pressed="true" android:state_activated="false" android:drawable="@drawable/kn_bottom_menu_button_clicked_n" />
+
+    <item android:state_pressed="true" android:state_activated="true" android:drawable="@drawable/kn_bottom_menu_button_clicked_n" />
+
+</selector>

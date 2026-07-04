@@ -1,0 +1,26 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/speed_meter"
+        android:layout_width="@dimen/size_86"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/size_48"
+        android:gravity="center"
+        style="@style/NaviRobotoBold.Black.Size40"
+        app:strokeEnable="true"
+        app:strokeWidth="@dimen/size_5"
+        app:strokeColor="@color/white"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

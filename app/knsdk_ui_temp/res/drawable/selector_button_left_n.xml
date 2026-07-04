@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="false" android:state_pressed="false">
+        <shape>
+            <solid android:color="@color/color_5c626b"/>
+            <corners android:topLeftRadius="@dimen/size_4"
+                android:bottomLeftRadius="@dimen/size_4"/>
+            <stroke android:color="@color/color_878a8c"
+                android:width="@dimen/size_0_5"/>
+        </shape>
+    </item>
+    <item android:state_selected="false" android:state_pressed="true">
+        <shape>
+            <solid android:color="@color/gray_600"/>
+            <corners android:topLeftRadius="@dimen/size_4"
+                android:bottomLeftRadius="@dimen/size_4"/>
+            <stroke android:color="@color/color_878a8c"
+                android:width="@dimen/size_0_5"/>
+        </shape>
+    </item>
+    <item android:state_selected="true" android:state_pressed="false">
+        <shape>
+            <solid android:color="@color/primary_dark_700"/>
+            <corners android:topLeftRadius="@dimen/size_4"
+                android:bottomLeftRadius="@dimen/size_4"/>
+            <stroke android:color="@color/color_2a80e5"
+                android:width="@dimen/size_1"/>
+        </shape>
+    </item>
+    <item android:state_selected="true" android:state_pressed="true">
+        <shape>
+            <solid android:color="@color/primary_dark_800"/>
+            <corners android:topLeftRadius="@dimen/size_4"
+                android:bottomLeftRadius="@dimen/size_4"/>
+            <stroke android:color="@color/color_2a80e5"
+                android:width="@dimen/size_1"/>
+        </shape>
+    </item>
+</selector>

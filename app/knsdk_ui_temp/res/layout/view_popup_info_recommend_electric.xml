@@ -1,0 +1,213 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:importantForAccessibility="no"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/popup_info_recommend_electric_title"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_16"
+        android:layout_marginTop="@dimen/size_1"
+        android:layout_marginEnd="@dimen/size_16"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:importantForAccessibility="no"
+        style="@style/NaviNotoBold.Black.Size18"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/popup_info_recommend_electric_dist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/size_8"
+        android:importantForAccessibility="no"
+        style="@style/NaviRobotoBold.Red.Size19"
+        app:layout_constraintStart_toStartOf="@id/popup_info_recommend_electric_title"
+        app:layout_constraintTop_toBottomOf="@id/popup_info_recommend_electric_title">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/popup_info_recommend_electric_nearby_ic"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/size_18"
+        android:layout_marginStart="@dimen/size_5"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@id/popup_info_recommend_electric_dist"
+        app:layout_constraintTop_toTopOf="@id/popup_info_recommend_electric_dist"
+        app:layout_constraintBottom_toBottomOf="@id/popup_info_recommend_electric_dist">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/popup_info_recommend_electric_lowest_ic"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/size_18"
+        android:layout_marginStart="@dimen/size_4"
+        app:layout_goneMarginStart="@dimen/size_5"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@id/popup_info_recommend_electric_nearby_ic"
+        app:layout_constraintTop_toTopOf="@id/popup_info_recommend_electric_nearby_ic"
+        app:layout_constraintBottom_toBottomOf="@id/popup_info_recommend_electric_nearby_ic">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/popup_info_recommend_electric_lowest_20_ic"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/size_18"
+        android:layout_marginStart="@dimen/size_4"
+        app:layout_goneMarginStart="@dimen/size_5"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@+id/popup_info_recommend_electric_lowest_ic"
+        app:layout_constraintTop_toTopOf="@+id/popup_info_recommend_electric_lowest_ic"
+        app:layout_constraintBottom_toBottomOf="@+id/popup_info_recommend_electric_lowest_ic">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/popup_info_recommend_electric_charge_1"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_16"
+        android:layout_marginEnd="@dimen/size_16"
+        android:visibility="gone"
+        app:layout_goneMarginBottom="@dimen/size_7"
+        android:importantForAccessibility="no"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/popup_info_recommend_electric_dist"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/popup_info_recommend_electric_charge_2">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/popup_info_recommend_electric_charge_1_icon"
+            android:layout_width="@dimen/size_34"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/popup_info_recommend_electric_charge_1_list"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/size_6"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:importantForAccessibility="no"
+            style="@style/NaviNotoRegular.Gray800.Size13"
+            app:layout_constraintStart_toEndOf="@id/popup_info_recommend_electric_charge_1_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/popup_info_recommend_electric_charge_2"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_16"
+        android:layout_marginTop="@dimen/size_4"
+        android:layout_marginEnd="@dimen/size_16"
+        android:visibility="gone"
+        app:layout_goneMarginBottom="@dimen/size_7"
+        android:importantForAccessibility="no"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/popup_info_recommend_electric_charge_1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/popup_info_recommend_electric_charge_3">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/popup_info_recommend_electric_charge_2_icon"
+            android:layout_width="@dimen/size_34"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/popup_info_recommend_electric_charge_2_list"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/size_6"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:importantForAccessibility="no"
+            style="@style/NaviNotoRegular.Gray800.Size13"
+            app:layout_constraintStart_toEndOf="@id/popup_info_recommend_electric_charge_2_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/popup_info_recommend_electric_charge_3"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_16"
+        android:layout_marginTop="@dimen/size_4"
+        android:layout_marginEnd="@dimen/size_16"
+        android:layout_marginBottom="@dimen/size_7"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/popup_info_recommend_electric_charge_2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/popup_info_recommend_electric_charge_3_icon"
+            android:layout_width="@dimen/size_34"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/popup_info_recommend_electric_charge_3_list"
+            android:layout_width="@dimen/size_0"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/size_6"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:importantForAccessibility="no"
+            style="@style/NaviNotoRegular.Gray800.Size13"
+            app:layout_constraintStart_toEndOf="@id/popup_info_recommend_electric_charge_3_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,93 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sing_main_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/sign_main_img"
+        android:layout_width="@dimen/size_86"
+        android:layout_height="@dimen/size_86"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/sign_main_speed"
+        android:layout_width="@dimen/size_63"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:letterSpacing="-0.03"
+        android:importantForAccessibility="no"
+        style="@style/NaviRobotoBold.Black.Size32"
+        app:layout_constraintStart_toStartOf="@id/sign_main_img"
+        app:layout_constraintTop_toTopOf="@id/sign_main_img"
+        app:layout_constraintEnd_toEndOf="@id/sign_main_img"
+        app:layout_constraintBottom_toBottomOf="@id/sign_main_img">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/sign_main_limit_layout"
+        android:layout_width="@dimen/size_63"
+        android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="@id/sign_main_img"
+        app:layout_constraintTop_toTopOf="@id/sign_main_img"
+        app:layout_constraintEnd_toEndOf="@id/sign_main_img"
+        app:layout_constraintBottom_toBottomOf="@id/sign_main_img"
+        app:layout_constraintHorizontal_chainStyle="packed">
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/sign_main_limit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="-0.03"
+            android:gravity="center_vertical|right"
+            android:importantForAccessibility="no"
+            style="@style/NaviRobotoBold.Black.Size28"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/sign_main_limit_unit"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_chainStyle="packed">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+        <com.kakaomobility.knsdk.ui.view.KNTextView
+            android:id="@+id/sign_main_limit_unit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="-0.03"
+            android:importantForAccessibility="no"
+            style="@style/NaviRobotoBold.Black.Size20"
+            app:layout_constraintStart_toEndOf="@id/sign_main_limit"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@id/sign_main_limit"
+            app:layout_constraintHorizontal_chainStyle="packed">
+
+        </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <include
+        android:id="@+id/sign_auxiliary"
+        layout="@layout/view_sign_auxiliary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/minus_size_18"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sign_main_img"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </include>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

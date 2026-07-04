@@ -1,0 +1,114 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <View
+        android:id="@+id/highway_info_night_border"
+        android:layout_width="@dimen/size_152"
+        android:layout_height="@dimen/size_0"
+        android:background="@drawable/shape_highway_info_night_border"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </View>
+
+    <View
+        android:id="@+id/highway_info_bg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/color_99434749"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </View>
+
+    <include
+        layout="@layout/view_highway_info_top_ext"
+        android:id="@+id/highway_info_top"
+        android:layout_width="@dimen/size_192"
+        android:layout_height="@dimen/size_80"
+        android:layout_marginEnd="@dimen/size_8"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </include>
+
+    <include
+        layout="@layout/view_highway_info_mid_ext"
+        android:id="@+id/highway_info_mid"
+        android:layout_width="@dimen/size_208"
+        android:layout_height="@dimen/size_86"
+        android:layout_marginTop="@dimen/size_8"
+        android:layout_marginEnd="@dimen/size_8"
+        app:layout_goneMarginTop="@dimen/size_0"
+        app:layout_constraintTop_toBottomOf="@id/highway_info_top"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </include>
+
+    <include
+        layout="@layout/view_highway_info_bottom_ext"
+        android:id="@+id/highway_info_bottom"
+        android:layout_width="@dimen/size_228"
+        android:layout_height="@dimen/size_96"
+        android:layout_marginTop="@dimen/size_8"
+        android:layout_marginEnd="@dimen/size_8"
+        app:layout_goneMarginTop="@dimen/size_0"
+        app:layout_constraintTop_toBottomOf="@id/highway_info_mid"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </include>
+
+    <View
+        android:id="@+id/highway_info_top_gap"
+        android:layout_width="@dimen/size_160"
+        android:layout_height="@dimen/size_0"
+        android:background="@color/blue_gray_900"
+        android:importantForAccessibility="no"
+        app:layout_constraintVertical_weight="0.295"
+        app:layout_constraintStart_toStartOf="@id/highway_info_bg"
+        app:layout_constraintTop_toBottomOf="@id/highway_info_bottom"
+        app:layout_constraintBottom_toTopOf="@id/highway_info_mid_gap">
+
+    </View>
+
+    <View
+        android:id="@+id/highway_info_mid_gap"
+        android:layout_width="@dimen/size_160"
+        android:layout_height="@dimen/size_0"
+        android:background="@color/blue_gray_900"
+        android:importantForAccessibility="no"
+        app:layout_constraintVertical_weight="0.3"
+        app:layout_constraintStart_toStartOf="@id/highway_info_bg"
+        app:layout_constraintTop_toBottomOf="@id/highway_info_top_gap"
+        app:layout_constraintBottom_toTopOf="@id/highway_info_guide">
+
+    </View>
+
+    <com.kakaomobility.knsdk.ui.view.KNTextView
+        android:id="@+id/highway_info_guide"
+        android:layout_width="@dimen/size_160"
+        android:layout_height="@dimen/size_0"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/size_0_5"
+        android:background="@color/blue_gray_900"
+        android:text="@string/highway_info_guide"
+        android:importantForAccessibility="no"
+        style="@style/NaviNotoRegular.White40.Size14"
+        app:layout_constraintVertical_weight="0.295"
+        app:layout_constraintStart_toStartOf="@id/highway_info_bg"
+        app:layout_constraintTop_toBottomOf="@id/highway_info_mid_gap"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </com.kakaomobility.knsdk.ui.view.KNTextView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,2015 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr format="reference" name="selectableItemBackgroundCompatGrey"/>
+    <attr format="reference" name="selectableItemBackgroundCompatWhite"/>
+    <color name="base_background_focus">@color/base_bg_color</color>
+    <color name="base_bg_color">#3183ea</color>
+    <color name="base_dialog_btn_accent_color">@color/cool</color>
+    <color name="base_dialog_btn_color">@color/blue_gray_950</color>
+    <color name="bg_black_a70">#70000000</color>
+    <color name="bg_black_aB4">#B4000000</color>
+    <color name="bg_black_aCD">#CD000000</color>
+    <color name="bg_blue1">@color/base_bg_color</color>
+    <color name="bg_grey2">#f7f7f7</color>
+    <color name="bg_grey_7ff1f2f4">#7ff1f2f4</color>
+    <color name="bg_grey_cccccc">#cccccc</color>
+    <color name="black">#000000</color>
+    <color name="black_10">#1e000000</color>
+    <color name="black_20">#33000000</color>
+    <color name="black_40">#66000000</color>
+    <color name="black_50">#80000000</color>
+    <color name="black_88">#e1000000</color>
+    <color name="blue_gray_100">#f3f5f8</color>
+    <color name="blue_gray_150">#eaedf2</color>
+    <color name="blue_gray_200">#dce1eb</color>
+    <color name="blue_gray_400">#acb3bd</color>
+    <color name="blue_gray_500">#8b919a</color>
+    <color name="blue_gray_600">#5c6268</color>
+    <color name="blue_gray_700">#4b525a</color>
+    <color name="blue_gray_800">#41454e</color>
+    <color name="blue_gray_900">#3b3f44</color>
+    <color name="blue_gray_950">#333741</color>
+    <color name="color_007aff">#007aff</color>
+    <color name="color_07333333">#07333333</color>
+    <color name="color_0c000000">#0c000000</color>
+    <color name="color_0edc4b">#0edc4b</color>
+    <color name="color_0f3470">#0f3470</color>
+    <color name="color_11223d">#11223d</color>
+    <color name="color_151515">#151515</color>
+    <color name="color_1692da">#1692da</color>
+    <color name="color_19000000">#19000000</color>
+    <color name="color_1A000000">#1A000000</color>
+    <color name="color_1E88E5">#1E88E5</color>
+    <color name="color_1d222d">#1d222d</color>
+    <color name="color_1f6ac8">#1f6ac8</color>
+    <color name="color_212528">#212528</color>
+    <color name="color_222222">#222222</color>
+    <color name="color_252b37">#252b37</color>
+    <color name="color_26ffffff">#26ffffff</color>
+    <color name="color_2a80e5">#2a80e5</color>
+    <color name="color_2c3241">#2c3241</color>
+    <color name="color_303030">#303030</color>
+    <color name="color_33000000">#33000000</color>
+    <color name="color_333333">#333333</color>
+    <color name="color_3fff0000">#3fff0000</color>
+    <color name="color_40000000">#40000000</color>
+    <color name="color_444444">#444444</color>
+    <color name="color_4c000000">#4c000000</color>
+    <color name="color_4f647d">#4f647d</color>
+    <color name="color_515662">#515662</color>
+    <color name="color_55595d">#55595d</color>
+    <color name="color_5a90f4">#5a90f4</color>
+    <color name="color_5c626b">#5c626b</color>
+    <color name="color_66000000">#66000000</color>
+    <color name="color_66ffffff">#66ffffff</color>
+    <color name="color_80000000">#80000000</color>
+    <color name="color_808080">#808080</color>
+    <color name="color_878a8c">#878a8c</color>
+    <color name="color_99000000">#99000000</color>
+    <color name="color_99434749">#99434749</color>
+    <color name="color_adafb2">#adafb2</color>
+    <color name="color_b3000000">#b3000000</color>
+    <color name="color_c0171b1d">#c0171b1d</color>
+    <color name="color_c2c2c2">#c2c2c2</color>
+    <color name="color_c4c4c4">#c4c4c4</color>
+    <color name="color_cccccc">#cccccc</color>
+    <color name="color_cyan">#66e2ff</color>
+    <color name="color_d7e3f7">#d7e3f7</color>
+    <color name="color_db1c0b">#db1c0b</color>
+    <color name="color_e1e1e4">#e1e1e4</color>
+    <color name="color_f52830">#f52830</color>
+    <color name="color_f6f6f6">#f6f6f6</color>
+    <color name="color_fad042">#fad042</color>
+    <color name="color_fae100">#fae100</color>
+    <color name="color_ffe100">#ffe100</color>
+    <color name="color_ffffff">#ffffff</color>
+    <color name="color_transparent">#00000000</color>
+    <color name="cool">#4079F3</color>
+    <color name="cool_30">#4D4079F3</color>
+    <color name="cool_38">#604079F3</color>
+    <color name="gray_100">#f4f4f4</color>
+    <color name="gray_150">#e6e6e6</color>
+    <color name="gray_200">#d9d9d9</color>
+    <color name="gray_250">#c3c3c3</color>
+    <color name="gray_300">#b3b3b3</color>
+    <color name="gray_400">#999999</color>
+    <color name="gray_50">#f9f9f9</color>
+    <color name="gray_500">#777777</color>
+    <color name="gray_600">#666666</color>
+    <color name="gray_700">#494949</color>
+    <color name="gray_750">#373737</color>
+    <color name="gray_800">#333333</color>
+    <color name="gray_900">#222222</color>
+    <color name="hipass_lane_view_item_bg_active">#1177FF</color>
+    <color name="hipass_lane_view_item_bg_inactive">#ACB3BD</color>
+    <color name="kn_bg_grey_f4f4f4">#f4f4f4</color>
+    <color name="lane_view_item_bg">#E6000000</color>
+    <color name="list_divider_color">@color/blue_gray_200</color>
+    <color name="neutral">#262D39</color>
+    <color name="neutral_32">#51262D39</color>
+    <color name="neutral_6">#14262D39</color>
+    <color name="primary_500">#2988ff</color>
+    <color name="primary_600">#3183ea</color>
+    <color name="primary_700">#2d79d8</color>
+    <color name="primary_750">#2274da</color>
+    <color name="primary_800">#0e67cf</color>
+    <color name="primary_900">#1d54ab</color>
+    <color name="primary_dark_300">#7fb4f3</color>
+    <color name="primary_dark_600">#3f84db</color>
+    <color name="primary_dark_700">#2f72c6</color>
+    <color name="primary_dark_800">#215b9f</color>
+    <color name="primary_dark_900">#154a88</color>
+    <color name="primary_dark_950">#0f3470</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="red">#f52830</color>
+    <color name="stroke_grey_e3e2e5">#e3e2e5</color>
+    <color name="text_blue_2988ff">#2988ff</color>
+    <color name="text_grey_666666">#666666</color>
+    <color name="traffic_blue">#4088ea</color>
+    <color name="traffic_none">#c4c8ce</color>
+    <color name="traffic_orange">#ed9837</color>
+    <color name="traffic_red">#ea3a3a</color>
+    <color name="traffic_yellow">#fec602</color>
+    <color name="white">#ffffff</color>
+    <color name="white_15">#25ffffff</color>
+    <color name="white_80">#ccffffff</color>
+    <color name="yellow">#fae100</color>
+    <item format="float" name="device_multiply_margin_value" type="dimen">1.0</item>
+    <item format="float" name="device_screen_margin_value" type="dimen">1.0</item>
+    <dimen name="minus_size_0_5">-0.5dp</dimen>
+    <dimen name="minus_size_1">-1dp</dimen>
+    <dimen name="minus_size_18">-18dp</dimen>
+    <dimen name="minus_size_2">-2dp</dimen>
+    <dimen name="size_0">0dp</dimen>
+    <dimen name="size_0_5">0.5dp</dimen>
+    <dimen name="size_1">1dp</dimen>
+    <dimen name="size_10">10dp</dimen>
+    <dimen name="size_100">100dp</dimen>
+    <dimen name="size_100_5">100.5dp</dimen>
+    <dimen name="size_101">101dp</dimen>
+    <dimen name="size_101_5">101.5dp</dimen>
+    <dimen name="size_102">102dp</dimen>
+    <dimen name="size_102_5">102.5dp</dimen>
+    <dimen name="size_103">103dp</dimen>
+    <dimen name="size_103_5">103.5dp</dimen>
+    <dimen name="size_104">104dp</dimen>
+    <dimen name="size_104_5">104.5dp</dimen>
+    <dimen name="size_105">105dp</dimen>
+    <dimen name="size_105_5">105.5dp</dimen>
+    <dimen name="size_106">106dp</dimen>
+    <dimen name="size_106_5">106.5dp</dimen>
+    <dimen name="size_107">107dp</dimen>
+    <dimen name="size_107_5">107.5dp</dimen>
+    <dimen name="size_108">108dp</dimen>
+    <dimen name="size_108_5">108.5dp</dimen>
+    <dimen name="size_109">109dp</dimen>
+    <dimen name="size_109_5">109.5dp</dimen>
+    <dimen name="size_10_5">10.5dp</dimen>
+    <dimen name="size_11">11dp</dimen>
+    <dimen name="size_110">110dp</dimen>
+    <dimen name="size_110_5">110.5dp</dimen>
+    <dimen name="size_111">111dp</dimen>
+    <dimen name="size_111_5">111.5dp</dimen>
+    <dimen name="size_112">112dp</dimen>
+    <dimen name="size_112_5">112.5dp</dimen>
+    <dimen name="size_113">113dp</dimen>
+    <dimen name="size_113_5">113.5dp</dimen>
+    <dimen name="size_114">114dp</dimen>
+    <dimen name="size_114_5">114.5dp</dimen>
+    <dimen name="size_115">115dp</dimen>
+    <dimen name="size_115_5">115.5dp</dimen>
+    <dimen name="size_116">116dp</dimen>
+    <dimen name="size_116_5">116.5dp</dimen>
+    <dimen name="size_117">117dp</dimen>
+    <dimen name="size_117_5">117.5dp</dimen>
+    <dimen name="size_118">118dp</dimen>
+    <dimen name="size_118_5">118.5dp</dimen>
+    <dimen name="size_119">119dp</dimen>
+    <dimen name="size_119_3">119.3dp</dimen>
+    <dimen name="size_119_5">119.5dp</dimen>
+    <dimen name="size_11_5">11.5dp</dimen>
+    <dimen name="size_12">12dp</dimen>
+    <dimen name="size_120">120dp</dimen>
+    <dimen name="size_120_5">120.5dp</dimen>
+    <dimen name="size_121">121dp</dimen>
+    <dimen name="size_121_5">121.5dp</dimen>
+    <dimen name="size_122">122dp</dimen>
+    <dimen name="size_122_5">122.5dp</dimen>
+    <dimen name="size_123">123dp</dimen>
+    <dimen name="size_123_5">123.5dp</dimen>
+    <dimen name="size_124">124dp</dimen>
+    <dimen name="size_124_5">124.5dp</dimen>
+    <dimen name="size_125">125dp</dimen>
+    <dimen name="size_125_5">125.5dp</dimen>
+    <dimen name="size_126">126dp</dimen>
+    <dimen name="size_126_5">126.5dp</dimen>
+    <dimen name="size_127">127dp</dimen>
+    <dimen name="size_127_5">127.5dp</dimen>
+    <dimen name="size_128">128dp</dimen>
+    <dimen name="size_128_5">128.5dp</dimen>
+    <dimen name="size_129">129dp</dimen>
+    <dimen name="size_129_5">129.5dp</dimen>
+    <dimen name="size_12_5">12.5dp</dimen>
+    <dimen name="size_13">13dp</dimen>
+    <dimen name="size_130">130dp</dimen>
+    <dimen name="size_130_5">130.5dp</dimen>
+    <dimen name="size_131">131dp</dimen>
+    <dimen name="size_131_5">131.5dp</dimen>
+    <dimen name="size_132">132dp</dimen>
+    <dimen name="size_132_5">132.5dp</dimen>
+    <dimen name="size_133">133dp</dimen>
+    <dimen name="size_133_5">133.5dp</dimen>
+    <dimen name="size_134">134dp</dimen>
+    <dimen name="size_134_5">134.5dp</dimen>
+    <dimen name="size_135">135dp</dimen>
+    <dimen name="size_135_5">135.5dp</dimen>
+    <dimen name="size_136">136dp</dimen>
+    <dimen name="size_136_5">136.5dp</dimen>
+    <dimen name="size_137">137dp</dimen>
+    <dimen name="size_137_5">137.5dp</dimen>
+    <dimen name="size_138">138dp</dimen>
+    <dimen name="size_138_5">138.5dp</dimen>
+    <dimen name="size_139">139dp</dimen>
+    <dimen name="size_139_5">139.5dp</dimen>
+    <dimen name="size_13_5">13.5dp</dimen>
+    <dimen name="size_14">14dp</dimen>
+    <dimen name="size_140">140dp</dimen>
+    <dimen name="size_140_5">140.5dp</dimen>
+    <dimen name="size_141">141dp</dimen>
+    <dimen name="size_141_5">141.5dp</dimen>
+    <dimen name="size_142">142dp</dimen>
+    <dimen name="size_142_5">142.5dp</dimen>
+    <dimen name="size_143">143dp</dimen>
+    <dimen name="size_143_5">143.5dp</dimen>
+    <dimen name="size_144">144dp</dimen>
+    <dimen name="size_144_5">144.5dp</dimen>
+    <dimen name="size_145">145dp</dimen>
+    <dimen name="size_145_5">145.5dp</dimen>
+    <dimen name="size_146">146dp</dimen>
+    <dimen name="size_146_5">146.5dp</dimen>
+    <dimen name="size_147">147dp</dimen>
+    <dimen name="size_147_5">147.5dp</dimen>
+    <dimen name="size_148">148dp</dimen>
+    <dimen name="size_148_5">148.5dp</dimen>
+    <dimen name="size_149">149dp</dimen>
+    <dimen name="size_149_5">149.5dp</dimen>
+    <dimen name="size_14_5">14.5dp</dimen>
+    <dimen name="size_15">15dp</dimen>
+    <dimen name="size_150">150dp</dimen>
+    <dimen name="size_150_5">150.5dp</dimen>
+    <dimen name="size_151">151dp</dimen>
+    <dimen name="size_151_5">151.5dp</dimen>
+    <dimen name="size_152">152dp</dimen>
+    <dimen name="size_152_5">152.5dp</dimen>
+    <dimen name="size_153">153dp</dimen>
+    <dimen name="size_153_5">153.5dp</dimen>
+    <dimen name="size_154">154dp</dimen>
+    <dimen name="size_154_5">154.5dp</dimen>
+    <dimen name="size_155">155dp</dimen>
+    <dimen name="size_155_5">155.5dp</dimen>
+    <dimen name="size_156">156dp</dimen>
+    <dimen name="size_156_5">156.5dp</dimen>
+    <dimen name="size_157">157dp</dimen>
+    <dimen name="size_157_5">157.5dp</dimen>
+    <dimen name="size_158">158dp</dimen>
+    <dimen name="size_158_5">158.5dp</dimen>
+    <dimen name="size_159">159dp</dimen>
+    <dimen name="size_159_5">159.5dp</dimen>
+    <dimen name="size_15_5">15.5dp</dimen>
+    <dimen name="size_16">16dp</dimen>
+    <dimen name="size_160">160dp</dimen>
+    <dimen name="size_160_5">160.5dp</dimen>
+    <dimen name="size_161">161dp</dimen>
+    <dimen name="size_161_5">161.5dp</dimen>
+    <dimen name="size_162">162dp</dimen>
+    <dimen name="size_162_5">162.5dp</dimen>
+    <dimen name="size_163">163dp</dimen>
+    <dimen name="size_163_5">163.5dp</dimen>
+    <dimen name="size_164">164dp</dimen>
+    <dimen name="size_164_5">164.5dp</dimen>
+    <dimen name="size_165">165dp</dimen>
+    <dimen name="size_165_5">165.5dp</dimen>
+    <dimen name="size_166">166dp</dimen>
+    <dimen name="size_166_5">166.5dp</dimen>
+    <dimen name="size_167">167dp</dimen>
+    <dimen name="size_167_5">167.5dp</dimen>
+    <dimen name="size_168">168dp</dimen>
+    <dimen name="size_168_5">168.5dp</dimen>
+    <dimen name="size_169">169dp</dimen>
+    <dimen name="size_169_5">169.5dp</dimen>
+    <dimen name="size_16_5">16.5dp</dimen>
+    <dimen name="size_17">17dp</dimen>
+    <dimen name="size_170">170dp</dimen>
+    <dimen name="size_170_5">170.5dp</dimen>
+    <dimen name="size_171">171dp</dimen>
+    <dimen name="size_171_5">171.5dp</dimen>
+    <dimen name="size_172">172dp</dimen>
+    <dimen name="size_172_5">172.5dp</dimen>
+    <dimen name="size_173">173dp</dimen>
+    <dimen name="size_173_5">173.5dp</dimen>
+    <dimen name="size_174">174dp</dimen>
+    <dimen name="size_174_5">174.5dp</dimen>
+    <dimen name="size_175">175dp</dimen>
+    <dimen name="size_175_5">175.5dp</dimen>
+    <dimen name="size_176">176dp</dimen>
+    <dimen name="size_176_5">176.5dp</dimen>
+    <dimen name="size_177">177dp</dimen>
+    <dimen name="size_177_5">177.5dp</dimen>
+    <dimen name="size_178">178dp</dimen>
+    <dimen name="size_178_5">178.5dp</dimen>
+    <dimen name="size_179">179dp</dimen>
+    <dimen name="size_179_5">179.5dp</dimen>
+    <dimen name="size_17_5">17.5dp</dimen>
+    <dimen name="size_18">18dp</dimen>
+    <dimen name="size_180">180dp</dimen>
+    <dimen name="size_180_5">180.5dp</dimen>
+    <dimen name="size_181">181dp</dimen>
+    <dimen name="size_181_5">181.5dp</dimen>
+    <dimen name="size_182">182dp</dimen>
+    <dimen name="size_182_5">182.5dp</dimen>
+    <dimen name="size_183">183dp</dimen>
+    <dimen name="size_183_5">183.5dp</dimen>
+    <dimen name="size_184">184dp</dimen>
+    <dimen name="size_184_5">184.5dp</dimen>
+    <dimen name="size_185">185dp</dimen>
+    <dimen name="size_185_5">185.5dp</dimen>
+    <dimen name="size_186">186dp</dimen>
+    <dimen name="size_186_5">186.5dp</dimen>
+    <dimen name="size_187">187dp</dimen>
+    <dimen name="size_187_5">187.5dp</dimen>
+    <dimen name="size_188">188dp</dimen>
+    <dimen name="size_188_5">188.5dp</dimen>
+    <dimen name="size_189">189dp</dimen>
+    <dimen name="size_189_5">189.5dp</dimen>
+    <dimen name="size_18_5">18.5dp</dimen>
+    <dimen name="size_19">19dp</dimen>
+    <dimen name="size_190">190dp</dimen>
+    <dimen name="size_190_5">190.5dp</dimen>
+    <dimen name="size_191">191dp</dimen>
+    <dimen name="size_191_5">191.5dp</dimen>
+    <dimen name="size_192">192dp</dimen>
+    <dimen name="size_192_5">192.5dp</dimen>
+    <dimen name="size_193">193dp</dimen>
+    <dimen name="size_193_5">193.5dp</dimen>
+    <dimen name="size_194">194dp</dimen>
+    <dimen name="size_194_5">194.5dp</dimen>
+    <dimen name="size_195">195dp</dimen>
+    <dimen name="size_195_5">195.5dp</dimen>
+    <dimen name="size_196">196dp</dimen>
+    <dimen name="size_196_5">196.5dp</dimen>
+    <dimen name="size_197">197dp</dimen>
+    <dimen name="size_197_5">197.5dp</dimen>
+    <dimen name="size_198">198dp</dimen>
+    <dimen name="size_198_5">198.5dp</dimen>
+    <dimen name="size_199">199dp</dimen>
+    <dimen name="size_199_5">199.5dp</dimen>
+    <dimen name="size_19_5">19.5dp</dimen>
+    <dimen name="size_1_5">1.5dp</dimen>
+    <dimen name="size_2">2dp</dimen>
+    <dimen name="size_20">20dp</dimen>
+    <dimen name="size_200">200dp</dimen>
+    <dimen name="size_200_5">200.5dp</dimen>
+    <dimen name="size_201">201dp</dimen>
+    <dimen name="size_201_5">201.5dp</dimen>
+    <dimen name="size_202">202dp</dimen>
+    <dimen name="size_202_5">202.5dp</dimen>
+    <dimen name="size_203">203dp</dimen>
+    <dimen name="size_203_5">203.5dp</dimen>
+    <dimen name="size_204">204dp</dimen>
+    <dimen name="size_204_5">204.5dp</dimen>
+    <dimen name="size_205">205dp</dimen>
+    <dimen name="size_205_5">205.5dp</dimen>
+    <dimen name="size_206">206dp</dimen>
+    <dimen name="size_206_5">206.5dp</dimen>
+    <dimen name="size_207">207dp</dimen>
+    <dimen name="size_207_5">207.5dp</dimen>
+    <dimen name="size_208">208dp</dimen>
+    <dimen name="size_208_5">208.5dp</dimen>
+    <dimen name="size_209">209dp</dimen>
+    <dimen name="size_209_5">209.5dp</dimen>
+    <dimen name="size_20_5">20.5dp</dimen>
+    <dimen name="size_21">21dp</dimen>
+    <dimen name="size_210">210dp</dimen>
+    <dimen name="size_210_5">210.5dp</dimen>
+    <dimen name="size_211">211dp</dimen>
+    <dimen name="size_211_5">211.5dp</dimen>
+    <dimen name="size_212">212dp</dimen>
+    <dimen name="size_212_5">212.5dp</dimen>
+    <dimen name="size_213">213dp</dimen>
+    <dimen name="size_213_5">213.5dp</dimen>
+    <dimen name="size_214">214dp</dimen>
+    <dimen name="size_214_5">214.5dp</dimen>
+    <dimen name="size_215">215dp</dimen>
+    <dimen name="size_215_5">215.5dp</dimen>
+    <dimen name="size_216">216dp</dimen>
+    <dimen name="size_216_5">216.5dp</dimen>
+    <dimen name="size_217">217dp</dimen>
+    <dimen name="size_217_5">217.5dp</dimen>
+    <dimen name="size_218">218dp</dimen>
+    <dimen name="size_218_5">218.5dp</dimen>
+    <dimen name="size_219">219dp</dimen>
+    <dimen name="size_219_5">219.5dp</dimen>
+    <dimen name="size_21_5">21.5dp</dimen>
+    <dimen name="size_21_6">21.6dp</dimen>
+    <dimen name="size_22">22dp</dimen>
+    <dimen name="size_220">220dp</dimen>
+    <dimen name="size_220_5">220.5dp</dimen>
+    <dimen name="size_221">221dp</dimen>
+    <dimen name="size_221_5">221.5dp</dimen>
+    <dimen name="size_222">222dp</dimen>
+    <dimen name="size_222_5">222.5dp</dimen>
+    <dimen name="size_223">223dp</dimen>
+    <dimen name="size_223_5">223.5dp</dimen>
+    <dimen name="size_224">224dp</dimen>
+    <dimen name="size_224_5">224.5dp</dimen>
+    <dimen name="size_225">225dp</dimen>
+    <dimen name="size_225_5">225.5dp</dimen>
+    <dimen name="size_226">226dp</dimen>
+    <dimen name="size_226_5">226.5dp</dimen>
+    <dimen name="size_227">227dp</dimen>
+    <dimen name="size_227_5">227.5dp</dimen>
+    <dimen name="size_228">228dp</dimen>
+    <dimen name="size_228_5">228.5dp</dimen>
+    <dimen name="size_229">229dp</dimen>
+    <dimen name="size_229_5">229.5dp</dimen>
+    <dimen name="size_22_5">22.5dp</dimen>
+    <dimen name="size_23">23dp</dimen>
+    <dimen name="size_230">230dp</dimen>
+    <dimen name="size_230_5">230.5dp</dimen>
+    <dimen name="size_231">231dp</dimen>
+    <dimen name="size_231_5">231.5dp</dimen>
+    <dimen name="size_232">232dp</dimen>
+    <dimen name="size_232_5">232.5dp</dimen>
+    <dimen name="size_233">233dp</dimen>
+    <dimen name="size_233_5">233.5dp</dimen>
+    <dimen name="size_234">234dp</dimen>
+    <dimen name="size_234_5">234.5dp</dimen>
+    <dimen name="size_235">235dp</dimen>
+    <dimen name="size_235_5">235.5dp</dimen>
+    <dimen name="size_236">236dp</dimen>
+    <dimen name="size_236_5">236.5dp</dimen>
+    <dimen name="size_237">237dp</dimen>
+    <dimen name="size_237_5">237.5dp</dimen>
+    <dimen name="size_238">238dp</dimen>
+    <dimen name="size_238_5">238.5dp</dimen>
+    <dimen name="size_239">239dp</dimen>
+    <dimen name="size_239_5">239.5dp</dimen>
+    <dimen name="size_23_5">23.5dp</dimen>
+    <dimen name="size_24">24dp</dimen>
+    <dimen name="size_240">240dp</dimen>
+    <dimen name="size_240_5">240.5dp</dimen>
+    <dimen name="size_241">241dp</dimen>
+    <dimen name="size_241_5">241.5dp</dimen>
+    <dimen name="size_242">242dp</dimen>
+    <dimen name="size_242_5">242.5dp</dimen>
+    <dimen name="size_243">243dp</dimen>
+    <dimen name="size_243_5">243.5dp</dimen>
+    <dimen name="size_244">244dp</dimen>
+    <dimen name="size_244_5">244.5dp</dimen>
+    <dimen name="size_245">245dp</dimen>
+    <dimen name="size_245_5">245.5dp</dimen>
+    <dimen name="size_246">246dp</dimen>
+    <dimen name="size_246_5">246.5dp</dimen>
+    <dimen name="size_247">247dp</dimen>
+    <dimen name="size_247_5">247.5dp</dimen>
+    <dimen name="size_248">248dp</dimen>
+    <dimen name="size_248_5">248.5dp</dimen>
+    <dimen name="size_249">249dp</dimen>
+    <dimen name="size_249_5">249.5dp</dimen>
+    <dimen name="size_24_5">24.5dp</dimen>
+    <dimen name="size_25">25dp</dimen>
+    <dimen name="size_250">250dp</dimen>
+    <dimen name="size_250_5">250.5dp</dimen>
+    <dimen name="size_251">251dp</dimen>
+    <dimen name="size_251_5">251.5dp</dimen>
+    <dimen name="size_252">252dp</dimen>
+    <dimen name="size_252_5">252.5dp</dimen>
+    <dimen name="size_253">253dp</dimen>
+    <dimen name="size_253_5">253.5dp</dimen>
+    <dimen name="size_254">254dp</dimen>
+    <dimen name="size_254_5">254.5dp</dimen>
+    <dimen name="size_255">255dp</dimen>
+    <dimen name="size_255_5">255.5dp</dimen>
+    <dimen name="size_256">256dp</dimen>
+    <dimen name="size_256_5">256.5dp</dimen>
+    <dimen name="size_257">257dp</dimen>
+    <dimen name="size_257_5">257.5dp</dimen>
+    <dimen name="size_258">258dp</dimen>
+    <dimen name="size_258_5">258.5dp</dimen>
+    <dimen name="size_259">259dp</dimen>
+    <dimen name="size_259_5">259.5dp</dimen>
+    <dimen name="size_25_5">25.5dp</dimen>
+    <dimen name="size_26">26dp</dimen>
+    <dimen name="size_260">260dp</dimen>
+    <dimen name="size_260_5">260.5dp</dimen>
+    <dimen name="size_261">261dp</dimen>
+    <dimen name="size_261_5">261.5dp</dimen>
+    <dimen name="size_262">262dp</dimen>
+    <dimen name="size_262_5">262.5dp</dimen>
+    <dimen name="size_263">263dp</dimen>
+    <dimen name="size_263_5">263.5dp</dimen>
+    <dimen name="size_264">264dp</dimen>
+    <dimen name="size_264_5">264.5dp</dimen>
+    <dimen name="size_265">265dp</dimen>
+    <dimen name="size_265_5">265.5dp</dimen>
+    <dimen name="size_266">266dp</dimen>
+    <dimen name="size_266_5">266.5dp</dimen>
+    <dimen name="size_267">267dp</dimen>
+    <dimen name="size_267_5">267.5dp</dimen>
+    <dimen name="size_268">268dp</dimen>
+    <dimen name="size_268_5">268.5dp</dimen>
+    <dimen name="size_269">269dp</dimen>
+    <dimen name="size_269_5">269.5dp</dimen>
+    <dimen name="size_26_5">26.5dp</dimen>
+    <dimen name="size_27">27dp</dimen>
+    <dimen name="size_270">270dp</dimen>
+    <dimen name="size_270_5">270.5dp</dimen>
+    <dimen name="size_271">271dp</dimen>
+    <dimen name="size_271_5">271.5dp</dimen>
+    <dimen name="size_272">272dp</dimen>
+    <dimen name="size_272_5">272.5dp</dimen>
+    <dimen name="size_273">273dp</dimen>
+    <dimen name="size_273_5">273.5dp</dimen>
+    <dimen name="size_274">274dp</dimen>
+    <dimen name="size_274_5">274.5dp</dimen>
+    <dimen name="size_275">275dp</dimen>
+    <dimen name="size_275_5">275.5dp</dimen>
+    <dimen name="size_276">276dp</dimen>
+    <dimen name="size_276_5">276.5dp</dimen>
+    <dimen name="size_277">277dp</dimen>
+    <dimen name="size_277_5">277.5dp</dimen>
+    <dimen name="size_278">278dp</dimen>
+    <dimen name="size_278_5">278.5dp</dimen>
+    <dimen name="size_279">279dp</dimen>
+    <dimen name="size_279_5">279.5dp</dimen>
+    <dimen name="size_27_5">27.5dp</dimen>
+    <dimen name="size_28">28dp</dimen>
+    <dimen name="size_280">280dp</dimen>
+    <dimen name="size_280_5">280.5dp</dimen>
+    <dimen name="size_281">281dp</dimen>
+    <dimen name="size_281_5">281.5dp</dimen>
+    <dimen name="size_282">282dp</dimen>
+    <dimen name="size_282_5">282.5dp</dimen>
+    <dimen name="size_283">283dp</dimen>
+    <dimen name="size_283_5">283.5dp</dimen>
+    <dimen name="size_284">284dp</dimen>
+    <dimen name="size_284_5">284.5dp</dimen>
+    <dimen name="size_285">285dp</dimen>
+    <dimen name="size_285_5">285.5dp</dimen>
+    <dimen name="size_286">286dp</dimen>
+    <dimen name="size_286_5">286.5dp</dimen>
+    <dimen name="size_287">287dp</dimen>
+    <dimen name="size_287_5">287.5dp</dimen>
+    <dimen name="size_288">288dp</dimen>
+    <dimen name="size_288_5">288.5dp</dimen>
+    <dimen name="size_289">289dp</dimen>
+    <dimen name="size_289_5">289.5dp</dimen>
+    <dimen name="size_28_5">28.5dp</dimen>
+    <dimen name="size_28_8">28.8dp</dimen>
+    <dimen name="size_29">29dp</dimen>
+    <dimen name="size_290">290dp</dimen>
+    <dimen name="size_290_5">290.5dp</dimen>
+    <dimen name="size_291">291dp</dimen>
+    <dimen name="size_291_5">291.5dp</dimen>
+    <dimen name="size_292">292dp</dimen>
+    <dimen name="size_292_5">292.5dp</dimen>
+    <dimen name="size_293">293dp</dimen>
+    <dimen name="size_293_5">293.5dp</dimen>
+    <dimen name="size_294">294dp</dimen>
+    <dimen name="size_294_5">294.5dp</dimen>
+    <dimen name="size_295">295dp</dimen>
+    <dimen name="size_295_5">295.5dp</dimen>
+    <dimen name="size_296">296dp</dimen>
+    <dimen name="size_296_5">296.5dp</dimen>
+    <dimen name="size_297">297dp</dimen>
+    <dimen name="size_297_5">297.5dp</dimen>
+    <dimen name="size_298">298dp</dimen>
+    <dimen name="size_298_5">298.5dp</dimen>
+    <dimen name="size_299">299dp</dimen>
+    <dimen name="size_299_5">299.5dp</dimen>
+    <dimen name="size_29_5">29.5dp</dimen>
+    <dimen name="size_2_3">2.3dp</dimen>
+    <dimen name="size_2_5">2.5dp</dimen>
+    <dimen name="size_3">3dp</dimen>
+    <dimen name="size_30">30dp</dimen>
+    <dimen name="size_300">300dp</dimen>
+    <dimen name="size_300_5">300.5dp</dimen>
+    <dimen name="size_301">301dp</dimen>
+    <dimen name="size_301_5">301.5dp</dimen>
+    <dimen name="size_302">302dp</dimen>
+    <dimen name="size_302_5">302.5dp</dimen>
+    <dimen name="size_303">303dp</dimen>
+    <dimen name="size_303_5">303.5dp</dimen>
+    <dimen name="size_304">304dp</dimen>
+    <dimen name="size_304_5">304.5dp</dimen>
+    <dimen name="size_305">305dp</dimen>
+    <dimen name="size_305_5">305.5dp</dimen>
+    <dimen name="size_306">306dp</dimen>
+    <dimen name="size_306_5">306.5dp</dimen>
+    <dimen name="size_307">307dp</dimen>
+    <dimen name="size_307_5">307.5dp</dimen>
+    <dimen name="size_308">308dp</dimen>
+    <dimen name="size_308_5">308.5dp</dimen>
+    <dimen name="size_309">309dp</dimen>
+    <dimen name="size_309_5">309.5dp</dimen>
+    <dimen name="size_30_5">30.5dp</dimen>
+    <dimen name="size_31">31dp</dimen>
+    <dimen name="size_310">310dp</dimen>
+    <dimen name="size_310_5">310.5dp</dimen>
+    <dimen name="size_311">311dp</dimen>
+    <dimen name="size_311_5">311.5dp</dimen>
+    <dimen name="size_312">312dp</dimen>
+    <dimen name="size_312_5">312.5dp</dimen>
+    <dimen name="size_313">313dp</dimen>
+    <dimen name="size_313_5">313.5dp</dimen>
+    <dimen name="size_314">314dp</dimen>
+    <dimen name="size_314_5">314.5dp</dimen>
+    <dimen name="size_315">315dp</dimen>
+    <dimen name="size_315_5">315.5dp</dimen>
+    <dimen name="size_316">316dp</dimen>
+    <dimen name="size_316_5">316.5dp</dimen>
+    <dimen name="size_317">317dp</dimen>
+    <dimen name="size_317_5">317.5dp</dimen>
+    <dimen name="size_318">318dp</dimen>
+    <dimen name="size_318_5">318.5dp</dimen>
+    <dimen name="size_319">319dp</dimen>
+    <dimen name="size_319_5">319.5dp</dimen>
+    <dimen name="size_31_5">31.5dp</dimen>
+    <dimen name="size_32">32dp</dimen>
+    <dimen name="size_320">320dp</dimen>
+    <dimen name="size_320_5">320.5dp</dimen>
+    <dimen name="size_321">321dp</dimen>
+    <dimen name="size_321_5">321.5dp</dimen>
+    <dimen name="size_322">322dp</dimen>
+    <dimen name="size_322_5">322.5dp</dimen>
+    <dimen name="size_323">323dp</dimen>
+    <dimen name="size_323_5">323.5dp</dimen>
+    <dimen name="size_324">324dp</dimen>
+    <dimen name="size_324_5">324.5dp</dimen>
+    <dimen name="size_325">325dp</dimen>
+    <dimen name="size_325_5">325.5dp</dimen>
+    <dimen name="size_326">326dp</dimen>
+    <dimen name="size_326_5">326.5dp</dimen>
+    <dimen name="size_327">327dp</dimen>
+    <dimen name="size_327_5">327.5dp</dimen>
+    <dimen name="size_328">328dp</dimen>
+    <dimen name="size_328_5">328.5dp</dimen>
+    <dimen name="size_329">329dp</dimen>
+    <dimen name="size_329_5">329.5dp</dimen>
+    <dimen name="size_32_5">32.5dp</dimen>
+    <dimen name="size_33">33dp</dimen>
+    <dimen name="size_330">330dp</dimen>
+    <dimen name="size_330_5">330.5dp</dimen>
+    <dimen name="size_331">331dp</dimen>
+    <dimen name="size_331_5">331.5dp</dimen>
+    <dimen name="size_332">332dp</dimen>
+    <dimen name="size_332_5">332.5dp</dimen>
+    <dimen name="size_333">333dp</dimen>
+    <dimen name="size_333_5">333.5dp</dimen>
+    <dimen name="size_334">334dp</dimen>
+    <dimen name="size_334_5">334.5dp</dimen>
+    <dimen name="size_335">335dp</dimen>
+    <dimen name="size_335_5">335.5dp</dimen>
+    <dimen name="size_336">336dp</dimen>
+    <dimen name="size_336_5">336.5dp</dimen>
+    <dimen name="size_337">337dp</dimen>
+    <dimen name="size_337_5">337.5dp</dimen>
+    <dimen name="size_338">338dp</dimen>
+    <dimen name="size_338_5">338.5dp</dimen>
+    <dimen name="size_339">339dp</dimen>
+    <dimen name="size_339_5">339.5dp</dimen>
+    <dimen name="size_33_5">33.5dp</dimen>
+    <dimen name="size_34">34dp</dimen>
+    <dimen name="size_340">340dp</dimen>
+    <dimen name="size_340_5">340.5dp</dimen>
+    <dimen name="size_341">341dp</dimen>
+    <dimen name="size_341_5">341.5dp</dimen>
+    <dimen name="size_342">342dp</dimen>
+    <dimen name="size_342_5">342.5dp</dimen>
+    <dimen name="size_343">343dp</dimen>
+    <dimen name="size_343_5">343.5dp</dimen>
+    <dimen name="size_344">344dp</dimen>
+    <dimen name="size_344_5">344.5dp</dimen>
+    <dimen name="size_345">345dp</dimen>
+    <dimen name="size_345_5">345.5dp</dimen>
+    <dimen name="size_346">346dp</dimen>
+    <dimen name="size_346_5">346.5dp</dimen>
+    <dimen name="size_347">347dp</dimen>
+    <dimen name="size_347_5">347.5dp</dimen>
+    <dimen name="size_348">348dp</dimen>
+    <dimen name="size_348_5">348.5dp</dimen>
+    <dimen name="size_349">349dp</dimen>
+    <dimen name="size_349_5">349.5dp</dimen>
+    <dimen name="size_34_5">34.5dp</dimen>
+    <dimen name="size_35">35dp</dimen>
+    <dimen name="size_350">350dp</dimen>
+    <dimen name="size_350_5">350.5dp</dimen>
+    <dimen name="size_351">351dp</dimen>
+    <dimen name="size_351_5">351.5dp</dimen>
+    <dimen name="size_352">352dp</dimen>
+    <dimen name="size_352_5">352.5dp</dimen>
+    <dimen name="size_353">353dp</dimen>
+    <dimen name="size_353_5">353.5dp</dimen>
+    <dimen name="size_354">354dp</dimen>
+    <dimen name="size_354_5">354.5dp</dimen>
+    <dimen name="size_355">355dp</dimen>
+    <dimen name="size_355_5">355.5dp</dimen>
+    <dimen name="size_356">356dp</dimen>
+    <dimen name="size_356_5">356.5dp</dimen>
+    <dimen name="size_357">357dp</dimen>
+    <dimen name="size_357_5">357.5dp</dimen>
+    <dimen name="size_358">358dp</dimen>
+    <dimen name="size_358_5">358.5dp</dimen>
+    <dimen name="size_359">359dp</dimen>
+    <dimen name="size_359_5">359.5dp</dimen>
+    <dimen name="size_35_5">35.5dp</dimen>
+    <dimen name="size_36">36dp</dimen>
+    <dimen name="size_360">360dp</dimen>
+    <dimen name="size_360_5">360.5dp</dimen>
+    <dimen name="size_361">361dp</dimen>
+    <dimen name="size_361_5">361.5dp</dimen>
+    <dimen name="size_362">362dp</dimen>
+    <dimen name="size_362_5">362.5dp</dimen>
+    <dimen name="size_363">363dp</dimen>
+    <dimen name="size_363_5">363.5dp</dimen>
+    <dimen name="size_364">364dp</dimen>
+    <dimen name="size_364_5">364.5dp</dimen>
+    <dimen name="size_365">365dp</dimen>
+    <dimen name="size_365_5">365.5dp</dimen>
+    <dimen name="size_366">366dp</dimen>
+    <dimen name="size_366_5">366.5dp</dimen>
+    <dimen name="size_367">367dp</dimen>
+    <dimen name="size_367_5">367.5dp</dimen>
+    <dimen name="size_368">368dp</dimen>
+    <dimen name="size_368_5">368.5dp</dimen>
+    <dimen name="size_369">369dp</dimen>
+    <dimen name="size_369_5">369.5dp</dimen>
+    <dimen name="size_36_5">36.5dp</dimen>
+    <dimen name="size_37">37dp</dimen>
+    <dimen name="size_370">370dp</dimen>
+    <dimen name="size_370_5">370.5dp</dimen>
+    <dimen name="size_371">371dp</dimen>
+    <dimen name="size_371_5">371.5dp</dimen>
+    <dimen name="size_372">372dp</dimen>
+    <dimen name="size_372_5">372.5dp</dimen>
+    <dimen name="size_373">373dp</dimen>
+    <dimen name="size_373_5">373.5dp</dimen>
+    <dimen name="size_374">374dp</dimen>
+    <dimen name="size_374_5">374.5dp</dimen>
+    <dimen name="size_375">375dp</dimen>
+    <dimen name="size_375_5">375.5dp</dimen>
+    <dimen name="size_376">376dp</dimen>
+    <dimen name="size_376_5">376.5dp</dimen>
+    <dimen name="size_377">377dp</dimen>
+    <dimen name="size_377_5">377.5dp</dimen>
+    <dimen name="size_378">378dp</dimen>
+    <dimen name="size_378_5">378.5dp</dimen>
+    <dimen name="size_379">379dp</dimen>
+    <dimen name="size_379_5">379.5dp</dimen>
+    <dimen name="size_37_5">37.5dp</dimen>
+    <dimen name="size_38">38dp</dimen>
+    <dimen name="size_380">380dp</dimen>
+    <dimen name="size_380_5">380.5dp</dimen>
+    <dimen name="size_381">381dp</dimen>
+    <dimen name="size_381_5">381.5dp</dimen>
+    <dimen name="size_382">382dp</dimen>
+    <dimen name="size_382_5">382.5dp</dimen>
+    <dimen name="size_383">383dp</dimen>
+    <dimen name="size_383_5">383.5dp</dimen>
+    <dimen name="size_384">384dp</dimen>
+    <dimen name="size_384_5">384.5dp</dimen>
+    <dimen name="size_385">385dp</dimen>
+    <dimen name="size_385_5">385.5dp</dimen>
+    <dimen name="size_386">386dp</dimen>
+    <dimen name="size_386_5">386.5dp</dimen>
+    <dimen name="size_387">387dp</dimen>
+    <dimen name="size_387_5">387.5dp</dimen>
+    <dimen name="size_388">388dp</dimen>
+    <dimen name="size_388_5">388.5dp</dimen>
+    <dimen name="size_389">389dp</dimen>
+    <dimen name="size_389_5">389.5dp</dimen>
+    <dimen name="size_38_5">38.5dp</dimen>
+    <dimen name="size_39">39dp</dimen>
+    <dimen name="size_390">390dp</dimen>
+    <dimen name="size_390_5">390.5dp</dimen>
+    <dimen name="size_391">391dp</dimen>
+    <dimen name="size_391_5">391.5dp</dimen>
+    <dimen name="size_392">392dp</dimen>
+    <dimen name="size_392_5">392.5dp</dimen>
+    <dimen name="size_393">393dp</dimen>
+    <dimen name="size_393_5">393.5dp</dimen>
+    <dimen name="size_394">394dp</dimen>
+    <dimen name="size_394_5">394.5dp</dimen>
+    <dimen name="size_395">395dp</dimen>
+    <dimen name="size_395_5">395.5dp</dimen>
+    <dimen name="size_396">396dp</dimen>
+    <dimen name="size_396_5">396.5dp</dimen>
+    <dimen name="size_397">397dp</dimen>
+    <dimen name="size_397_5">397.5dp</dimen>
+    <dimen name="size_398">398dp</dimen>
+    <dimen name="size_398_5">398.5dp</dimen>
+    <dimen name="size_399">399dp</dimen>
+    <dimen name="size_399_5">399.5dp</dimen>
+    <dimen name="size_39_5">39.5dp</dimen>
+    <dimen name="size_3_5">3.5dp</dimen>
+    <dimen name="size_4">4dp</dimen>
+    <dimen name="size_40">40dp</dimen>
+    <dimen name="size_400">400dp</dimen>
+    <dimen name="size_400_5">400.5dp</dimen>
+    <dimen name="size_401">401dp</dimen>
+    <dimen name="size_401_5">401.5dp</dimen>
+    <dimen name="size_402">402dp</dimen>
+    <dimen name="size_402_5">402.5dp</dimen>
+    <dimen name="size_403">403dp</dimen>
+    <dimen name="size_403_5">403.5dp</dimen>
+    <dimen name="size_404">404dp</dimen>
+    <dimen name="size_404_5">404.5dp</dimen>
+    <dimen name="size_405">405dp</dimen>
+    <dimen name="size_405_5">405.5dp</dimen>
+    <dimen name="size_406">406dp</dimen>
+    <dimen name="size_406_5">406.5dp</dimen>
+    <dimen name="size_407">407dp</dimen>
+    <dimen name="size_407_5">407.5dp</dimen>
+    <dimen name="size_408">408dp</dimen>
+    <dimen name="size_408_5">408.5dp</dimen>
+    <dimen name="size_409">409dp</dimen>
+    <dimen name="size_409_5">409.5dp</dimen>
+    <dimen name="size_40_5">40.5dp</dimen>
+    <dimen name="size_41">41dp</dimen>
+    <dimen name="size_410">410dp</dimen>
+    <dimen name="size_410_5">410.5dp</dimen>
+    <dimen name="size_411">411dp</dimen>
+    <dimen name="size_411_5">411.5dp</dimen>
+    <dimen name="size_412">412dp</dimen>
+    <dimen name="size_412_5">412.5dp</dimen>
+    <dimen name="size_413">413dp</dimen>
+    <dimen name="size_413_5">413.5dp</dimen>
+    <dimen name="size_414">414dp</dimen>
+    <dimen name="size_414_5">414.5dp</dimen>
+    <dimen name="size_415">415dp</dimen>
+    <dimen name="size_415_5">415.5dp</dimen>
+    <dimen name="size_416">416dp</dimen>
+    <dimen name="size_416_5">416.5dp</dimen>
+    <dimen name="size_417">417dp</dimen>
+    <dimen name="size_417_5">417.5dp</dimen>
+    <dimen name="size_418">418dp</dimen>
+    <dimen name="size_418_5">418.5dp</dimen>
+    <dimen name="size_419">419dp</dimen>
+    <dimen name="size_419_5">419.5dp</dimen>
+    <dimen name="size_41_4">41.4dp</dimen>
+    <dimen name="size_41_5">41.5dp</dimen>
+    <dimen name="size_42">42dp</dimen>
+    <dimen name="size_420">420dp</dimen>
+    <dimen name="size_420_5">420.5dp</dimen>
+    <dimen name="size_421">421dp</dimen>
+    <dimen name="size_421_5">421.5dp</dimen>
+    <dimen name="size_422">422dp</dimen>
+    <dimen name="size_422_5">422.5dp</dimen>
+    <dimen name="size_423">423dp</dimen>
+    <dimen name="size_423_5">423.5dp</dimen>
+    <dimen name="size_424">424dp</dimen>
+    <dimen name="size_424_5">424.5dp</dimen>
+    <dimen name="size_425">425dp</dimen>
+    <dimen name="size_425_5">425.5dp</dimen>
+    <dimen name="size_426">426dp</dimen>
+    <dimen name="size_426_5">426.5dp</dimen>
+    <dimen name="size_427">427dp</dimen>
+    <dimen name="size_427_5">427.5dp</dimen>
+    <dimen name="size_428">428dp</dimen>
+    <dimen name="size_428_5">428.5dp</dimen>
+    <dimen name="size_429">429dp</dimen>
+    <dimen name="size_429_5">429.5dp</dimen>
+    <dimen name="size_42_5">42.5dp</dimen>
+    <dimen name="size_43">43dp</dimen>
+    <dimen name="size_430">430dp</dimen>
+    <dimen name="size_430_5">430.5dp</dimen>
+    <dimen name="size_431">431dp</dimen>
+    <dimen name="size_431_5">431.5dp</dimen>
+    <dimen name="size_432">432dp</dimen>
+    <dimen name="size_432_5">432.5dp</dimen>
+    <dimen name="size_433">433dp</dimen>
+    <dimen name="size_433_5">433.5dp</dimen>
+    <dimen name="size_434">434dp</dimen>
+    <dimen name="size_434_5">434.5dp</dimen>
+    <dimen name="size_435">435dp</dimen>
+    <dimen name="size_435_5">435.5dp</dimen>
+    <dimen name="size_436">436dp</dimen>
+    <dimen name="size_436_5">436.5dp</dimen>
+    <dimen name="size_437">437dp</dimen>
+    <dimen name="size_437_5">437.5dp</dimen>
+    <dimen name="size_438">438dp</dimen>
+    <dimen name="size_438_5">438.5dp</dimen>
+    <dimen name="size_439">439dp</dimen>
+    <dimen name="size_439_5">439.5dp</dimen>
+    <dimen name="size_43_4">43.4dp</dimen>
+    <dimen name="size_43_5">43.5dp</dimen>
+    <dimen name="size_44">44dp</dimen>
+    <dimen name="size_440">440dp</dimen>
+    <dimen name="size_440_5">440.5dp</dimen>
+    <dimen name="size_441">441dp</dimen>
+    <dimen name="size_441_5">441.5dp</dimen>
+    <dimen name="size_442">442dp</dimen>
+    <dimen name="size_442_5">442.5dp</dimen>
+    <dimen name="size_443">443dp</dimen>
+    <dimen name="size_443_5">443.5dp</dimen>
+    <dimen name="size_444">444dp</dimen>
+    <dimen name="size_444_5">444.5dp</dimen>
+    <dimen name="size_445">445dp</dimen>
+    <dimen name="size_445_5">445.5dp</dimen>
+    <dimen name="size_446">446dp</dimen>
+    <dimen name="size_446_5">446.5dp</dimen>
+    <dimen name="size_447">447dp</dimen>
+    <dimen name="size_447_5">447.5dp</dimen>
+    <dimen name="size_448">448dp</dimen>
+    <dimen name="size_448_5">448.5dp</dimen>
+    <dimen name="size_449">449dp</dimen>
+    <dimen name="size_449_5">449.5dp</dimen>
+    <dimen name="size_44_5">44.5dp</dimen>
+    <dimen name="size_45">45dp</dimen>
+    <dimen name="size_450">450dp</dimen>
+    <dimen name="size_450_5">450.5dp</dimen>
+    <dimen name="size_451">451dp</dimen>
+    <dimen name="size_451_5">451.5dp</dimen>
+    <dimen name="size_452">452dp</dimen>
+    <dimen name="size_452_5">452.5dp</dimen>
+    <dimen name="size_453">453dp</dimen>
+    <dimen name="size_453_5">453.5dp</dimen>
+    <dimen name="size_454">454dp</dimen>
+    <dimen name="size_454_5">454.5dp</dimen>
+    <dimen name="size_455">455dp</dimen>
+    <dimen name="size_455_5">455.5dp</dimen>
+    <dimen name="size_456">456dp</dimen>
+    <dimen name="size_456_5">456.5dp</dimen>
+    <dimen name="size_457">457dp</dimen>
+    <dimen name="size_457_5">457.5dp</dimen>
+    <dimen name="size_458">458dp</dimen>
+    <dimen name="size_458_5">458.5dp</dimen>
+    <dimen name="size_459">459dp</dimen>
+    <dimen name="size_459_5">459.5dp</dimen>
+    <dimen name="size_45_5">45.5dp</dimen>
+    <dimen name="size_46">46dp</dimen>
+    <dimen name="size_460">460dp</dimen>
+    <dimen name="size_460_5">460.5dp</dimen>
+    <dimen name="size_461">461dp</dimen>
+    <dimen name="size_461_5">461.5dp</dimen>
+    <dimen name="size_462">462dp</dimen>
+    <dimen name="size_462_5">462.5dp</dimen>
+    <dimen name="size_463">463dp</dimen>
+    <dimen name="size_463_5">463.5dp</dimen>
+    <dimen name="size_464">464dp</dimen>
+    <dimen name="size_464_5">464.5dp</dimen>
+    <dimen name="size_465">465dp</dimen>
+    <dimen name="size_465_5">465.5dp</dimen>
+    <dimen name="size_466">466dp</dimen>
+    <dimen name="size_466_5">466.5dp</dimen>
+    <dimen name="size_467">467dp</dimen>
+    <dimen name="size_467_5">467.5dp</dimen>
+    <dimen name="size_468">468dp</dimen>
+    <dimen name="size_468_5">468.5dp</dimen>
+    <dimen name="size_469">469dp</dimen>
+    <dimen name="size_469_5">469.5dp</dimen>
+    <dimen name="size_46_5">46.5dp</dimen>
+    <dimen name="size_47">47dp</dimen>
+    <dimen name="size_470">470dp</dimen>
+    <dimen name="size_470_5">470.5dp</dimen>
+    <dimen name="size_471">471dp</dimen>
+    <dimen name="size_471_5">471.5dp</dimen>
+    <dimen name="size_472">472dp</dimen>
+    <dimen name="size_472_5">472.5dp</dimen>
+    <dimen name="size_473">473dp</dimen>
+    <dimen name="size_473_5">473.5dp</dimen>
+    <dimen name="size_474">474dp</dimen>
+    <dimen name="size_474_5">474.5dp</dimen>
+    <dimen name="size_475">475dp</dimen>
+    <dimen name="size_475_5">475.5dp</dimen>
+    <dimen name="size_476">476dp</dimen>
+    <dimen name="size_476_5">476.5dp</dimen>
+    <dimen name="size_477">477dp</dimen>
+    <dimen name="size_477_5">477.5dp</dimen>
+    <dimen name="size_478">478dp</dimen>
+    <dimen name="size_478_5">478.5dp</dimen>
+    <dimen name="size_479">479dp</dimen>
+    <dimen name="size_479_5">479.5dp</dimen>
+    <dimen name="size_47_5">47.5dp</dimen>
+    <dimen name="size_48">48dp</dimen>
+    <dimen name="size_480">480dp</dimen>
+    <dimen name="size_480_5">480.5dp</dimen>
+    <dimen name="size_481">481dp</dimen>
+    <dimen name="size_481_5">481.5dp</dimen>
+    <dimen name="size_482">482dp</dimen>
+    <dimen name="size_482_5">482.5dp</dimen>
+    <dimen name="size_483">483dp</dimen>
+    <dimen name="size_483_5">483.5dp</dimen>
+    <dimen name="size_484">484dp</dimen>
+    <dimen name="size_484_5">484.5dp</dimen>
+    <dimen name="size_485">485dp</dimen>
+    <dimen name="size_485_5">485.5dp</dimen>
+    <dimen name="size_486">486dp</dimen>
+    <dimen name="size_486_5">486.5dp</dimen>
+    <dimen name="size_487">487dp</dimen>
+    <dimen name="size_487_5">487.5dp</dimen>
+    <dimen name="size_488">488dp</dimen>
+    <dimen name="size_488_5">488.5dp</dimen>
+    <dimen name="size_489">489dp</dimen>
+    <dimen name="size_489_5">489.5dp</dimen>
+    <dimen name="size_48_5">48.5dp</dimen>
+    <dimen name="size_49">49dp</dimen>
+    <dimen name="size_490">490dp</dimen>
+    <dimen name="size_490_5">490.5dp</dimen>
+    <dimen name="size_491">491dp</dimen>
+    <dimen name="size_491_5">491.5dp</dimen>
+    <dimen name="size_492">492dp</dimen>
+    <dimen name="size_492_5">492.5dp</dimen>
+    <dimen name="size_493">493dp</dimen>
+    <dimen name="size_493_5">493.5dp</dimen>
+    <dimen name="size_494">494dp</dimen>
+    <dimen name="size_494_5">494.5dp</dimen>
+    <dimen name="size_495">495dp</dimen>
+    <dimen name="size_495_5">495.5dp</dimen>
+    <dimen name="size_496">496dp</dimen>
+    <dimen name="size_496_5">496.5dp</dimen>
+    <dimen name="size_497">497dp</dimen>
+    <dimen name="size_497_5">497.5dp</dimen>
+    <dimen name="size_498">498dp</dimen>
+    <dimen name="size_498_5">498.5dp</dimen>
+    <dimen name="size_499">499dp</dimen>
+    <dimen name="size_499_5">499.5dp</dimen>
+    <dimen name="size_49_5">49.5dp</dimen>
+    <dimen name="size_4_5">4.5dp</dimen>
+    <dimen name="size_5">5dp</dimen>
+    <dimen name="size_50">50dp</dimen>
+    <dimen name="size_500">500dp</dimen>
+    <dimen name="size_500_5">500.5dp</dimen>
+    <dimen name="size_501">501dp</dimen>
+    <dimen name="size_501_5">501.5dp</dimen>
+    <dimen name="size_502">502dp</dimen>
+    <dimen name="size_502_5">502.5dp</dimen>
+    <dimen name="size_503">503dp</dimen>
+    <dimen name="size_503_5">503.5dp</dimen>
+    <dimen name="size_504">504dp</dimen>
+    <dimen name="size_504_5">504.5dp</dimen>
+    <dimen name="size_505">505dp</dimen>
+    <dimen name="size_505_5">505.5dp</dimen>
+    <dimen name="size_506">506dp</dimen>
+    <dimen name="size_506_5">506.5dp</dimen>
+    <dimen name="size_507">507dp</dimen>
+    <dimen name="size_507_5">507.5dp</dimen>
+    <dimen name="size_508">508dp</dimen>
+    <dimen name="size_508_5">508.5dp</dimen>
+    <dimen name="size_509">509dp</dimen>
+    <dimen name="size_509_5">509.5dp</dimen>
+    <dimen name="size_50_5">50.5dp</dimen>
+    <dimen name="size_51">51dp</dimen>
+    <dimen name="size_510">510dp</dimen>
+    <dimen name="size_510_5">510.5dp</dimen>
+    <dimen name="size_511">511dp</dimen>
+    <dimen name="size_511_5">511.5dp</dimen>
+    <dimen name="size_512">512dp</dimen>
+    <dimen name="size_512_5">512.5dp</dimen>
+    <dimen name="size_513">513dp</dimen>
+    <dimen name="size_513_5">513.5dp</dimen>
+    <dimen name="size_514">514dp</dimen>
+    <dimen name="size_514_5">514.5dp</dimen>
+    <dimen name="size_515">515dp</dimen>
+    <dimen name="size_515_5">515.5dp</dimen>
+    <dimen name="size_516">516dp</dimen>
+    <dimen name="size_516_5">516.5dp</dimen>
+    <dimen name="size_517">517dp</dimen>
+    <dimen name="size_517_5">517.5dp</dimen>
+    <dimen name="size_518">518dp</dimen>
+    <dimen name="size_518_5">518.5dp</dimen>
+    <dimen name="size_519">519dp</dimen>
+    <dimen name="size_519_5">519.5dp</dimen>
+    <dimen name="size_51_5">51.5dp</dimen>
+    <dimen name="size_52">52dp</dimen>
+    <dimen name="size_520">520dp</dimen>
+    <dimen name="size_520_5">520.5dp</dimen>
+    <dimen name="size_521">521dp</dimen>
+    <dimen name="size_521_5">521.5dp</dimen>
+    <dimen name="size_522">522dp</dimen>
+    <dimen name="size_522_5">522.5dp</dimen>
+    <dimen name="size_523">523dp</dimen>
+    <dimen name="size_523_5">523.5dp</dimen>
+    <dimen name="size_524">524dp</dimen>
+    <dimen name="size_524_5">524.5dp</dimen>
+    <dimen name="size_525">525dp</dimen>
+    <dimen name="size_525_5">525.5dp</dimen>
+    <dimen name="size_526">526dp</dimen>
+    <dimen name="size_526_5">526.5dp</dimen>
+    <dimen name="size_527">527dp</dimen>
+    <dimen name="size_527_5">527.5dp</dimen>
+    <dimen name="size_528">528dp</dimen>
+    <dimen name="size_528_5">528.5dp</dimen>
+    <dimen name="size_529">529dp</dimen>
+    <dimen name="size_529_5">529.5dp</dimen>
+    <dimen name="size_52_5">52.5dp</dimen>
+    <dimen name="size_53">53dp</dimen>
+    <dimen name="size_530">530dp</dimen>
+    <dimen name="size_530_5">530.5dp</dimen>
+    <dimen name="size_531">531dp</dimen>
+    <dimen name="size_531_5">531.5dp</dimen>
+    <dimen name="size_532">532dp</dimen>
+    <dimen name="size_532_5">532.5dp</dimen>
+    <dimen name="size_533">533dp</dimen>
+    <dimen name="size_533_5">533.5dp</dimen>
+    <dimen name="size_534">534dp</dimen>
+    <dimen name="size_534_5">534.5dp</dimen>
+    <dimen name="size_535">535dp</dimen>
+    <dimen name="size_535_5">535.5dp</dimen>
+    <dimen name="size_536">536dp</dimen>
+    <dimen name="size_536_5">536.5dp</dimen>
+    <dimen name="size_537">537dp</dimen>
+    <dimen name="size_537_5">537.5dp</dimen>
+    <dimen name="size_538">538dp</dimen>
+    <dimen name="size_538_5">538.5dp</dimen>
+    <dimen name="size_539">539dp</dimen>
+    <dimen name="size_539_5">539.5dp</dimen>
+    <dimen name="size_53_5">53.5dp</dimen>
+    <dimen name="size_54">54dp</dimen>
+    <dimen name="size_540">540dp</dimen>
+    <dimen name="size_540_5">540.5dp</dimen>
+    <dimen name="size_541">541dp</dimen>
+    <dimen name="size_541_5">541.5dp</dimen>
+    <dimen name="size_542">542dp</dimen>
+    <dimen name="size_542_5">542.5dp</dimen>
+    <dimen name="size_543">543dp</dimen>
+    <dimen name="size_543_5">543.5dp</dimen>
+    <dimen name="size_544">544dp</dimen>
+    <dimen name="size_544_5">544.5dp</dimen>
+    <dimen name="size_545">545dp</dimen>
+    <dimen name="size_545_5">545.5dp</dimen>
+    <dimen name="size_546">546dp</dimen>
+    <dimen name="size_546_5">546.5dp</dimen>
+    <dimen name="size_547">547dp</dimen>
+    <dimen name="size_547_5">547.5dp</dimen>
+    <dimen name="size_548">548dp</dimen>
+    <dimen name="size_548_5">548.5dp</dimen>
+    <dimen name="size_549">549dp</dimen>
+    <dimen name="size_549_5">549.5dp</dimen>
+    <dimen name="size_54_5">54.5dp</dimen>
+    <dimen name="size_55">55dp</dimen>
+    <dimen name="size_550">550dp</dimen>
+    <dimen name="size_550_5">550.5dp</dimen>
+    <dimen name="size_551">551dp</dimen>
+    <dimen name="size_551_5">551.5dp</dimen>
+    <dimen name="size_552">552dp</dimen>
+    <dimen name="size_552_5">552.5dp</dimen>
+    <dimen name="size_553">553dp</dimen>
+    <dimen name="size_553_5">553.5dp</dimen>
+    <dimen name="size_554">554dp</dimen>
+    <dimen name="size_554_5">554.5dp</dimen>
+    <dimen name="size_555">555dp</dimen>
+    <dimen name="size_555_5">555.5dp</dimen>
+    <dimen name="size_556">556dp</dimen>
+    <dimen name="size_556_5">556.5dp</dimen>
+    <dimen name="size_557">557dp</dimen>
+    <dimen name="size_557_5">557.5dp</dimen>
+    <dimen name="size_558">558dp</dimen>
+    <dimen name="size_558_5">558.5dp</dimen>
+    <dimen name="size_559">559dp</dimen>
+    <dimen name="size_559_5">559.5dp</dimen>
+    <dimen name="size_55_5">55.5dp</dimen>
+    <dimen name="size_56">56dp</dimen>
+    <dimen name="size_560">560dp</dimen>
+    <dimen name="size_560_5">560.5dp</dimen>
+    <dimen name="size_561">561dp</dimen>
+    <dimen name="size_561_5">561.5dp</dimen>
+    <dimen name="size_562">562dp</dimen>
+    <dimen name="size_562_5">562.5dp</dimen>
+    <dimen name="size_563">563dp</dimen>
+    <dimen name="size_563_5">563.5dp</dimen>
+    <dimen name="size_564">564dp</dimen>
+    <dimen name="size_564_5">564.5dp</dimen>
+    <dimen name="size_565">565dp</dimen>
+    <dimen name="size_565_5">565.5dp</dimen>
+    <dimen name="size_566">566dp</dimen>
+    <dimen name="size_566_5">566.5dp</dimen>
+    <dimen name="size_567">567dp</dimen>
+    <dimen name="size_567_5">567.5dp</dimen>
+    <dimen name="size_568">568dp</dimen>
+    <dimen name="size_568_5">568.5dp</dimen>
+    <dimen name="size_569">569dp</dimen>
+    <dimen name="size_569_5">569.5dp</dimen>
+    <dimen name="size_56_5">56.5dp</dimen>
+    <dimen name="size_57">57dp</dimen>
+    <dimen name="size_570">570dp</dimen>
+    <dimen name="size_570_5">570.5dp</dimen>
+    <dimen name="size_571">571dp</dimen>
+    <dimen name="size_571_5">571.5dp</dimen>
+    <dimen name="size_572">572dp</dimen>
+    <dimen name="size_572_5">572.5dp</dimen>
+    <dimen name="size_573">573dp</dimen>
+    <dimen name="size_573_5">573.5dp</dimen>
+    <dimen name="size_574">574dp</dimen>
+    <dimen name="size_574_5">574.5dp</dimen>
+    <dimen name="size_575">575dp</dimen>
+    <dimen name="size_575_5">575.5dp</dimen>
+    <dimen name="size_576">576dp</dimen>
+    <dimen name="size_576_5">576.5dp</dimen>
+    <dimen name="size_577">577dp</dimen>
+    <dimen name="size_577_5">577.5dp</dimen>
+    <dimen name="size_578">578dp</dimen>
+    <dimen name="size_578_5">578.5dp</dimen>
+    <dimen name="size_579">579dp</dimen>
+    <dimen name="size_579_5">579.5dp</dimen>
+    <dimen name="size_57_5">57.5dp</dimen>
+    <dimen name="size_58">58dp</dimen>
+    <dimen name="size_580">580dp</dimen>
+    <dimen name="size_580_5">580.5dp</dimen>
+    <dimen name="size_581">581dp</dimen>
+    <dimen name="size_581_5">581.5dp</dimen>
+    <dimen name="size_582">582dp</dimen>
+    <dimen name="size_582_5">582.5dp</dimen>
+    <dimen name="size_583">583dp</dimen>
+    <dimen name="size_583_5">583.5dp</dimen>
+    <dimen name="size_584">584dp</dimen>
+    <dimen name="size_584_5">584.5dp</dimen>
+    <dimen name="size_585">585dp</dimen>
+    <dimen name="size_585_5">585.5dp</dimen>
+    <dimen name="size_586">586dp</dimen>
+    <dimen name="size_586_5">586.5dp</dimen>
+    <dimen name="size_587">587dp</dimen>
+    <dimen name="size_587_5">587.5dp</dimen>
+    <dimen name="size_588">588dp</dimen>
+    <dimen name="size_588_5">588.5dp</dimen>
+    <dimen name="size_589">589dp</dimen>
+    <dimen name="size_589_5">589.5dp</dimen>
+    <dimen name="size_58_5">58.5dp</dimen>
+    <dimen name="size_59">59dp</dimen>
+    <dimen name="size_590">590dp</dimen>
+    <dimen name="size_590_5">590.5dp</dimen>
+    <dimen name="size_591">591dp</dimen>
+    <dimen name="size_591_5">591.5dp</dimen>
+    <dimen name="size_592">592dp</dimen>
+    <dimen name="size_592_5">592.5dp</dimen>
+    <dimen name="size_593">593dp</dimen>
+    <dimen name="size_593_5">593.5dp</dimen>
+    <dimen name="size_594">594dp</dimen>
+    <dimen name="size_594_5">594.5dp</dimen>
+    <dimen name="size_595">595dp</dimen>
+    <dimen name="size_595_5">595.5dp</dimen>
+    <dimen name="size_596">596dp</dimen>
+    <dimen name="size_596_5">596.5dp</dimen>
+    <dimen name="size_597">597dp</dimen>
+    <dimen name="size_597_5">597.5dp</dimen>
+    <dimen name="size_598">598dp</dimen>
+    <dimen name="size_598_5">598.5dp</dimen>
+    <dimen name="size_599">599dp</dimen>
+    <dimen name="size_599_5">599.5dp</dimen>
+    <dimen name="size_59_5">59.5dp</dimen>
+    <dimen name="size_5_5">5.5dp</dimen>
+    <dimen name="size_6">6dp</dimen>
+    <dimen name="size_60">60dp</dimen>
+    <dimen name="size_600">600dp</dimen>
+    <dimen name="size_600_5">600.5dp</dimen>
+    <dimen name="size_601">601dp</dimen>
+    <dimen name="size_601_5">601.5dp</dimen>
+    <dimen name="size_602">602dp</dimen>
+    <dimen name="size_602_5">602.5dp</dimen>
+    <dimen name="size_603">603dp</dimen>
+    <dimen name="size_603_5">603.5dp</dimen>
+    <dimen name="size_604">604dp</dimen>
+    <dimen name="size_604_5">604.5dp</dimen>
+    <dimen name="size_605">605dp</dimen>
+    <dimen name="size_605_5">605.5dp</dimen>
+    <dimen name="size_606">606dp</dimen>
+    <dimen name="size_606_5">606.5dp</dimen>
+    <dimen name="size_607">607dp</dimen>
+    <dimen name="size_607_5">607.5dp</dimen>
+    <dimen name="size_608">608dp</dimen>
+    <dimen name="size_608_5">608.5dp</dimen>
+    <dimen name="size_609">609dp</dimen>
+    <dimen name="size_609_5">609.5dp</dimen>
+    <dimen name="size_60_5">60.5dp</dimen>
+    <dimen name="size_61">61dp</dimen>
+    <dimen name="size_610">610dp</dimen>
+    <dimen name="size_610_5">610.5dp</dimen>
+    <dimen name="size_611">611dp</dimen>
+    <dimen name="size_611_5">611.5dp</dimen>
+    <dimen name="size_612">612dp</dimen>
+    <dimen name="size_612_5">612.5dp</dimen>
+    <dimen name="size_613">613dp</dimen>
+    <dimen name="size_613_5">613.5dp</dimen>
+    <dimen name="size_614">614dp</dimen>
+    <dimen name="size_614_5">614.5dp</dimen>
+    <dimen name="size_615">615dp</dimen>
+    <dimen name="size_615_5">615.5dp</dimen>
+    <dimen name="size_616">616dp</dimen>
+    <dimen name="size_616_5">616.5dp</dimen>
+    <dimen name="size_617">617dp</dimen>
+    <dimen name="size_617_5">617.5dp</dimen>
+    <dimen name="size_618">618dp</dimen>
+    <dimen name="size_618_5">618.5dp</dimen>
+    <dimen name="size_619">619dp</dimen>
+    <dimen name="size_619_5">619.5dp</dimen>
+    <dimen name="size_61_5">61.5dp</dimen>
+    <dimen name="size_62">62dp</dimen>
+    <dimen name="size_620">620dp</dimen>
+    <dimen name="size_620_5">620.5dp</dimen>
+    <dimen name="size_621">621dp</dimen>
+    <dimen name="size_621_5">621.5dp</dimen>
+    <dimen name="size_622">622dp</dimen>
+    <dimen name="size_622_5">622.5dp</dimen>
+    <dimen name="size_623">623dp</dimen>
+    <dimen name="size_623_5">623.5dp</dimen>
+    <dimen name="size_624">624dp</dimen>
+    <dimen name="size_624_5">624.5dp</dimen>
+    <dimen name="size_625">625dp</dimen>
+    <dimen name="size_625_5">625.5dp</dimen>
+    <dimen name="size_626">626dp</dimen>
+    <dimen name="size_626_5">626.5dp</dimen>
+    <dimen name="size_627">627dp</dimen>
+    <dimen name="size_627_5">627.5dp</dimen>
+    <dimen name="size_628">628dp</dimen>
+    <dimen name="size_628_5">628.5dp</dimen>
+    <dimen name="size_629">629dp</dimen>
+    <dimen name="size_629_5">629.5dp</dimen>
+    <dimen name="size_62_5">62.5dp</dimen>
+    <dimen name="size_63">63dp</dimen>
+    <dimen name="size_630">630dp</dimen>
+    <dimen name="size_630_5">630.5dp</dimen>
+    <dimen name="size_631">631dp</dimen>
+    <dimen name="size_631_5">631.5dp</dimen>
+    <dimen name="size_632">632dp</dimen>
+    <dimen name="size_632_5">632.5dp</dimen>
+    <dimen name="size_633">633dp</dimen>
+    <dimen name="size_633_5">633.5dp</dimen>
+    <dimen name="size_634">634dp</dimen>
+    <dimen name="size_634_5">634.5dp</dimen>
+    <dimen name="size_635">635dp</dimen>
+    <dimen name="size_635_5">635.5dp</dimen>
+    <dimen name="size_636">636dp</dimen>
+    <dimen name="size_636_5">636.5dp</dimen>
+    <dimen name="size_637">637dp</dimen>
+    <dimen name="size_637_5">637.5dp</dimen>
+    <dimen name="size_638">638dp</dimen>
+    <dimen name="size_638_5">638.5dp</dimen>
+    <dimen name="size_639">639dp</dimen>
+    <dimen name="size_639_5">639.5dp</dimen>
+    <dimen name="size_63_5">63.5dp</dimen>
+    <dimen name="size_64">64dp</dimen>
+    <dimen name="size_640">640dp</dimen>
+    <dimen name="size_64_5">64.5dp</dimen>
+    <dimen name="size_65">65dp</dimen>
+    <dimen name="size_65_5">65.5dp</dimen>
+    <dimen name="size_66">66dp</dimen>
+    <dimen name="size_66_5">66.5dp</dimen>
+    <dimen name="size_67">67dp</dimen>
+    <dimen name="size_67_5">67.5dp</dimen>
+    <dimen name="size_68">68dp</dimen>
+    <dimen name="size_68_5">68.5dp</dimen>
+    <dimen name="size_69">69dp</dimen>
+    <dimen name="size_69_4">69.4dp</dimen>
+    <dimen name="size_69_5">69.5dp</dimen>
+    <dimen name="size_6_5">6.5dp</dimen>
+    <dimen name="size_7">7dp</dimen>
+    <dimen name="size_70">70dp</dimen>
+    <dimen name="size_70_5">70.5dp</dimen>
+    <dimen name="size_71">71dp</dimen>
+    <dimen name="size_71_5">71.5dp</dimen>
+    <dimen name="size_72">72dp</dimen>
+    <dimen name="size_72_5">72.5dp</dimen>
+    <dimen name="size_73">73dp</dimen>
+    <dimen name="size_73_5">73.5dp</dimen>
+    <dimen name="size_74">74dp</dimen>
+    <dimen name="size_74_5">74.5dp</dimen>
+    <dimen name="size_75">75dp</dimen>
+    <dimen name="size_75_5">75.5dp</dimen>
+    <dimen name="size_76">76dp</dimen>
+    <dimen name="size_76_5">76.5dp</dimen>
+    <dimen name="size_77">77dp</dimen>
+    <dimen name="size_77_5">77.5dp</dimen>
+    <dimen name="size_78">78dp</dimen>
+    <dimen name="size_78_5">78.5dp</dimen>
+    <dimen name="size_79">79dp</dimen>
+    <dimen name="size_79_5">79.5dp</dimen>
+    <dimen name="size_7_5">7.5dp</dimen>
+    <dimen name="size_8">8dp</dimen>
+    <dimen name="size_80">80dp</dimen>
+    <dimen name="size_80_5">80.5dp</dimen>
+    <dimen name="size_81">81dp</dimen>
+    <dimen name="size_81_5">81.5dp</dimen>
+    <dimen name="size_82">82dp</dimen>
+    <dimen name="size_82_5">82.5dp</dimen>
+    <dimen name="size_83">83dp</dimen>
+    <dimen name="size_83_5">83.5dp</dimen>
+    <dimen name="size_84">84dp</dimen>
+    <dimen name="size_84_5">84.5dp</dimen>
+    <dimen name="size_85">85dp</dimen>
+    <dimen name="size_85_5">85.5dp</dimen>
+    <dimen name="size_86">86dp</dimen>
+    <dimen name="size_86_5">86.5dp</dimen>
+    <dimen name="size_87">87dp</dimen>
+    <dimen name="size_87_5">87.5dp</dimen>
+    <dimen name="size_88">88dp</dimen>
+    <dimen name="size_88_5">88.5dp</dimen>
+    <dimen name="size_89">89dp</dimen>
+    <dimen name="size_89_5">89.5dp</dimen>
+    <dimen name="size_8_5">8.5dp</dimen>
+    <dimen name="size_9">9dp</dimen>
+    <dimen name="size_90">90dp</dimen>
+    <dimen name="size_90_5">90.5dp</dimen>
+    <dimen name="size_91">91dp</dimen>
+    <dimen name="size_91_5">91.5dp</dimen>
+    <dimen name="size_92">92dp</dimen>
+    <dimen name="size_92_5">92.5dp</dimen>
+    <dimen name="size_93">93dp</dimen>
+    <dimen name="size_93_5">93.5dp</dimen>
+    <dimen name="size_94">94dp</dimen>
+    <dimen name="size_94_5">94.5dp</dimen>
+    <dimen name="size_95">95dp</dimen>
+    <dimen name="size_95_5">95.5dp</dimen>
+    <dimen name="size_96">96dp</dimen>
+    <dimen name="size_96_5">96.5dp</dimen>
+    <dimen name="size_97">97dp</dimen>
+    <dimen name="size_97_5">97.5dp</dimen>
+    <dimen name="size_98">98dp</dimen>
+    <dimen name="size_98_5">98.5dp</dimen>
+    <dimen name="size_99">99dp</dimen>
+    <dimen name="size_99_5">99.5dp</dimen>
+    <dimen name="size_9_5">9.5dp</dimen>
+    <item name="popup_info_priority" type="id"/>
+    <string name="Dialog_label_confirm">확인</string>
+    <string name="Dialog_msg_termination_kakaoNavi">카카오내비를 종료합니다.</string>
+    <string name="RouteInfoActivity_routeinfo_cost">통행료 %1$s</string>
+    <string name="RouteInfoActivity_routeinfo_dist">거리 %1$s</string>
+    <string name="app_name">drive</string>
+    <string name="ar_calibration">카메라가 도로를 다시 인식하고 있습니다. 잠시만 기다려주세요.</string>
+    <string name="ar_highway">고속모드 주행 시에는 모드 전환이 되지 않습니다.</string>
+    <string name="ar_temperature">휴대폰 온도가 높아져 지도 모드로 전환합니다..</string>
+    <string name="around_menu_convenience">편의점</string>
+    <string name="around_menu_electric">전기차</string>
+    <string name="around_menu_food">맛집</string>
+    <string name="around_menu_lpg">LPG</string>
+    <string name="around_menu_oil">주유소</string>
+    <string name="around_menu_parking">주차장</string>
+    <string name="aroundinfo_emergency_accident">사고알림</string>
+    <string name="aroundinfo_emergency_ambulance">119차량 접근중</string>
+    <string name="aroundinfo_emergency_update_time">발생시간 %s 경</string>
+    <string name="aroundinfo_navigate_close">닫기</string>
+    <string name="aroundinfo_navigate_goal">도착</string>
+    <string name="aroundinfo_navigate_move_app">앱 열기</string>
+    <string name="aroundinfo_navigate_ok">확인</string>
+    <string name="aroundinfo_navigate_reserve">예약</string>
+    <string name="aroundinfo_navigate_via">경유지로</string>
+    <string name="aroundinfo_navigate_via_remove">경유지 삭제</string>
+    <string name="aroundinfo_yugo_time_prefix">~ %s</string>
+    <string name="blackbox_ar_stop_text">AR모드에서는 블랙박스 사용이\n 불가하여 녹화를 중지합니다.</string>
+    <string name="blackbox_empty_space">저장 공간이 부족합니다. 녹화를 중단합니다.</string>
+    <string name="blackbox_safety_file_name">안전운행</string>
+    <string name="blackbox_start">블랙박스 녹화를 시작합니다.</string>
+    <string name="blackbox_stop">블랙박스 녹화를 중지합니다.</string>
+    <string name="blackbox_unknow_error">알 수 없는 오류로 녹화를 중단합니다.</string>
+    <string name="bottom_am">오전</string>
+    <string name="bottom_cant_find_address">주소 확인 불가</string>
+    <string name="bottom_home">우리집</string>
+    <string name="bottom_menu_another_route">다른경로</string>
+    <string name="bottom_menu_arrival_finish">도착알림</string>
+    <string name="bottom_menu_cancel_route">경로취소</string>
+    <string name="bottom_menu_cancel_via">이번\n경유취소</string>
+    <string name="bottom_menu_drive_setting">주행설정</string>
+    <string name="bottom_menu_error_report">오류제보</string>
+    <string name="bottom_menu_full_route">전체경로</string>
+    <string name="bottom_pm">오후</string>
+    <string name="bottom_remain_time_take">소요</string>
+    <string name="bottom_work">회사</string>
+    <string formatted="false" name="cur_direction_name_multiple">%s, %s 방면</string>
+    <string name="cur_direction_name_single">%s 방면</string>
+    <string name="current_position_title">현위치로</string>
+    <string name="dp_magnification_ratio">1</string>
+    <string name="drive_device_volume">기기 음량</string>
+    <string name="drive_label_close">닫기</string>
+    <string name="drive_option_ducking">음악 재생 시 자동 음량 조절</string>
+    <string name="drive_option_hud">HUD</string>
+    <string name="drive_option_nightmode">야간주행</string>
+    <string name="drive_result_close">닫기</string>
+    <string name="drive_result_cost">통행료</string>
+    <string name="drive_sound_volume">길안내 음량</string>
+    <string name="drive_voice_select">음성 선택</string>
+    <string name="highway_info_guide">규정 속도로\n안전하게 운전하세요.</string>
+    <string name="highway_info_next_sa">다음 </string>
+    <string name="highway_info_toll_fare">요금 </string>
+    <string name="hud_average_min">분</string>
+    <string name="hud_average_remain_sec">초 남음</string>
+    <string name="hud_average_remaining">남음</string>
+    <string name="hud_average_speed">평균속도</string>
+    <string name="hud_killomitor_per_hour">km/h</string>
+    <string name="hud_menu_flip">FLIP</string>
+    <string name="hud_menu_lock">LOCK</string>
+    <string name="hud_menu_off">OFF</string>
+    <string name="hud_menu_un_lock">UNLOCK</string>
+    <string name="hud_road_direction">방면</string>
+    <string name="info_continue">기존 경로로 계속 안내합니다.</string>
+    <string name="info_error_landscape">오류화면 캡쳐 완료! \'문의하기>오류제보\'에서 확인해주세요.</string>
+    <string name="info_error_landscape_ar">오류화면 캡쳐 완료! \'문의하기>오류제보\'에서 확인해주세요.\n타인의 개인정보가 노출되지 않도록 유의해주세요.</string>
+    <string name="info_error_portrait">오류화면 캡쳐 완료!\n\'문의하기>오류제보\'에서 확인해주세요.</string>
+    <string name="info_error_portrait_ar">오류화면 캡쳐 완료!\n\'문의하기>오류제보\'에서 확인해주세요.\n타인의 개인정보가 노출되지 않도록 유의해주세요.</string>
+    <string name="info_gps_fail_landscape">GPS 신호가 약하거나 수신되지 않습니다.</string>
+    <string name="info_gps_fail_portrait">GPS 신호가 약하거나\n수신되지 않습니다.</string>
+    <string name="info_new_route_landscape">교통 상황이 변하여 새로운 경로로 안내합니다.</string>
+    <string name="info_new_route_portrait">교통 상황이 변하여\n새로운 경로로 안내합니다.</string>
+    <string name="info_report_issue">오류제보가 정상적으로\n전달되었습니다.</string>
+    <string name="info_report_issue_failed">이미 제보한 오류입니다.</string>
+    <string name="info_research">경로를 이탈하여 재탐색 합니다.</string>
+    <string name="info_rest">잠시 휴식을 취한 뒤 운전하세요.</string>
+    <string name="info_saved">장소를 저장하였습니다.</string>
+    <string name="info_school_zone_landscape">어린이 보호구역을 최대한 우회하는 경로로 안내합니다.</string>
+    <string name="info_school_zone_portrait">어린이 보호구역을\n최대한 우회하는 경로로 안내합니다.</string>
+    <string name="info_traffic_status">실시간 교통 상황을 확인 중입니다.</string>
+    <string name="info_voice_downloading">선택한 음성을 다운로드 중입니다.</string>
+    <string name="info_voice_selected">선택한 음성으로 변경되었습니다.</string>
+    <string name="info_yugochange">사고정보로 인해, 경로를 변경합니다.</string>
+    <string name="kakao_common_header_replace_regex">\\s</string>
+    <string name="kakao_common_header_replace_replacement">-</string>
+    <string name="kakao_common_header_text">sdk/2.10.0 sdk_type/kotlin os/android-%s lang/%s-%s origin/%s device/%s appPkg/%s app_ver/%s navisdk/%s</string>
+    <string name="kn_around_fuel_disel">경유</string>
+    <string name="kn_around_fuel_electronic">전기</string>
+    <string name="kn_around_fuel_gasolin">휘발유</string>
+    <string name="kn_around_fuel_lpg">LPG</string>
+    <string name="kn_around_fuel_premium">고급휘발유</string>
+    <string name="kn_around_poi_reg_count">저장 %d명</string>
+    <string name="kn_around_poi_reg_count_999">저장 999+명</string>
+    <string name="kn_around_price">%,d원</string>
+    <string name="kn_around_price_text">원</string>
+    <string name="kn_bottom_bus_lane_off">버스전용차로 이용 가능</string>
+    <string name="kn_bottom_bus_lane_on">버스전용차로 단속 중</string>
+    <string name="kn_destinfo_another_path">대안경로</string>
+    <string name="kn_destinfo_current_path">현재경로</string>
+    <string name="kn_destinfo_select_path">이 경로 선택</string>
+    <string name="kn_destinfo_start_navi">길안내 시작</string>
+    <string name="kn_indoor_to_up_down_floor">다른 층으로 이동 중</string>
+    <string name="kn_safety_bus_lane_off">버스전용차로를 이용할 수 있습니다</string>
+    <string name="kn_safety_bus_lane_on">버스전용차로 단속 중입니다</string>
+    <string name="kn_sectioninfo_fold">접기</string>
+    <string name="knsdk_ver_name" translatable="false">"1.12.8-hotfix02"</string>
+    <string name="label_confirm">확인</string>
+    <string name="label_electronic_fast_charge">급속</string>
+    <string name="label_electronic_slow_charge">완속</string>
+    <string name="label_gps_on">위치 서비스 켜기</string>
+    <string name="label_ignore">무시</string>
+    <string name="label_ignore_directions">무시하고 경로 탐색</string>
+    <string name="label_retry">재탐색</string>
+    <string name="label_safety_drive">안전 운전 모드</string>
+    <string name="mapview_label_intl_airport">국제공항</string>
+    <string name="msg_check_gps">현재 위치 정보를 가져올 수 없습니다. GPS 상태를 확인해주세요.</string>
+    <string name="msg_toast_blackbox_audio_off_on_kakaoi">Kakao i 사용시 블랙박스 음성 녹음을 자동으로 OFF합니다.</string>
+    <string name="multi_route_cost">가격</string>
+    <string name="multi_route_decrease">감소</string>
+    <string name="multi_route_distance">거리</string>
+    <string name="multi_route_increase">증가</string>
+    <string name="multi_route_no_recommend_guide">새로운 경로와 비교하여 현재 주행 경로가 최적입니다.</string>
+    <string name="multi_route_same">동일</string>
+    <string name="multi_route_time">시간</string>
+    <string name="multi_route_time_min">1분미만</string>
+    <string name="multi_route_title">대안경로</string>
+    <string name="navi_error_capture">오류제보 중입니다. 오류제보가 끝난 뒤 이용해 주시기 바랍니다.</string>
+    <string name="navi_multiwindow_on">화면 분할에서는 정확한 길안내 동작이 어려울 수 있으니 전체 화면으로 사용해 주세요.</string>
+    <string name="navi_terminate">종료하시겠습니까?</string>
+    <string name="navi_terminate_app">카카오내비 종료</string>
+    <string name="navi_terminate_guide">길안내 종료</string>
+    <string name="recommendinfo_empty_charging_text">경로상 추천충전소가\n없습니다.</string>
+    <string name="recommendinfo_empty_oil_text">경로상 추천주유소가\n없습니다.</string>
+    <string name="recommendinfo_title">경로상 추천</string>
+    <string name="route_option_item_bike">자동차전용제외</string>
+    <string name="route_option_item_easy">큰길우선</string>
+    <string name="route_option_item_expressway">고속도로우선</string>
+    <string name="route_option_item_fast">빠른길</string>
+    <string name="route_option_item_free">무료도로</string>
+    <string name="route_option_item_general">일반도로우선</string>
+    <string name="route_option_item_recommend">추천</string>
+    <string name="route_option_item_school_zone">어린이안심</string>
+    <string name="route_option_item_short">최단거리</string>
+    <string name="route_option_select_cancel">취소</string>
+    <string name="route_option_select_close">확인</string>
+    <string name="route_option_select_option">경로옵션</string>
+    <string name="routinfo_activity_select">이 경로 선택</string>
+    <string name="school_zone_eng">SCHOOL ZONE</string>
+    <string name="school_zone_guide">여기부터 속도를\n줄이시오.</string>
+    <string name="school_zone_title">어린이 보호 구역</string>
+    <string name="sdk_name">KNSDK</string>
+    <string name="sign_auxiliary_large_distance_unit">남음</string>
+    <string name="sign_auxiliary_large_minute_unit">분</string>
+    <string name="sign_auxiliary_large_second_unit">초 남음</string>
+    <string name="sign_auxiliary_large_time_exceed">시간초과</string>
+    <string name="sign_auxiliary_large_title">평균속도</string>
+    <style name="NaviNotoBold" parent="TextAppearance.AppCompat">
+        <item name="naviFontType">NOTO_BOLD</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="NaviNotoBold.Black">
+        <item name="android:textColor">@color/black</item>
+    </style>
+    <style name="NaviNotoBold.Black.Size17"><item name="android:textSize">@dimen/size_17</item></style>
+    <style name="NaviNotoBold.Black.Size18"><item name="android:textSize">@dimen/size_18</item></style>
+    <style name="NaviNotoBold.Black.Size20"><item name="android:textSize">@dimen/size_20</item></style>
+    <style name="NaviNotoBold.Black.Size25"><item name="android:textSize">@dimen/size_25</item></style>
+    <style name="NaviNotoBold.Gray800"><item name="android:textColor">@color/gray_800</item></style>
+    <style name="NaviNotoBold.Gray800.Size15"><item name="android:textSize">@dimen/size_15</item></style>
+    <style name="NaviNotoBold.Gray800.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviNotoBold.Gray900"><item name="android:textColor">@color/gray_900</item></style>
+    <style name="NaviNotoBold.Gray900.Size18"><item name="android:textSize">@dimen/size_18</item></style>
+    <style name="NaviNotoBold.Primary800">
+        <item name="android:textColor">@color/primary_800</item>
+    </style>
+    <style name="NaviNotoBold.Primary800.Size15">
+        <item name="android:textSize">@dimen/size_15</item>
+    </style>
+    <style name="NaviNotoBold.Primary800.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviNotoBold.Red"><item name="android:textColor">@color/red</item></style>
+    <style name="NaviNotoBold.Red.Size15"><item name="android:textSize">@dimen/size_15</item></style>
+    <style name="NaviNotoBold.White"><item name="android:textColor">@color/white</item></style>
+    <style name="NaviNotoBold.White.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviNotoBold.White.Size15"><item name="android:textSize">@dimen/size_15</item></style>
+    <style name="NaviNotoBold.White.Size24"><item name="android:textSize">@dimen/size_24</item></style>
+    <style name="NaviNotoRegular" parent="TextAppearance.AppCompat">
+        <item name="naviFontType">NOTO_REGULAR</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="NaviNotoRegular.Black"><item name="android:textColor">@color/black</item></style>
+    <style name="NaviNotoRegular.Black.Size13"><item name="android:textSize">@dimen/size_13</item></style>
+    <style name="NaviNotoRegular.Black.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviNotoRegular.Black.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviNotoRegular.Black.Size17"><item name="android:textSize">@dimen/size_17</item></style>
+    <style name="NaviNotoRegular.Black.Size18"><item name="android:textSize">@dimen/size_18</item></style>
+    <style name="NaviNotoRegular.Black.Size36"><item name="android:textSize">@dimen/size_36</item></style>
+    <style name="NaviNotoRegular.BlueGray400"><item name="android:textColor">@color/blue_gray_400</item></style>
+    <style name="NaviNotoRegular.BlueGray400.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviNotoRegular.BlueGray500"><item name="android:textColor">@color/blue_gray_500</item></style>
+    <style name="NaviNotoRegular.BlueGray500.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviNotoRegular.BlueGray600"><item name="android:textColor">@color/blue_gray_600</item></style>
+    <style name="NaviNotoRegular.BlueGray600.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviNotoRegular.Cool">
+        <item name="android:textColor">@color/cool</item>
+    </style>
+    <style name="NaviNotoRegular.Cool.Size18">
+        <item name="android:textSize">@dimen/size_18</item>
+    </style>
+    <style name="NaviNotoRegular.Cyan">
+        <item name="android:textColor">@color/color_cyan</item>
+    </style>
+    <style name="NaviNotoRegular.Cyan.Size24">
+        <item name="android:textSize">@dimen/size_24</item>
+    </style>
+    <style name="NaviNotoRegular.Gray200"><item name="android:textColor">@color/gray_200</item></style>
+    <style name="NaviNotoRegular.Gray200.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviNotoRegular.Gray200.Size18"><item name="android:textSize">@dimen/size_18</item></style>
+    <style name="NaviNotoRegular.Gray400"><item name="android:textColor">@color/gray_400</item></style>
+    <style name="NaviNotoRegular.Gray400.Size13"><item name="android:textSize">@dimen/size_13</item></style>
+    <style name="NaviNotoRegular.Gray400.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviNotoRegular.Gray500"><item name="android:textColor">@color/gray_500</item></style>
+    <style name="NaviNotoRegular.Gray500.Size13"><item name="android:textSize">@dimen/size_13</item></style>
+    <style name="NaviNotoRegular.Gray500.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviNotoRegular.Gray500.Size15"><item name="android:textSize">@dimen/size_15</item></style>
+    <style name="NaviNotoRegular.Gray500.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviNotoRegular.Gray800"><item name="android:textColor">@color/gray_800</item></style>
+    <style name="NaviNotoRegular.Gray800.Size13"><item name="android:textSize">@dimen/size_13</item></style>
+    <style name="NaviNotoRegular.Gray800.Size15"><item name="android:textSize">@dimen/size_15</item></style>
+    <style name="NaviNotoRegular.Gray800.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviNotoRegular.Gray900">
+        <item name="android:textColor">@color/gray_900</item>
+    </style>
+    <style name="NaviNotoRegular.Gray900.Size15">
+        <item name="android:textSize">@dimen/size_15</item>
+    </style>
+    <style name="NaviNotoRegular.Gray900.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviNotoRegular.Gray900.Size18">
+        <item name="android:textSize">@dimen/size_18</item>
+    </style>
+    <style name="NaviNotoRegular.Gray900.Size20">
+        <item name="android:textSize">@dimen/size_20</item>
+    </style>
+    <style name="NaviNotoRegular.Gray900.Size28">
+        <item name="android:textSize">@dimen/size_28</item>
+    </style>
+    <style name="NaviNotoRegular.PrimaryDark300"><item name="android:textColor">@color/primary_dark_300</item></style>
+    <style name="NaviNotoRegular.PrimaryDark300.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviNotoRegular.White"><item name="android:textColor">@color/white</item></style>
+    <style name="NaviNotoRegular.White.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviNotoRegular.White.Size15"><item name="android:textSize">@dimen/size_15</item></style>
+    <style name="NaviNotoRegular.White.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviNotoRegular.White.Size17"><item name="android:textSize">@dimen/size_17</item></style>
+    <style name="NaviNotoRegular.White.Size18"><item name="android:textSize">@dimen/size_18</item></style>
+    <style name="NaviNotoRegular.White.Size22"><item name="android:textSize">@dimen/size_22</item></style>
+    <style name="NaviNotoRegular.White.Size32"><item name="android:textSize">@dimen/size_32</item></style>
+    <style name="NaviNotoRegular.White40"><item name="android:textColor">@color/color_66ffffff</item></style>
+    <style name="NaviNotoRegular.White40.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviNotoRegular.Yellow">
+        <item name="android:textColor">@color/yellow</item>
+    </style>
+    <style name="NaviNotoRegular.Yellow.Size12">
+        <item name="android:textSize">@dimen/size_12</item>
+    </style>
+    <style name="NaviPretendardBold" parent="TextAppearance.AppCompat">
+        <item name="naviFontType">PRETENDARD_MEDIUM</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="NaviPretendardBold.Yellow"><item name="android:textColor">@color/yellow</item></style>
+    <style name="NaviPretendardBold.Yellow.Size20"><item name="android:textSize">@dimen/size_20</item></style>
+    <style name="NaviPretendardBold.Yellow.Size32"><item name="android:textSize">@dimen/size_32</item></style>
+    <style name="NaviPretendardMedium" parent="TextAppearance.AppCompat">
+        <item name="naviFontType">PRETENDARD_MEDIUM</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    <style name="NaviPretendardMedium.White"><item name="android:textColor">@color/white</item></style>
+    <style name="NaviPretendardMedium.White.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviPretendardMedium.White.Size15"><item name="android:textSize">@dimen/size_15</item></style>
+    <style name="NaviPretendardMedium.White.Size24"><item name="android:textSize">@dimen/size_24</item></style>
+    <style name="NaviPretendardMedium.Yellow"><item name="android:textColor">@color/yellow</item></style>
+    <style name="NaviPretendardMedium.Yellow.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviRobotoBold" parent="TextAppearance.AppCompat">
+        <item name="naviFontType">ROBOTO_BOLD</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="NaviRobotoBold.Black"><item name="android:textColor">@color/black</item></style>
+    <style name="NaviRobotoBold.Black.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviRobotoBold.Black.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviRobotoBold.Black.Size19"><item name="android:textSize">@dimen/size_19</item></style>
+    <style name="NaviRobotoBold.Black.Size20"><item name="android:textSize">@dimen/size_20</item></style>
+    <style name="NaviRobotoBold.Black.Size24"><item name="android:textSize">@dimen/size_24</item></style>
+    <style name="NaviRobotoBold.Black.Size28"><item name="android:textSize">@dimen/size_28</item></style>
+    <style name="NaviRobotoBold.Black.Size32"><item name="android:textSize">@dimen/size_32</item></style>
+    <style name="NaviRobotoBold.Black.Size36"><item name="android:textSize">@dimen/size_36</item></style>
+    <style name="NaviRobotoBold.Black.Size40"><item name="android:textSize">@dimen/size_40</item></style>
+    <style name="NaviRobotoBold.BlueGray900">
+        <item name="android:textColor">@color/blue_gray_900</item>
+    </style>
+    <style name="NaviRobotoBold.BlueGray900.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviRobotoBold.BlueGray950">
+        <item name="android:textColor">@color/blue_gray_950</item>
+    </style>
+    <style name="NaviRobotoBold.BlueGray950.Size14">
+        <item name="android:textSize">@dimen/size_14</item>
+    </style>
+    <style name="NaviRobotoBold.BlueGray950.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviRobotoBold.BlueGray950.Size17">
+        <item name="android:textSize">@dimen/size_17</item>
+    </style>
+    <style name="NaviRobotoBold.BlueGray950.Size18">
+        <item name="android:textSize">@dimen/size_18</item>
+    </style>
+    <style name="NaviRobotoBold.BlueGray950.Size19">
+        <item name="android:textSize">@dimen/size_19</item>
+    </style>
+    <style name="NaviRobotoBold.Cool">
+        <item name="android:textColor">@color/cool</item>
+    </style>
+    <style name="NaviRobotoBold.Cool.Size14">
+        <item name="android:textSize">@dimen/size_14</item>
+    </style>
+    <style name="NaviRobotoBold.Cyan">
+        <item name="android:textColor">@color/color_cyan</item>
+    </style>
+    <style name="NaviRobotoBold.Cyan.Size44">
+        <item name="android:textSize">@dimen/size_44</item>
+    </style>
+    <style name="NaviRobotoBold.Gray800"><item name="android:textColor">@color/gray_800</item></style>
+    <style name="NaviRobotoBold.Gray800.Size15">
+        <item name="android:textSize">@dimen/size_15</item>
+    </style>
+    <style name="NaviRobotoBold.Gray800.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviRobotoBold.Gray900">
+        <item name="android:textColor">@color/gray_900</item>
+    </style>
+    <style name="NaviRobotoBold.Gray900.Size28">
+        <item name="android:textSize">@dimen/size_28</item>
+    </style>
+    <style name="NaviRobotoBold.Red"><item name="android:textColor">@color/red</item></style>
+    <style name="NaviRobotoBold.Red.Size18"><item name="android:textSize">@dimen/size_18</item></style>
+    <style name="NaviRobotoBold.Red.Size19"><item name="android:textSize">@dimen/size_19</item></style>
+    <style name="NaviRobotoBold.Red.Size20"><item name="android:textSize">@dimen/size_20</item></style>
+    <style name="NaviRobotoBold.White"><item name="android:textColor">@color/white</item></style>
+    <style name="NaviRobotoBold.White.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviRobotoBold.White.Size18"><item name="android:textSize">@dimen/size_18</item></style>
+    <style name="NaviRobotoBold.White.Size19"><item name="android:textSize">@dimen/size_19</item></style>
+    <style name="NaviRobotoBold.White.Size21"><item name="android:textSize">@dimen/size_21</item></style>
+    <style name="NaviRobotoBold.White.Size22"><item name="android:textSize">@dimen/size_22</item></style>
+    <style name="NaviRobotoBold.White.Size24"><item name="android:textSize">@dimen/size_24</item></style>
+    <style name="NaviRobotoBold.White.Size25"><item name="android:textSize">@dimen/size_25</item></style>
+    <style name="NaviRobotoBold.White.Size31"><item name="android:textSize">@dimen/size_31</item></style>
+    <style name="NaviRobotoBold.White.Size32"><item name="android:textSize">@dimen/size_32</item></style>
+    <style name="NaviRobotoBold.White.Size40"><item name="android:textSize">@dimen/size_40</item></style>
+    <style name="NaviRobotoBold.White.Size57"><item name="android:textSize">@dimen/size_57</item></style>
+    <style name="NaviRobotoBold.White.Size60"><item name="android:textSize">@dimen/size_60</item></style>
+    <style name="NaviRobotoBold.White80"><item name="android:textColor">@color/white_80</item></style>
+    <style name="NaviRobotoBold.White80.Size20"><item name="android:textSize">@dimen/size_20</item></style>
+    <style name="NaviRobotoBold.White80.Size26"><item name="android:textSize">@dimen/size_26</item></style>
+    <style name="NaviRobotoBold.Yellow">
+        <item name="android:textColor">@color/yellow</item>
+    </style>
+    <style name="NaviRobotoBold.Yellow.Size26">
+        <item name="android:textSize">@dimen/size_26</item>
+    </style>
+    <style name="NaviRobotoBold.Yellow.Size36">
+        <item name="android:textSize">@dimen/size_36</item>
+    </style>
+    <style name="NaviRobotoMedium" parent="TextAppearance.AppCompat">
+        <item name="naviFontType">ROBOTO_MEDIUM</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="NaviRobotoMedium.Black">
+        <item name="android:textColor">@color/black</item>
+    </style>
+    <style name="NaviRobotoMedium.Black.Size14">
+        <item name="android:textSize">@dimen/size_14</item>
+    </style>
+    <style name="NaviRobotoMedium.Black.Size15">
+        <item name="android:textSize">@dimen/size_15</item>
+    </style>
+    <style name="NaviRobotoMedium.Black.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviRobotoMedium.Black.Size18">
+        <item name="android:textSize">@dimen/size_18</item>
+    </style>
+    <style name="NaviRobotoMedium.Black.Size35">
+        <item name="android:textSize">@dimen/size_35</item>
+    </style>
+    <style name="NaviRobotoMedium.BlueGray400">
+        <item name="android:textColor">@color/blue_gray_400</item>
+    </style>
+    <style name="NaviRobotoMedium.BlueGray400.Size18">
+        <item name="android:textSize">@dimen/size_18</item>
+    </style>
+    <style name="NaviRobotoMedium.BlueGray400.Size20">
+        <item name="android:textSize">@dimen/size_20</item>
+    </style>
+    <style name="NaviRobotoMedium.BlueGray900">
+        <item name="android:textColor">@color/blue_gray_900</item>
+    </style>
+    <style name="NaviRobotoMedium.BlueGray900.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviRobotoMedium.Cool"><item name="android:textColor">@color/cool</item></style>
+    <style name="NaviRobotoMedium.Cool.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviRobotoMedium.Gray200">
+        <item name="android:textColor">@color/gray_200</item>
+    </style>
+    <style name="NaviRobotoMedium.Gray200.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviRobotoMedium.Gray200.Size18">
+        <item name="android:textSize">@dimen/size_18</item>
+    </style>
+    <style name="NaviRobotoMedium.Gray200.Size20">
+        <item name="android:textSize">@dimen/size_20</item>
+    </style>
+    <style name="NaviRobotoMedium.Gray200.Size22">
+        <item name="android:textSize">@dimen/size_22</item>
+    </style>
+    <style name="NaviRobotoMedium.Gray800">
+        <item name="android:textColor">@color/gray_800</item>
+    </style>
+    <style name="NaviRobotoMedium.Gray800.Size15">
+        <item name="android:textSize">@dimen/size_15</item>
+    </style>
+    <style name="NaviRobotoMedium.Gray900">
+        <item name="android:textColor">@color/gray_900</item>
+    </style>
+    <style name="NaviRobotoMedium.Gray900.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviRobotoMedium.Gray900.Size18">
+        <item name="android:textSize">@dimen/size_18</item>
+    </style>
+    <style name="NaviRobotoMedium.Primary500"><item name="android:textColor">@color/primary_500</item></style>
+    <style name="NaviRobotoMedium.Primary500.Size12"><item name="android:textSize">@dimen/size_12</item></style>
+    <style name="NaviRobotoMedium.Size12"><item name="android:textSize">@dimen/size_12</item></style>
+    <style name="NaviRobotoMedium.Size15"><item name="android:textSize">@dimen/size_15</item></style>
+    <style name="NaviRobotoMedium.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviRobotoMedium.White"><item name="android:textColor">@color/white</item></style>
+    <style name="NaviRobotoMedium.White.Size15">
+        <item name="android:textSize">@dimen/size_15</item>
+    </style>
+    <style name="NaviRobotoMedium.White.Size16">
+        <item name="android:textSize">@dimen/size_16</item>
+    </style>
+    <style name="NaviRobotoMedium.White.Size24">
+        <item name="android:textSize">@dimen/size_24</item>
+    </style>
+    <style name="NaviRobotoRegular" parent="TextAppearance.AppCompat">
+        <item name="naviFontType">ROBOTO_REGULAR</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="NaviRobotoRegular.Black"><item name="android:textColor">@color/black</item></style>
+    <style name="NaviRobotoRegular.Black.Size13"><item name="android:textSize">@dimen/size_13</item></style>
+    <style name="NaviRobotoRegular.Black.Size14"><item name="android:textSize">@dimen/size_14</item></style>
+    <style name="NaviRobotoRegular.Black.Size16"><item name="android:textSize">@dimen/size_16</item></style>
+    <style name="NaviRobotoRegular.Black.Size24"><item name="android:textSize">@dimen/size_24</item></style>
+    <style name="NaviRobotoRegular.Gray500"><item name="android:textColor">@color/gray_500</item></style>
+    <style name="NaviRobotoRegular.Gray500.Size13"><item name="android:textSize">@dimen/size_13</item></style>
+    <style name="SwitchCommon" parent="Theme.KakaoNavi">
+        <item name="colorControlActivated">@color/cool</item>
+        <item name="android:colorForeground">@color/gray_500</item>
+        <item name="colorSwitchThumbNormal">@color/gray_100</item>
+    </style>
+    <style name="SwitchCompatStyle">
+        <item name="trackTint">@color/selector_bottom_menu_darkmode_track</item>
+    </style>
+    <style name="Theme.KakaoNavi" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="colorAccent">@color/base_bg_color</item>
+        <item name="colorPrimary">@android:color/white</item>
+        
+        <item name="colorControlHighlight">@color/base_bg_color</item>
+        <item name="colorControlNormal">@color/base_bg_color</item>
+        
+
+        <item name="selectableItemBackgroundCompatGrey">@drawable/selector_ripple_grey_bg</item>
+        <item name="selectableItemBackgroundCompatWhite">@drawable/selector_ripple_white_bg</item>
+    </style>
+    <style name="text_middle_black_1">
+        <item name="android:textSize">@dimen/size_16</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+    <style name="text_middle_white_1">
+        <item name="android:textSize">@dimen/size_16</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+    <declare-styleable name="KNCircleProgress">
+        <attr format="integer" name="c_progress"/>
+        <attr format="integer" name="c_max"/>
+
+        <attr format="color" name="c_unfinished_color"/>
+        <attr format="color" name="c_finished_color"/>
+
+        <attr format="dimension" name="c_finished_stroke_width"/>
+        <attr format="dimension" name="c_unfinished_stroke_width"/>
+
+        <attr format="dimension" name="c_text_size"/>
+        <attr format="color" name="c_text_color"/>
+
+        <attr format="string" name="c_prefix_text"/>
+        <attr format="string" name="c_suffix_text"/>
+        <attr format="string" name="c_text"/>
+
+        <attr format="color" name="c_background_color"/>
+
+        <attr format="string" name="c_inner_bottom_text"/>
+        <attr format="dimension" name="c_inner_bottom_text_size"/>
+        <attr format="color" name="c_inner_bottom_text_color"/>
+
+        <attr format="integer" name="c_circle_starting_degree"/>
+    </declare-styleable>
+    <declare-styleable name="KNComponentSignView">
+        <attr format="integer" name="index"/>
+    </declare-styleable>
+    <declare-styleable name="KNFlowLayout">
+        <attr format="dimension" name="kn_horizontalSpacing"/>
+        <attr format="dimension" name="kn_verticalSpacing"/>
+        <attr format="enum" name="kn_orientation">
+            <enum name="horizontal" value="0"/>
+            <enum name="vertical" value="1"/>
+        </attr>
+        <attr format="boolean" name="kn_debugDraw"/>
+    </declare-styleable>
+    <declare-styleable name="KNFlowLayout_LayoutParams">
+        <attr format="boolean" name="layout_newLine"/>
+        <attr format="dimension" name="layout_horizontalSpacing"/>
+        <attr format="dimension" name="layout_verticalSpacing"/>
+    </declare-styleable>
+    <declare-styleable name="KNTextView">
+        <attr format="enum" name="naviFontType">
+            <enum name="NOTO_REGULAR" value="0"/>
+            <enum name="NOTO_MEDIUM" value="1"/>
+            <enum name="NOTO_BOLD" value="2"/>
+            <enum name="ROBOTO_REGULAR" value="3"/>
+            <enum name="ROBOTO_MEDIUM" value="4"/>
+            <enum name="ROBOTO_BOLD" value="5"/>
+            <enum name="PRETENDARD_MEDIUM" value="6"/>
+            <enum name="PRETENDARD_SEMIBOLD" value="7"/>
+        </attr>
+        <attr name="android:textStyle"/>
+        <attr format="boolean" name="strokeEnable"/>
+        <attr format="dimension" name="strokeWidth"/>
+        <attr format="color" name="strokeColor"/>
+        <attr format="boolean" name="strokeShadowEnable"/>
+    </declare-styleable>
+    <declare-styleable name="NaviFont">
+        <attr format="enum" name="fontType">
+            <enum name="NOTO_REGULAR" value="0"/>
+            <enum name="NOTO_MEDIUM" value="1"/>
+            <enum name="NOTO_BOLD" value="2"/>
+            <enum name="ROBOTO_REGULAR" value="3"/>
+            <enum name="ROBOTO_MEDIUM" value="4"/>
+            <enum name="ROBOTO_BOLD" value="5"/>
+            <enum name="PRETENDARD_MEDIUM" value="6"/>
+            <enum name="PRETENDARD_SEMIBOLD" value="7"/>
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="simulDriveProgress">
+        <attr format="integer|float" name="value"/>
+    </declare-styleable>
+</resources>

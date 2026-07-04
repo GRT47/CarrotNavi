@@ -1,0 +1,29 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:importantForAccessibility="no"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.kakaomobility.knsdk.ui.view.KNDriveHipassLaneCodeView
+        android:id="@+id/hipass_info_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/size_1"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" >
+
+    </com.kakaomobility.knsdk.ui.view.KNDriveHipassLaneCodeView>
+
+    <ImageView
+        android:layout_width="@dimen/size_66"
+        android:layout_height="@dimen/size_26"
+        android:scaleType="fitStart"
+        android:importantForAccessibility="no"
+        android:src="@drawable/drive_view_component_hipass_logo"
+        app:layout_constraintBottom_toTopOf="@+id/hipass_info_code"
+        app:layout_constraintStart_toStartOf="@+id/hipass_info_code" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

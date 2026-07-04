@@ -1,0 +1,23 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_map_poi_list"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/map_around_pin_list"
+        android:layout_width="@dimen/size_0"
+        android:layout_height="@dimen/size_0"
+        android:paddingStart="@dimen/size_2"
+        android:paddingEnd="@dimen/size_2"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@drawable/layer_map_poi_list_scrollbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
