@@ -37,6 +37,15 @@ class MapActivity : AppCompatActivity() {
 private var navigationFragment: NavigationFragment? = null
         private var isOverlayVisible = true
 
+    private val cancelRouteReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "com.example.carrotnavi.ACTION_CANCEL_ROUTE") {
+                Log.d("MapActivity", "Cancel Route received, stopping navigation")
+                navigationFragment?.startSafeDrive()
+            }
+        }
+    }
+
     private val preferenceChangeListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
         when (key) {
             "BLOCK_SPEED_OFFSET" -> {
@@ -73,8 +82,6 @@ private var navigationFragment: NavigationFragment? = null
         hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this, hudBinding, this)
         hudOverlayManager.binding.btnSearchAddress.setOnClickListener { showSearchDialog() }
-// 자동 업데이트 체크
-        AutoUpdater.checkForUpdates(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -94,6 +101,13 @@ private var navigationFragment: NavigationFragment? = null
             Toast.makeText(this, "App Key가 설정되지 않았습니다.", Toast.LENGTH_SHORT).show()
             finish()
             return
+        }
+
+        val filter = android.content.IntentFilter("com.example.carrotnavi.ACTION_CANCEL_ROUTE")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(cancelRouteReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(cancelRouteReceiver, filter)
         }
 
         
@@ -291,6 +305,9 @@ private var navigationFragment: NavigationFragment? = null
 
     override fun onDestroy() {
         super.onDestroy()
+        try {
+            unregisterReceiver(cancelRouteReceiver)
+        } catch (e: Exception) {}
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         sharedPref.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         val intent = Intent(this, UdpSenderService::class.java)

@@ -173,6 +173,7 @@ class HudOverlayManager(
             val btnEditApiKey = dialogView.findViewById<android.widget.Button>(R.id.btnEditApiKey)
             val btnDebugPage = dialogView.findViewById<android.widget.Button>(R.id.btnDebugPage)
             val btnCloseSettings = dialogView.findViewById<android.widget.ImageView>(R.id.btnCloseSettings)
+            val btnCheckUpdate = dialogView.findViewById<android.widget.Button>(R.id.btnCheckUpdate)
 
             cbDistanceFormatKm.isChecked = sp.getBoolean("USE_KM_DISTANCE_FORMAT", true)
             cbBackgroundLocation.isChecked = sp.getBoolean("REQ_BACKGROUND", false)
@@ -232,6 +233,10 @@ class HudOverlayManager(
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
                 tvAppVersion.text = "버전 ${pInfo.versionName}"
             } catch (e: Exception) {}
+            
+            btnCheckUpdate?.setOnClickListener {
+                AutoUpdater.checkForUpdates(activity, isManual = true)
+            }
             
             btnDebugPage.visibility = android.view.View.GONE
             

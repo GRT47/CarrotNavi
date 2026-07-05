@@ -88,6 +88,16 @@ class KakaoMapActivity : AppCompatActivity(),
     private var lastRoadType: com.kakaomobility.knsdk.KNRoadType? = null
     private var currentSafetyGuide: com.kakaomobility.knsdk.guidance.knguidance.safetyguide.KNGuide_Safety? = null
 
+    private val cancelRouteReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "com.example.carrotnavi.ACTION_CANCEL_ROUTE") {
+                Log.d("KakaoMapActivity", "Cancel Route received, stopping guidance")
+                KNSDK.sharedGuidance()?.stop()
+                if (!isFinishing) finish()
+            }
+        }
+    }
+
     
         
     companion object {
@@ -112,6 +122,13 @@ class KakaoMapActivity : AppCompatActivity(),
             ),
             100
         )
+
+        val filter = android.content.IntentFilter("com.example.carrotnavi.ACTION_CANCEL_ROUTE")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(cancelRouteReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(cancelRouteReceiver, filter)
+        }
 
         sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         sharedPref.edit().putString("ACTIVE_NAVI", "kakao").apply()
@@ -658,6 +675,9 @@ class KakaoMapActivity : AppCompatActivity(),
 
     override fun onDestroy() {
         super.onDestroy()
+        try {
+            unregisterReceiver(cancelRouteReceiver)
+        } catch (e: Exception) {}
         sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
         if (::hudOverlayManager.isInitialized) hudOverlayManager.onDestroy()
         locationManager.removeUpdates(this)

@@ -276,6 +276,15 @@
                         android:layout_marginBottom="16dp"/>
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCheckUpdate"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:text="앱 최신버전 업데이트 확인"
+                        app:backgroundTint="#2196F3"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="16dp"/>
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnExitApp"
                         android:layout_width="match_parent"
                         android:layout_height="60dp"
@@ -309,7 +318,9 @@
                     android:layout_height="wrap_content"
                     android:text="버전 정보 확인 중"
                     android:textColor="#666666"
-                    android:textSize="12sp"/>
+                    android:textSize="12sp"
+                    android:layout_marginBottom="8dp"/>
+
             </LinearLayout>
 
         </LinearLayout>

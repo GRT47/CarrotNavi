@@ -71,9 +71,10 @@ class MainActivity : AppCompatActivity() {
         
         // 앱 버전 표시
         binding.tvAppVersion.text = "버전 ${BuildConfig.VERSION_NAME}"
-
-        // 자동 업데이트 확인
-        AutoUpdater.checkForUpdates(this)
+        
+        binding.btnCheckUpdate?.setOnClickListener {
+            AutoUpdater.checkForUpdates(this, isManual = true)
+        }
 
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
 

@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
+import android.widget.ProgressBar
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +26,11 @@ object AutoUpdater {
     private const val TAG = "AutoUpdater"
     private const val GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/GRT47/CarrotNavi/releases/latest"
 
-    fun checkForUpdates(context: Context) {
+    fun checkForUpdates(context: Context, isManual: Boolean = false) {
+        if (isManual) {
+            Toast.makeText(context, "업데이트를 확인하는 중...", Toast.LENGTH_SHORT).show()
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val url = URL(GITHUB_LATEST_RELEASE_URL)
@@ -58,10 +63,27 @@ object AutoUpdater {
                                 }
                             }
                         }
+                    } else {
+                        if (isManual) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, "현재 최신 버전입니다.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                } else {
+                    if (isManual) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "업데이트 서버에 연결할 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Update check failed", e)
+                if (isManual) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "업데이트 확인 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }
@@ -83,7 +105,7 @@ object AutoUpdater {
         AlertDialog.Builder(context)
             .setTitle("새로운 업데이트 발견")
             .setMessage("최신 버전($newVersion)이 등록되었습니다.\n지금 업데이트 하시겠습니까?")
-            .setPositiveButton("업데이트") { _, _ ->
+            .setPositiveButton("업데이트 진행") { _, _ ->
                 downloadAndInstall(context, downloadUrl, newVersion)
             }
             .setNegativeButton("나중에") { dialog, _ ->
@@ -94,8 +116,6 @@ object AutoUpdater {
     }
 
     private fun downloadAndInstall(context: Context, downloadUrl: String, version: String) {
-        Toast.makeText(context, "업데이트 다운로드를 시작합니다...", Toast.LENGTH_SHORT).show()
-
         val fileName = "CarrotNavi_$version.apk"
         val destinationDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
         val destinationFile = File(destinationDir, fileName)
@@ -112,6 +132,20 @@ object AutoUpdater {
 
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = downloadManager.enqueue(request)
+
+        // Show progress dialog
+        val progressBar = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal).apply {
+            isIndeterminate = false
+            max = 100
+            setPadding(50, 20, 50, 20)
+        }
+        val progressDialog = AlertDialog.Builder(context)
+            .setTitle("업데이트 다운로드 중")
+            .setMessage("준비 중...")
+            .setView(progressBar)
+            .setCancelable(false)
+            .create()
+        progressDialog.show()
 
         val onComplete = object : BroadcastReceiver() {
             override fun onReceive(ctxt: Context, intent: Intent) {
@@ -131,6 +165,55 @@ object AutoUpdater {
             context.registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED)
         } else {
             context.registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        }
+
+        // Track progress
+        CoroutineScope(Dispatchers.IO).launch {
+            var downloading = true
+            while (downloading) {
+                val query = DownloadManager.Query().setFilterById(downloadId)
+                val cursor = downloadManager.query(query)
+                if (cursor.moveToFirst()) {
+                    val bytesDownloadedIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
+                    val bytesTotalIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+                    val statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+
+                    if (statusIndex >= 0 && bytesDownloadedIndex >= 0 && bytesTotalIndex >= 0) {
+                        val status = cursor.getInt(statusIndex)
+                        val bytesDownloaded = cursor.getLong(bytesDownloadedIndex)
+                        val bytesTotal = cursor.getLong(bytesTotalIndex)
+
+                        if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                            downloading = false
+                            withContext(Dispatchers.Main) {
+                                progressBar.progress = 100
+                                progressDialog.setMessage("다운로드 완료. 설치를 시작합니다.")
+                            }
+                            kotlinx.coroutines.delay(1000)
+                        } else if (status == DownloadManager.STATUS_FAILED) {
+                            downloading = false
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, "다운로드 실패", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            if (bytesTotal > 0) {
+                                val progress = (bytesDownloaded * 100 / bytesTotal).toInt()
+                                val downloadedMb = String.format("%.1f", bytesDownloaded / (1024.0 * 1024.0))
+                                val totalMb = String.format("%.1f", bytesTotal / (1024.0 * 1024.0))
+                                withContext(Dispatchers.Main) {
+                                    progressBar.progress = progress
+                                    progressDialog.setMessage("$downloadedMb MB / $totalMb MB ($progress%)")
+                                }
+                            }
+                        }
+                    }
+                }
+                cursor.close()
+                if (downloading) kotlinx.coroutines.delay(500)
+            }
+            withContext(Dispatchers.Main) {
+                progressDialog.dismiss()
+            }
         }
     }
 

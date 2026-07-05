@@ -31,6 +31,16 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                     }
                 }
                 
+                if (session.uri == "/api/cancel_route") {
+                    val cancelIntent = Intent("com.example.carrotnavi.ACTION_CANCEL_ROUTE").apply {
+                        setPackage(context.packageName)
+                    }
+                    context.sendBroadcast(cancelIntent)
+                    val response = newFixedLengthResponse(Response.Status.OK, "text/plain", "OK")
+                    response.addHeader("Access-Control-Allow-Origin", "*")
+                    return response
+                }
+                
                 val editor = prefs.edit()
                 
                 if (params.containsKey("TARGET_UDP_IP")) {
@@ -85,6 +95,14 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
 
         if (session.uri == "/api/settings") {
             val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode}"""
+            val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
+            response.addHeader("Access-Control-Allow-Origin", "*")
+            return response
+        }
+
+        if (session.uri == "/api/route_info") {
+            val routeInfo = RouteInfoRepository.getRouteInfo()
+            val json = """{"szGoalName":"${routeInfo.szGoalName}", "nGoPosDist":${routeInfo.nGoPosDist}, "nGoPosTime":${routeInfo.nGoPosTime}, "activeNavi":"${routeInfo.activeNavi}"}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response

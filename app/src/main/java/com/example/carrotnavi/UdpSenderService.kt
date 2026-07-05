@@ -340,6 +340,9 @@ class UdpSenderService : Service() {
                     val lon = bundle.getDouble("lon", 0.0)
                     if (lat > 0.0) json.put("lat", lat)
                     if (lon > 0.0) json.put("lon", lon)
+                    
+                    // RouteInfoRepository 업데이트
+                    RouteInfoRepository.updateRouteInfo(szGoalName ?: "", nGoPosDist, nGoPosTime, activeNavi)
 
                     // 상시 안내 텍스트 표시를 위한 필수 TBT 더미 값 주입
                     // 우선순위: 1차 이벤트 -> 2차 이벤트 -> 구간단속
