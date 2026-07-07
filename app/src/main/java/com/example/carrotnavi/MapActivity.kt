@@ -79,6 +79,12 @@ private var navigationFragment: NavigationFragment? = null
         binding = ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        sharedPref.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+
+        // 현재 앱이 Tmap 모드임을 명시적으로 설정하여 JSON 로그 송신 오류 수정
+        sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
+
         hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this, hudBinding, this)
         hudOverlayManager.binding.btnSearchAddress.setOnClickListener { showSearchDialog() }
@@ -89,10 +95,7 @@ private var navigationFragment: NavigationFragment? = null
             insets
         }
 
-                val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         val appKey = sharedPref.getString("APP_KEY", "") ?: ""
-        
-        sharedPref.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
 
         // Force Tmap SDK to run in background
         getSharedPreferences("user.settings.info", Context.MODE_PRIVATE).edit().putBoolean("set_suspend_in_background", false).apply()
@@ -163,6 +166,13 @@ private var navigationFragment: NavigationFragment? = null
                 // 경로 안내 중이 아니므로 무시
             }
         })
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (::hudOverlayManager.isInitialized && hudOverlayManager.shouldBlockTouch(ev)) {
+            return true
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     private fun startSafeDriveMode() {
@@ -241,9 +251,11 @@ private var navigationFragment: NavigationFragment? = null
                     // 도로 기본 제한속도 추출 및 UI 업데이트
                     val realRoadLimit = getRoadLimitSpeedFromEngine()
                     runOnUiThread {
-                        if (realRoadLimit >= 30) {
+                        if (realRoadLimit >= 30 && hudOverlayManager.isOverlayVisible) {
                             hudBinding.llRoadSpeedLimit?.visibility = android.view.View.VISIBLE
                             hudBinding.tvRoadSpeedLimit?.text = realRoadLimit.toString()
+                        } else {
+                            hudBinding.llRoadSpeedLimit?.visibility = android.view.View.GONE
                         }
                     }
 
@@ -357,14 +369,7 @@ private var navigationFragment: NavigationFragment? = null
                                         if (isBoosting) {
                                             } else {
                                             }
-                    
-                    if (isBlockSection && blockDist > 0) {
-                        hudBinding.llBlockInfo?.visibility = android.view.View.VISIBLE
-                        hudBinding.tvBlockAvgSpeed?.text = "평균: ${blockAvgSpeed}km/h"
-                        hudBinding.tvBlockDistTime?.text = String.format("남은: %s (%d:%02d)", formatDistance(blockDist), blockTime / 60, blockTime % 60)
-                    } else {
-                        hudBinding.llBlockInfo?.visibility = android.view.View.GONE
-                    }
+
                     
                     if (sdiType > 0 || (sdiSpeedLimit > 0 && sdiDist > 0)) {
                         
@@ -383,7 +388,7 @@ private var navigationFragment: NavigationFragment? = null
                 }
             } else {
                 runOnUiThread {
-                                        hudBinding.llBlockInfo?.visibility = android.view.View.GONE
+
                 }
             }
         } catch (e: Exception) {

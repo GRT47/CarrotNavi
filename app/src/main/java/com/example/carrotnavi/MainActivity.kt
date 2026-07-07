@@ -238,28 +238,31 @@ class MainActivity : AppCompatActivity() {
                                     }
                                     startActivity(newIntent)
                                 } else {
-                                    Toast.makeText(this@MainActivity, "공유된 주소를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
-                                    binding.tvOpStatus.text = "검색 실패"
+                                    handleSearchFailure(keyword)
                                 }
                             }
                             override fun onFailure(call: retrofit2.Call<KakaoSearchResponse>, t: Throwable) {
-                                binding.tvOpStatus.text = "검색 오류"
+                                handleSearchFailure(keyword)
                             }
                         })
                     } else {
-                        Toast.makeText(this@MainActivity, "공유된 주소를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
-                        binding.tvOpStatus.text = "검색 실패"
+                        handleSearchFailure(keyword)
                     }
                 }
                 override fun onFailure(call: retrofit2.Call<KakaoSearchResponse>, t: Throwable) {
-                    Toast.makeText(this@MainActivity, "검색 실패: ${t.message}", Toast.LENGTH_SHORT).show()
-                    binding.tvOpStatus.text = "검색 오류"
+                    handleSearchFailure(keyword)
                 }
             })
             
             // clear intent action so it doesn't trigger again on rotation
             intent.action = Intent.ACTION_MAIN
         }
+    }
+
+    private fun handleSearchFailure(failedKeyword: String) {
+        Toast.makeText(this, "주소를 찾을 수 없어 안심 주행 모드를 시작합니다.", Toast.LENGTH_SHORT).show()
+        binding.tvOpStatus.text = "안심 주행 모드 전환"
+        checkPermissionsAndStart()
     }
 
     private fun checkPermissionsAndStart() {

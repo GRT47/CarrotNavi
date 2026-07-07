@@ -66,6 +66,15 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                 if (params.containsKey("BLOCK_SPEED_BOOST_MODE")) {
                     params["BLOCK_SPEED_BOOST_MODE"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("BLOCK_SPEED_BOOST_MODE", it) }
                 }
+                if (params.containsKey("APP_KEY")) {
+                    params["APP_KEY"]?.firstOrNull()?.let { editor.putString("APP_KEY", it) }
+                }
+                if (params.containsKey("KAKAO_NATIVE_APP_KEY")) {
+                    params["KAKAO_NATIVE_APP_KEY"]?.firstOrNull()?.let { editor.putString("KAKAO_NATIVE_APP_KEY", it) }
+                }
+                if (params.containsKey("KAKAO_REST_API_KEY")) {
+                    params["KAKAO_REST_API_KEY"]?.firstOrNull()?.let { editor.putString("KAKAO_REST_API_KEY", it) }
+                }
                 editor.apply()
                 
             } catch (e: Exception) {
@@ -92,9 +101,13 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val blockSpeedOffset = prefs.getInt("BLOCK_SPEED_OFFSET", 0)
         val blockSpeedFakeDrop = prefs.getInt("BLOCK_SPEED_FAKE_DROP", 10)
         val blockSpeedBoostMode = prefs.getInt("BLOCK_SPEED_BOOST_MODE", 0)
+        
+        val appKey = prefs.getString("APP_KEY", "") ?: ""
+        val kakaoNativeAppKey = prefs.getString("KAKAO_NATIVE_APP_KEY", "") ?: ""
+        val kakaoRestApiKey = prefs.getString("KAKAO_REST_API_KEY", "") ?: ""
 
         if (session.uri == "/api/settings") {
-            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode}"""
+            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey"}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response

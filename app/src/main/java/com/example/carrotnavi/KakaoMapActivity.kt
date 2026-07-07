@@ -241,7 +241,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
-        if (::hudOverlayManager.isInitialized && hudOverlayManager.dispatchTouchEvent(ev)) {
+        if (::hudOverlayManager.isInitialized && hudOverlayManager.shouldBlockTouch(ev)) {
             return true
         }
         return super.dispatchTouchEvent(ev)
@@ -750,11 +750,8 @@ class KakaoMapActivity : AppCompatActivity(),
         binding.naviView.mapComponent?.mapView?.removeMarkersAll()
         
         
-        hudOverlayManager.binding.llSpeedGroup.visibility = android.view.View.VISIBLE
-        hudOverlayManager.binding.llStatusGroup.visibility = android.view.View.VISIBLE
         hudOverlayManager.binding.btnToggleVisibility.visibility = android.view.View.VISIBLE
-        hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.VISIBLE
-        hudOverlayManager.binding.btnEditMode.visibility = android.view.View.VISIBLE
+        hudOverlayManager.updateOverlayVisibility()
     }
 
     private fun createMarkerBitmap(): android.graphics.Bitmap {

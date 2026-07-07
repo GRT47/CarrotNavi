@@ -85,33 +85,6 @@
 
     
     
-    <!-- 구간단속 정보 -->
-    <LinearLayout
-        android:id="@+id/llBlockInfo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:visibility="gone">
-        
-        <TextView
-            android:id="@+id/tvBlockAvgSpeed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="-"
-            android:textColor="#FFEB3B"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-            
-        <TextView
-            android:id="@+id/tvBlockDistTime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="남은 0m"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
-    </LinearLayout>
 
     <LinearLayout android:id="@+id/llStatusGroup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="80dp" android:layout_marginEnd="16dp" android:layout_gravity="top|end" android:elevation="6dp">
         <LinearLayout android:id="@+id/llGpsInfo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingHorizontal="14dp" android:paddingVertical="8dp" android:gravity="center" android:background="@drawable/bg_text_pill">

@@ -62,6 +62,14 @@ class SearchActivity : AppCompatActivity() {
 
         etKeyword = findViewById(R.id.etSearchKeyword)
         btnSearch = findViewById(R.id.btnSearch)
+
+        intent.getStringExtra("initial_query")?.let {
+            if (it.isNotEmpty()) {
+                etKeyword.setText(it)
+                // Optionally perform search automatically:
+                // etKeyword.post { btnSearch.performClick() }
+            }
+        }
         rgSort = findViewById(R.id.rgSort)
         rbSortDistance = findViewById(R.id.rbSortDistance)
         rvResults = findViewById(R.id.rvSearchResults)

@@ -31,7 +31,7 @@ class HudOverlayManager(
 ) {
     private val sharedPref: SharedPreferences = activity.getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
     private var isEditMode = false
-    private var isOverlayVisible = true
+    var isOverlayVisible = true
 
     private var initialX = 0f
     private var initialY = 0f
@@ -115,7 +115,7 @@ class HudOverlayManager(
             binding.llSpeedGroup,
             binding.llBottomLeftOverlays,
             binding.llTopUiGroup,
-            binding.llBlockInfo,
+
             binding.llStatusGroup
         )
 
@@ -185,16 +185,6 @@ class HudOverlayManager(
             swBoostEnable.setOnCheckedChangeListener { _, isChecked ->
                 sp.edit().putBoolean("BLOCK_SPEED_ENABLED", isChecked).apply()
                 llBoostSettingsContainer.visibility = if (isChecked) android.view.View.VISIBLE else android.view.View.GONE
-                
-                if (!isChecked) {
-                    sp.edit().putInt("BLOCK_SPEED_OFFSET", 0).apply()
-                    sp.edit().putInt("BLOCK_SPEED_FAKE_DROP", 0).apply()
-                    
-                    sliderOffset.value = 0f
-                    sliderFakeDrop.value = 0f
-                    tvOffsetValue.text = "0 km/h"
-                    tvFakeDropValue.text = "0"
-                }
             }
 
             cbDistanceFormatKm.setOnCheckedChangeListener { _, isChecked ->
@@ -232,6 +222,13 @@ class HudOverlayManager(
             try {
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
                 tvAppVersion.text = "버전 ${pInfo.versionName}"
+                val toolbar = dialogView.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbarSettings)
+                val titleStr = "상세 설정  v${pInfo.versionName}"
+                val spannable = android.text.SpannableString(titleStr)
+                spannable.setSpan(android.text.style.RelativeSizeSpan(0.7f), 6, titleStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#AAAAAA")), 6, titleStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                toolbar?.title = spannable
+                toolbar?.subtitle = null
             } catch (e: Exception) {}
             
             btnCheckUpdate?.setOnClickListener {
@@ -367,12 +364,12 @@ class HudOverlayManager(
         }
     }
 
-    private fun updateOverlayVisibility() {
+    fun updateOverlayVisibility() {
         val visibility = if (isOverlayVisible) View.VISIBLE else View.GONE
         binding.llSpeedGroup.visibility = visibility
         binding.llBottomLeftOverlays.visibility = visibility
         binding.llTopUiGroup?.visibility = visibility
-        binding.llBlockInfo?.visibility = visibility
+
         
         binding.btnSearchAddress.visibility = visibility
         binding.btnSettings?.visibility = visibility
@@ -389,13 +386,13 @@ class HudOverlayManager(
             binding.llSpeedGroup.foreground = HatchedDrawable(binding.llSpeedGroup)
             binding.llBottomLeftOverlays.foreground = HatchedDrawable(binding.llBottomLeftOverlays)
             binding.llTopUiGroup?.let { it.foreground = HatchedDrawable(it) }
-            binding.llBlockInfo?.let { it.foreground = HatchedDrawable(it) }
+
             binding.llStatusGroup?.let { it.foreground = HatchedDrawable(it) }
         } else {
             binding.llSpeedGroup.foreground = null
             binding.llBottomLeftOverlays.foreground = null
             binding.llTopUiGroup?.foreground = null
-            binding.llBlockInfo?.foreground = null
+
             binding.llStatusGroup?.foreground = null
         }
     }
@@ -563,16 +560,15 @@ class HudOverlayManager(
         return Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
     }
 
-    fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+    fun shouldBlockTouch(ev: MotionEvent): Boolean {
         if (isEditMode) {
             val touchedOverlay = findTouchedOverlay(ev)
             if (touchedOverlay != null) {
-                touchedOverlay.dispatchTouchEvent(ev)
-                return true // Consume in edit mode
+                return false // Let Android view hierarchy handle it normally to preserve coordinates
             }
             return true // Block map interactions in edit mode
         }
-        return false // Return false to indicate unhandled by manager (Activity handles it)
+        return false 
     }
 
     private fun findTouchedOverlay(ev: MotionEvent): View? {
@@ -582,7 +578,7 @@ class HudOverlayManager(
             binding.llSpeedGroup,
             binding.llBottomLeftOverlays,
             binding.llTopUiGroup,
-            binding.llBlockInfo,
+
             binding.llStatusGroup,
             binding.btnRestoreDefaults,
             binding.llRightBottomGrid
