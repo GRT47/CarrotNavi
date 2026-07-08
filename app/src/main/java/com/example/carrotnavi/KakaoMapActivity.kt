@@ -1,4 +1,4 @@
-﻿package com.example.carrotnavi
+package com.example.carrotnavi
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -154,7 +154,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     private val preferenceChangeListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
-        if (key == "MEDIA_SPLIT_RATIO") {
+        if (key == "MEDIA_SPLIT_RATIO" || key == "MEDIA_SPLIT_RATIO_F") {
             runOnUiThread {
                 updateMediaLayout(resources.configuration.orientation)
             }

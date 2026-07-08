@@ -117,7 +117,7 @@ private var navigationFragment: NavigationFragment? = null
                     }
                 }
             }
-            "MEDIA_SPLIT_RATIO" -> {
+            "MEDIA_SPLIT_RATIO", "MEDIA_SPLIT_RATIO_F" -> {
                 runOnUiThread {
                     updateMediaLayout(resources.configuration.orientation)
                 }
