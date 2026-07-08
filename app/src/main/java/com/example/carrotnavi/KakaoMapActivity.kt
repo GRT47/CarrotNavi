@@ -872,6 +872,11 @@ class KakaoMapActivity : AppCompatActivity(),
     override fun onResume() {
         super.onResume()
         updateMediaUIFromService()
+        val intent = android.content.Intent(MediaNotificationListenerService.ACTION_MEDIA_CONTROL).apply {
+            setPackage(packageName)
+            putExtra("command", "refresh")
+        }
+        sendBroadcast(intent)
     }
 
     override fun onDestroy() {

@@ -45,6 +45,7 @@ class MediaNotificationListenerService : NotificationListenerService() {
                         val seekPos = intent.getLongExtra("seekPos", -1)
                         if (seekPos >= 0) currentController?.transportControls?.seekTo(seekPos)
                     }
+                    "refresh" -> setupMediaSessionCallback()
                 }
             }
         }
