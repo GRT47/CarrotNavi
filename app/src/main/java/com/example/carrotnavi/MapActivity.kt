@@ -67,6 +67,8 @@ private var navigationFragment: NavigationFragment? = null
     }
 
     private fun updateMediaUIFromService() {
+        if (!::binding.isInitialized) return
+        
         val title = MediaNotificationListenerService.currentTitle
         val artist = MediaNotificationListenerService.currentArtist
         val isPlaying = MediaNotificationListenerService.isPlaying
