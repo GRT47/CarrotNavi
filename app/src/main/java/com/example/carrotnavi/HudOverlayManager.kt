@@ -233,14 +233,22 @@ class HudOverlayManager(
                 }
             }
 
-            val ratio = sp.getInt("MEDIA_SPLIT_RATIO", 5)
-            sliderMediaRatio?.value = ratio.toFloat()
-            tvMediaRatioValue?.text = "$ratio : ${6 - ratio}"
+            sliderMediaRatio?.valueFrom = 0.5f
+            sliderMediaRatio?.valueTo = 5.0f
+            sliderMediaRatio?.stepSize = 0.5f
+            val ratio = if (sp.contains("MEDIA_SPLIT_RATIO_F")) sp.getFloat("MEDIA_SPLIT_RATIO_F", 4f) else {
+                val r = sp.getInt("MEDIA_SPLIT_RATIO", 4).toFloat()
+                if (r >= 5f) 5f else r
+            }
+            sliderMediaRatio?.value = ratio
+            
+            fun fmt(v: Float) = if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()
+            tvMediaRatioValue?.text = "${fmt(ratio)} : ${fmt(5f - ratio)}"
             sliderMediaRatio?.addOnChangeListener { _, value, _ ->
-                val mapWeight = value.toInt()
-                val mediaWeight = 6 - mapWeight
-                tvMediaRatioValue?.text = "$mapWeight : $mediaWeight"
-                sp.edit().putInt("MEDIA_SPLIT_RATIO", mapWeight).apply()
+                val mapWeight = value
+                val mediaWeight = 5f - mapWeight
+                tvMediaRatioValue?.text = "${fmt(mapWeight)} : ${fmt(mediaWeight)}"
+                sp.edit().putFloat("MEDIA_SPLIT_RATIO_F", mapWeight).apply()
             }
             
             try {
