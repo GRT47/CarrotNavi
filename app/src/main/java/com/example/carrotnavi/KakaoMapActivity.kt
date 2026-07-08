@@ -364,7 +364,9 @@ class KakaoMapActivity : AppCompatActivity(),
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        updateMediaLayout(newConfig.orientation)
+        if (::binding.isInitialized) {
+            updateMediaLayout(newConfig.orientation)
+        }
     }
 
     private fun updateMediaLayout(orientation: Int) {
@@ -572,7 +574,7 @@ class KakaoMapActivity : AppCompatActivity(),
 
     override fun guidanceGuideEnded(guidance: KNGuidance) {
         if(::naviView.isInitialized) naviView.guidanceGuideEnded(guidance)
-        if (!isFinishing) finish()
+        if (hasStartedRouteGuidance && !isFinishing) finish()
     }
 
     override fun guidanceDidUpdateLocation(guidance: KNGuidance, locationGuide: KNGuide_Location) {
@@ -852,7 +854,11 @@ class KakaoMapActivity : AppCompatActivity(),
         sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
         if (::hudOverlayManager.isInitialized) hudOverlayManager.onDestroy()
         locationManager.removeUpdates(this)
-        KNSDK.sharedGuidance()?.stop()
+        
+        // 인스턴스 재생성 시 이전 인스턴스의 onDestroy가 새 인스턴스의 초기화를 방해하지 않도록 조건 추가
+        if (isFinishing || hasStartedRouteGuidance) {
+            KNSDK.sharedGuidance()?.stop()
+        }
     }
 
     private fun showPreviewOverlay(doc: KakaoDocument, destName: String) {
@@ -965,7 +971,8 @@ class KakaoMapActivity : AppCompatActivity(),
         if (viewState == KNNaviViewState.NONE) {
             // 카카오내비가 안전운행 모드(NONE)로 진입하면 즉시 액티비티를 종료하여
             // 기존에 떠있는 T맵 안전운행 모드로 돌아갑니다.
-            if (!isFinishing) {
+            // 단, 아직 경로안내를 시작하지 않은 미리보기 상태에서는 종료하지 않도록 방어합니다.
+            if (hasStartedRouteGuidance && !isFinishing) {
                 finish()
             }
         }

@@ -127,7 +127,9 @@ private var navigationFragment: NavigationFragment? = null
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        updateMediaLayout(newConfig.orientation)
+        if (::binding.isInitialized) {
+            updateMediaLayout(newConfig.orientation)
+        }
     }
 
     private fun updateMediaLayout(orientation: Int) {
