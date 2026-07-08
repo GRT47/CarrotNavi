@@ -1,4 +1,4 @@
-package com.example.carrotnavi
+﻿package com.example.carrotnavi
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -239,6 +239,7 @@ class KakaoMapActivity : AppCompatActivity(),
     private fun setupContentAndStart() {
         binding = ActivityKakaoMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        checkNotificationPermissionAndPrompt()
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
@@ -987,4 +988,23 @@ class KakaoMapActivity : AppCompatActivity(),
 
 
 
+
+    private fun isNotificationPermissionGranted(): Boolean {
+        val enabledListeners = android.provider.Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
+        return enabledListeners != null && enabledListeners.contains(packageName)
+    }
+
+    private fun checkNotificationPermissionAndPrompt() {
+        if (!isNotificationPermissionGranted()) {
+            android.app.AlertDialog.Builder(this)
+                .setTitle("알림 접근 권한 필요")
+                .setMessage("미디어 재생 정보(현재 재생 중인 음악 등)를 내비게이션 화면에 표시하려면 '알림 접근 허용'이 필요합니다.\n\n설정 화면으로 이동하시겠습니까?")
+                .setPositiveButton("이동") { _, _ ->
+                    val intent = android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                    startActivity(intent)
+                }
+                .setNegativeButton("다음에", null)
+                .show()
+        }
+    }
 }
