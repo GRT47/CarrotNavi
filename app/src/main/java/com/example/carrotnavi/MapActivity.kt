@@ -410,6 +410,12 @@ private var navigationFragment: NavigationFragment? = null
                     Log.e("SdiDebug", "observableRouteData: $it")
                 }
             })
+            frag.nightModeLiveData.observe(this@MapActivity, Observer { isNight ->
+                isNight?.let {
+                    Log.d("CarrotNavi", "TMap Night Mode changed: $it")
+                    SdiDataRepository.isNightMode.postValue(it)
+                }
+            })
             TmapUISDK.observableEDCData.observe(this@MapActivity, Observer { data ->
                 data?.let {
                     Log.e("SdiDebug", "observableEDCData class: ${it.javaClass.name}")

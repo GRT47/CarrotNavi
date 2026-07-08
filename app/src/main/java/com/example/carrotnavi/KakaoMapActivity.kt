@@ -249,6 +249,12 @@ class KakaoMapActivity : AppCompatActivity(),
         naviView = binding.naviView
         naviView.stateDelegate = this@KakaoMapActivity
         
+        SdiDataRepository.isNightMode.observe(this, androidx.lifecycle.Observer { isNight ->
+            if (::naviView.isInitialized) {
+                naviView.useDarkMode = isNight ?: false
+            }
+        })
+        
         val hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this@KakaoMapActivity, hudBinding, this@KakaoMapActivity)
         

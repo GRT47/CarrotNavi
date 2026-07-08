@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
 object SdiDataRepository {
+    val isNightMode = MutableLiveData<Boolean>(false)
+
     private val _observableRoadLimitSpeed = MutableLiveData<Int>()
     val observableRoadLimitSpeed: LiveData<Int> get() = _observableRoadLimitSpeed
 
