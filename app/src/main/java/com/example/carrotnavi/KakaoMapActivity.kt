@@ -377,41 +377,53 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     private fun updateMediaLayout(orientation: Int) {
-        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val ratio = sharedPref.getInt("MEDIA_SPLIT_RATIO", 4)
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+        val ratio = if (sharedPref.contains("MEDIA_SPLIT_RATIO_F")) {
+            sharedPref.getFloat("MEDIA_SPLIT_RATIO_F", 4f)
+        } else {
+            val oldRatio = sharedPref.getInt("MEDIA_SPLIT_RATIO", 4).toFloat()
+            if (oldRatio >= 5f) 5f else oldRatio
+        }
         
         val mainContainer = binding.root.findViewById<android.widget.LinearLayout>(R.id.llSplitContainer)
         val tmapLayout = binding.root.findViewById<android.widget.FrameLayout>(R.id.mapOverlayContainer)
         val mediaContainer = binding.root.findViewById<android.widget.FrameLayout>(R.id.flMediaContainer)
         
         if (mainContainer != null && tmapLayout != null && mediaContainer != null) {
-            mainContainer.weightSum = 6f
+            mainContainer.weightSum = 5f
             
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            val mediaWeight = 5f - ratio
+            if (mediaWeight <= 0f) {
+                mediaContainer.visibility = android.view.View.GONE
+            } else {
+                mediaContainer.visibility = android.view.View.VISIBLE
+            }
+
+            if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
                 mainContainer.orientation = android.widget.LinearLayout.HORIZONTAL
                 val tmapParams = tmapLayout.layoutParams as android.widget.LinearLayout.LayoutParams
                 tmapParams.width = 0
                 tmapParams.height = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
-                tmapParams.weight = ratio.toFloat()
+                tmapParams.weight = ratio
                 tmapLayout.layoutParams = tmapParams
                 
                 val mediaParams = mediaContainer.layoutParams as android.widget.LinearLayout.LayoutParams
                 mediaParams.width = 0
                 mediaParams.height = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
-                mediaParams.weight = (6 - ratio).toFloat()
+                mediaParams.weight = mediaWeight
                 mediaContainer.layoutParams = mediaParams
             } else {
                 mainContainer.orientation = android.widget.LinearLayout.VERTICAL
                 val tmapParams = tmapLayout.layoutParams as android.widget.LinearLayout.LayoutParams
                 tmapParams.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
                 tmapParams.height = 0
-                tmapParams.weight = ratio.toFloat()
+                tmapParams.weight = ratio
                 tmapLayout.layoutParams = tmapParams
                 
                 val mediaParams = mediaContainer.layoutParams as android.widget.LinearLayout.LayoutParams
                 mediaParams.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
                 mediaParams.height = 0
-                mediaParams.weight = (6 - ratio).toFloat()
+                mediaParams.weight = mediaWeight
                 mediaContainer.layoutParams = mediaParams
             }
         }
