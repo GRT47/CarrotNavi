@@ -135,7 +135,7 @@ private var navigationFragment: NavigationFragment? = null
     private fun updateMediaLayout(orientation: Int) {
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
         val ratio = if (sharedPref.contains("MEDIA_SPLIT_RATIO_F")) {
-            sharedPref.getFloat("MEDIA_SPLIT_RATIO_F", 4f)
+            sharedPref.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
         } else {
             val oldRatio = sharedPref.getInt("MEDIA_SPLIT_RATIO", 4).toFloat()
             if (oldRatio >= 5f) 5f else oldRatio

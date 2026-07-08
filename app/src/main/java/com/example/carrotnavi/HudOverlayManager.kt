@@ -236,7 +236,7 @@ class HudOverlayManager(
             sliderMediaRatio?.valueFrom = 0.5f
             sliderMediaRatio?.valueTo = 5.0f
             sliderMediaRatio?.stepSize = 0.5f
-            val ratio = if (sp.contains("MEDIA_SPLIT_RATIO_F")) sp.getFloat("MEDIA_SPLIT_RATIO_F", 4f) else {
+            val ratio = if (sp.contains("MEDIA_SPLIT_RATIO_F")) sp.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f) else {
                 val r = sp.getInt("MEDIA_SPLIT_RATIO", 4).toFloat()
                 if (r >= 5f) 5f else r
             }
