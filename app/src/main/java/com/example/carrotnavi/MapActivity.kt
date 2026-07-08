@@ -61,33 +61,37 @@ private var navigationFragment: NavigationFragment? = null
     private val mediaUpdateReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "com.example.carrotnavi.ACTION_MEDIA_UPDATE") {
-                val title = intent.getStringExtra("title") ?: "재생중인 곡 없음"
-                val artist = intent.getStringExtra("artist") ?: "아티스트 없음"
-                val isPlaying = intent.getBooleanExtra("isPlaying", false)
-                val duration = intent.getLongExtra("duration", 0L)
-                
-                val ivAlbumArt = binding.root.findViewById<android.widget.ImageView>(R.id.ivAlbumArt)
-                val ivAlbumArtThumbnail = binding.root.findViewById<android.widget.ImageView>(R.id.ivAlbumArtThumbnail)
-                val tvMediaTitle = binding.root.findViewById<android.widget.TextView>(R.id.tvMediaTitle)
-                val tvMediaArtist = binding.root.findViewById<android.widget.TextView>(R.id.tvMediaArtist)
-                val btnPlayPause = binding.root.findViewById<android.widget.ImageButton>(R.id.btnPlayPause)
-                val tvDuration = binding.root.findViewById<android.widget.TextView>(R.id.tvDuration)
-                
-                tvMediaTitle?.text = title
-                tvMediaArtist?.text = artist
-                ivAlbumArt?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
-                ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
-                
-                btnPlayPause?.setImageResource(if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24)
-                
-                val durSecs = duration / 1000
-                tvDuration?.text = String.format("%d:%02d", durSecs / 60, durSecs % 60)
-                
-                mediaProgressHandler.removeCallbacks(mediaProgressRunnable)
-                if (isPlaying) {
-                    mediaProgressHandler.post(mediaProgressRunnable)
-                }
+                updateMediaUIFromService()
             }
+        }
+    }
+
+    private fun updateMediaUIFromService() {
+        val title = MediaNotificationListenerService.currentTitle
+        val artist = MediaNotificationListenerService.currentArtist
+        val isPlaying = MediaNotificationListenerService.isPlaying
+        val duration = MediaNotificationListenerService.duration
+        
+        val ivAlbumArt = binding.root.findViewById<android.widget.ImageView>(R.id.ivAlbumArt)
+        val ivAlbumArtThumbnail = binding.root.findViewById<android.widget.ImageView>(R.id.ivAlbumArtThumbnail)
+        val tvMediaTitle = binding.root.findViewById<android.widget.TextView>(R.id.tvMediaTitle)
+        val tvMediaArtist = binding.root.findViewById<android.widget.TextView>(R.id.tvMediaArtist)
+        val btnPlayPause = binding.root.findViewById<android.widget.ImageButton>(R.id.btnPlayPause)
+        val tvDuration = binding.root.findViewById<android.widget.TextView>(R.id.tvDuration)
+        
+        tvMediaTitle?.text = title
+        tvMediaArtist?.text = artist
+        ivAlbumArt?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+        ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+        
+        btnPlayPause?.setImageResource(if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24)
+        
+        val durSecs = duration / 1000
+        tvDuration?.text = String.format("%d:%02d", durSecs / 60, durSecs % 60)
+        
+        mediaProgressHandler.removeCallbacks(mediaProgressRunnable)
+        if (isPlaying) {
+            mediaProgressHandler.post(mediaProgressRunnable)
         }
     }
 
@@ -501,6 +505,11 @@ private var navigationFragment: NavigationFragment? = null
         } else {
             startService(intent)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateMediaUIFromService()
     }
 
     override fun onDestroy() {
