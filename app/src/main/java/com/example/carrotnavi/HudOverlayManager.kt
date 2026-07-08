@@ -218,6 +218,30 @@ class HudOverlayManager(
                 tvFakeDropValue.text = "${value.toInt()}"
                 sp.edit().putInt("BLOCK_SPEED_FAKE_DROP", value.toInt()).apply()
             }
+
+            val btnMediaPermission = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnMediaPermission)
+            val sliderMediaRatio = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderMediaRatio)
+            val tvMediaRatioValue = dialogView.findViewById<android.widget.TextView>(R.id.tvMediaRatioValue)
+
+            btnMediaPermission?.setOnClickListener {
+                dialog.dismiss()
+                try {
+                    val intent = android.content.Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+                    activity.startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(activity, "설정 화면을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            val ratio = sp.getInt("MEDIA_SPLIT_RATIO", 5)
+            sliderMediaRatio?.value = ratio.toFloat()
+            tvMediaRatioValue?.text = "$ratio : ${6 - ratio}"
+            sliderMediaRatio?.addOnChangeListener { _, value, _ ->
+                val mapWeight = value.toInt()
+                val mediaWeight = 6 - mapWeight
+                tvMediaRatioValue?.text = "$mapWeight : $mediaWeight"
+                sp.edit().putInt("MEDIA_SPLIT_RATIO", mapWeight).apply()
+            }
             
             try {
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)

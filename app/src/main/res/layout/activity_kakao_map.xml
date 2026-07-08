@@ -1,100 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/llSplitContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:fitsSystemWindows="true"
-    android:background="#222222">
+    android:background="#222222"
+    android:weightSum="6">
 
-    <com.kakaomobility.knsdk.ui.view.KNNaviView
-        android:id="@+id/navi_view"
+    <FrameLayout
+        android:id="@+id/mapOverlayContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <include layout="@layout/layout_hud_overlays" />
+        android:layout_height="0dp"
+        android:layout_weight="5">
         
-    <!-- 목적지 확인 오버레이 -->
-    <LinearLayout
-        android:id="@+id/llPreviewOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="bottom"
-        android:background="#DD222222"
-        android:padding="16dp"
-        android:visibility="gone"
-        android:elevation="10dp"
-        android:clickable="true"
-        android:focusable="true">
+        <com.kakaomobility.knsdk.ui.view.KNNaviView
+            android:id="@+id/navi_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+            
+        <include layout="@layout/layout_hud_overlays" />
         
-        <TextView
-            android:id="@+id/tvPreviewDestName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp"/>
-            
-        <TextView
-            android:id="@+id/tvPreviewAddress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#AAAAAA"
-            android:textSize="14sp"
-            android:layout_marginBottom="16dp"/>
-            
+        <!-- 목적지 확인 오버레이 -->
         <LinearLayout
+            android:id="@+id/llPreviewOverlay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:layout_gravity="bottom"
+            android:background="#DD222222"
+            android:padding="16dp"
+            android:visibility="gone"
+            android:elevation="10dp"
+            android:clickable="true"
+            android:focusable="true">
             
-            <Button
-                android:id="@+id/btnPreviewCancel"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="취소"
-                android:backgroundTint="#555555"
-                android:layout_marginEnd="8dp"/>
+            <TextView
+                android:id="@+id/tvPreviewDestName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
                 
-            <Button
-                android:id="@+id/btnPreviewStart"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="안내 시작"
-                android:backgroundTint="#FFEB3B"
-                android:textColor="#000000"/>
+            <TextView
+                android:id="@+id/tvPreviewAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#AAAAAA"
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp"/>
+                
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                
+                <Button
+                    android:id="@+id/btnPreviewCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="취소"
+                    android:backgroundTint="#555555"
+                    android:layout_marginEnd="8dp"/>
+                    
+                <Button
+                    android:id="@+id/btnPreviewStart"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="안내 시작"
+                    android:backgroundTint="#FFEB3B"
+                    android:textColor="#000000"/>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
 
-    <!-- 로딩 오버레이 -->
-    <LinearLayout
-        android:id="@+id/llLoadingOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#FF222222"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="20dp">
-        
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:indeterminateTint="#FFFFFF" />
+        <!-- 로딩 오버레이 -->
+        <LinearLayout
+            android:id="@+id/llLoadingOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FF222222"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="20dp">
             
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="경로를 탐색 중입니다..."
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:layout_marginTop="16dp" />
-    </LinearLayout>
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="#FFFFFF" />
+                
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="경로를 탐색 중입니다..."
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:layout_marginTop="16dp" />
+        </LinearLayout>
+    </FrameLayout>
 
-</FrameLayout>
+    <FrameLayout
+        android:id="@+id/flMediaContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="visible">
+        <include layout="@layout/layout_media_player" />
+    </FrameLayout>
+</LinearLayout>

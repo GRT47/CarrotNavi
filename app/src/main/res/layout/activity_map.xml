@@ -1,16 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/llSplitContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:fitsSystemWindows="true"
-    android:background="#222222">
+    android:background="#222222"
+    android:weightSum="6">
 
     <FrameLayout
-        android:id="@+id/tmapUILayout"
+        android:id="@+id/mapOverlayContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="5">
+        
+        <FrameLayout
+            android:id="@+id/tmapUILayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+            
+        <include layout="@layout/layout_hud_overlays" />
+    </FrameLayout>
 
-    <include layout="@layout/layout_hud_overlays" />
-</FrameLayout>
+    <FrameLayout
+        android:id="@+id/flMediaContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="visible">
+        <include layout="@layout/layout_media_player" />
+    </FrameLayout>
+
+</LinearLayout>

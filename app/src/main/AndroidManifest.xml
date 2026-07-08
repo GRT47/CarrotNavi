@@ -37,7 +37,8 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".MapActivity" />
+        <activity android:name=".MapActivity" 
+                  android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity android:name=".SearchActivity"
                   android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity android:name=".KakaoMapActivity"
@@ -57,6 +58,16 @@
             android:foregroundServiceType="dataSync"
             android:exported="false" />
             
+        <service
+            android:name=".MediaNotificationListenerService"
+            android:label="CarrotNavi Media Listener"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

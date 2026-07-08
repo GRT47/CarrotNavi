@@ -35,7 +35,61 @@ class MapActivity : AppCompatActivity() {
     }
 
 private var navigationFragment: NavigationFragment? = null
-        private var isOverlayVisible = true
+    private var isOverlayVisible = true
+
+    private val mediaProgressHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val mediaProgressRunnable = object : Runnable {
+        override fun run() {
+            if (MediaNotificationListenerService.isPlaying) {
+                val elapsed = android.os.SystemClock.elapsedRealtime() - MediaNotificationListenerService.lastUpdateTime
+                val currentPos = MediaNotificationListenerService.position + elapsed
+                
+                val sbMediaProgress = binding.root.findViewById<android.widget.SeekBar>(R.id.sbMediaProgress)
+                val tvCurrentTime = binding.root.findViewById<android.widget.TextView>(R.id.tvCurrentTime)
+                
+                sbMediaProgress?.max = MediaNotificationListenerService.duration.toInt()
+                sbMediaProgress?.progress = currentPos.toInt()
+                
+                val currentSecs = currentPos / 1000
+                tvCurrentTime?.text = String.format("%d:%02d", currentSecs / 60, currentSecs % 60)
+                
+                mediaProgressHandler.postDelayed(this, 1000)
+            }
+        }
+    }
+
+    private val mediaUpdateReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "com.example.carrotnavi.ACTION_MEDIA_UPDATE") {
+                val title = intent.getStringExtra("title") ?: "재생중인 곡 없음"
+                val artist = intent.getStringExtra("artist") ?: "아티스트 없음"
+                val isPlaying = intent.getBooleanExtra("isPlaying", false)
+                val duration = intent.getLongExtra("duration", 0L)
+                
+                val ivAlbumArt = binding.root.findViewById<android.widget.ImageView>(R.id.ivAlbumArt)
+                val ivAlbumArtThumbnail = binding.root.findViewById<android.widget.ImageView>(R.id.ivAlbumArtThumbnail)
+                val tvMediaTitle = binding.root.findViewById<android.widget.TextView>(R.id.tvMediaTitle)
+                val tvMediaArtist = binding.root.findViewById<android.widget.TextView>(R.id.tvMediaArtist)
+                val btnPlayPause = binding.root.findViewById<android.widget.ImageButton>(R.id.btnPlayPause)
+                val tvDuration = binding.root.findViewById<android.widget.TextView>(R.id.tvDuration)
+                
+                tvMediaTitle?.text = title
+                tvMediaArtist?.text = artist
+                ivAlbumArt?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+                ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+                
+                btnPlayPause?.setImageResource(if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24)
+                
+                val durSecs = duration / 1000
+                tvDuration?.text = String.format("%d:%02d", durSecs / 60, durSecs % 60)
+                
+                mediaProgressHandler.removeCallbacks(mediaProgressRunnable)
+                if (isPlaying) {
+                    mediaProgressHandler.post(mediaProgressRunnable)
+                }
+            }
+        }
+    }
 
     private val cancelRouteReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -62,6 +116,57 @@ private var navigationFragment: NavigationFragment? = null
                         else -> turnTypeOverride.toString()
                     }
                 }
+            }
+            "MEDIA_SPLIT_RATIO" -> {
+                runOnUiThread {
+                    updateMediaLayout(resources.configuration.orientation)
+                }
+            }
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateMediaLayout(newConfig.orientation)
+    }
+
+    private fun updateMediaLayout(orientation: Int) {
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        val ratio = sharedPref.getInt("MEDIA_SPLIT_RATIO", 4)
+        
+        val mainContainer = binding.root.findViewById<android.widget.LinearLayout>(R.id.llSplitContainer)
+        val tmapLayout = binding.root.findViewById<android.widget.FrameLayout>(R.id.mapOverlayContainer)
+        val mediaContainer = binding.root.findViewById<android.widget.FrameLayout>(R.id.flMediaContainer)
+        
+        if (mainContainer != null && tmapLayout != null && mediaContainer != null) {
+            mainContainer.weightSum = 6f
+            
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                mainContainer.orientation = android.widget.LinearLayout.HORIZONTAL
+                val tmapParams = tmapLayout.layoutParams as android.widget.LinearLayout.LayoutParams
+                tmapParams.width = 0
+                tmapParams.height = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                tmapParams.weight = ratio.toFloat()
+                tmapLayout.layoutParams = tmapParams
+                
+                val mediaParams = mediaContainer.layoutParams as android.widget.LinearLayout.LayoutParams
+                mediaParams.width = 0
+                mediaParams.height = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                mediaParams.weight = (6 - ratio).toFloat()
+                mediaContainer.layoutParams = mediaParams
+            } else {
+                mainContainer.orientation = android.widget.LinearLayout.VERTICAL
+                val tmapParams = tmapLayout.layoutParams as android.widget.LinearLayout.LayoutParams
+                tmapParams.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                tmapParams.height = 0
+                tmapParams.weight = ratio.toFloat()
+                tmapLayout.layoutParams = tmapParams
+                
+                val mediaParams = mediaContainer.layoutParams as android.widget.LinearLayout.LayoutParams
+                mediaParams.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                mediaParams.height = 0
+                mediaParams.weight = (6 - ratio).toFloat()
+                mediaContainer.layoutParams = mediaParams
             }
         }
     }
@@ -107,13 +212,74 @@ private var navigationFragment: NavigationFragment? = null
         }
 
         val filter = android.content.IntentFilter("com.example.carrotnavi.ACTION_CANCEL_ROUTE")
+        val mediaFilter = android.content.IntentFilter("com.example.carrotnavi.ACTION_MEDIA_UPDATE")
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(cancelRouteReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            registerReceiver(mediaUpdateReceiver, mediaFilter, Context.RECEIVER_NOT_EXPORTED)
         } else {
             registerReceiver(cancelRouteReceiver, filter)
+            registerReceiver(mediaUpdateReceiver, mediaFilter)
         }
 
+        updateMediaLayout(resources.configuration.orientation)
         
+        // request current media info manually
+        val ivAlbumArt = binding.root.findViewById<android.widget.ImageView>(R.id.ivAlbumArt)
+        val ivAlbumArtThumbnail = binding.root.findViewById<android.widget.ImageView>(R.id.ivAlbumArtThumbnail)
+        val tvMediaTitle = binding.root.findViewById<android.widget.TextView>(R.id.tvMediaTitle)
+        val tvMediaArtist = binding.root.findViewById<android.widget.TextView>(R.id.tvMediaArtist)
+        val btnPrev = binding.root.findViewById<android.widget.ImageButton>(R.id.btnPrev)
+        val btnPlayPause = binding.root.findViewById<android.widget.ImageButton>(R.id.btnPlayPause)
+        val btnNext = binding.root.findViewById<android.widget.ImageButton>(R.id.btnNext)
+        val sbMediaProgress = binding.root.findViewById<android.widget.SeekBar>(R.id.sbMediaProgress)
+        
+        ivAlbumArt?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+        ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+        tvMediaTitle?.text = MediaNotificationListenerService.currentTitle
+        tvMediaArtist?.text = MediaNotificationListenerService.currentArtist
+
+        fun sendMediaCommand(cmd: String) {
+            val intent = Intent(MediaNotificationListenerService.ACTION_MEDIA_CONTROL).apply {
+                setPackage(packageName)
+                putExtra("command", cmd)
+            }
+            sendBroadcast(intent)
+        }
+        
+        btnPrev?.setOnClickListener { sendMediaCommand("prev") }
+        btnPlayPause?.setOnClickListener { 
+            sendMediaCommand(if (MediaNotificationListenerService.isPlaying) "pause" else "play") 
+        }
+        btnNext?.setOnClickListener { sendMediaCommand("next") }
+        
+        sbMediaProgress?.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {}
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {
+                seekBar?.let {
+                    val intent = Intent(MediaNotificationListenerService.ACTION_MEDIA_CONTROL).apply {
+                        setPackage(packageName)
+                        putExtra("command", "seek")
+                        putExtra("seekPos", it.progress.toLong())
+                    }
+                    sendBroadcast(intent)
+                }
+            }
+        })
+
+        // 강제로 서비스 리바인딩 시도 (앱 업데이트 후 서비스 끊김 방지)
+        try {
+            val component = android.content.ComponentName(this, MediaNotificationListenerService::class.java)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                android.service.notification.NotificationListenerService.requestRebind(component)
+            }
+            // 확실한 리바인딩을 위한 컴포넌트 토글 트릭
+            val pm = packageManager
+            pm.setComponentEnabledSetting(component, android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED, android.content.pm.PackageManager.DONT_KILL_APP)
+            pm.setComponentEnabledSetting(component, android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED, android.content.pm.PackageManager.DONT_KILL_APP)
+        } catch (e: Exception) {
+            Log.e("MapActivity", "Failed to rebind media service: ${e.message}")
+        }
 
         initTmapSdk(appKey)
 
@@ -219,8 +385,9 @@ private var navigationFragment: NavigationFragment? = null
 
             frag.setNavigationScreenStateListener(object : com.tmapmobility.tmap.tmapsdk.ui.data.NavigationScreenStateListener {
                 override fun onChanged(state: com.tmapmobility.tmap.tmapsdk.ui.data.NavigationScreenState) {
-                    Log.d("MapActivity", "NavigationScreenState changed: ${state.javaClass.simpleName}")
-                    if (state.javaClass.simpleName.contains("DefaultScreen")) {
+                    val stateName = state.javaClass.simpleName
+                    Log.d("MapActivity", "NavigationScreenState changed: $stateName")
+                    if (stateName.contains("DefaultScreen")) {
                         // TMap Safe Driving has ended (probably user clicked X).
                         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                             if (!isFinishing) {
@@ -319,7 +486,11 @@ private var navigationFragment: NavigationFragment? = null
         super.onDestroy()
         try {
             unregisterReceiver(cancelRouteReceiver)
+            unregisterReceiver(mediaUpdateReceiver)
         } catch (e: Exception) {}
+        if (::hudOverlayManager.isInitialized) {
+            hudOverlayManager.onDestroy()
+        }
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         sharedPref.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         val intent = Intent(this, UdpSenderService::class.java)

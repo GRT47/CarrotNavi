@@ -251,6 +251,74 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- 미디어 및 화면 분할 섹션 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#1E1E1E"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="미디어 화면 분할 설정"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        android:layout_marginBottom="16dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnMediaPermission"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:text="미디어 권한 허용 (필수)"
+                        app:backgroundTint="#FF9800"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="16dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="내비 지도 화면 비율 (기본 5:1)"
+                        android:textColor="#DDDDDD"
+                        android:layout_marginBottom="8dp"/>
+                        
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/sliderMediaRatio"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:valueFrom="1"
+                            android:valueTo="5"
+                            android:stepSize="1"
+                            android:value="5"/>
+                            
+                        <TextView
+                            android:id="@+id/tvMediaRatioValue"
+                            android:layout_width="60dp"
+                            android:layout_height="wrap_content"
+                            android:text="5 : 1"
+                            android:textColor="#FFFFFF"
+                            android:gravity="end"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- 시스템 섹션 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
