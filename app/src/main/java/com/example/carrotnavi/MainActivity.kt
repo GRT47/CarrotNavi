@@ -188,15 +188,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkNotificationPermissionAndPrompt() {
         if (!isNotificationPermissionGranted()) {
-            AlertDialog.Builder(this)
-                .setTitle("알림 접근 권한 필요")
-                .setMessage("미디어 재생 정보(현재 재생 중인 음악 등)를 내비게이션 화면에 표시하려면 '알림 접근 허용'이 필요합니다.\n\n설정 화면으로 이동하시겠습니까?")
-                .setPositiveButton("이동") { _, _ ->
-                    val intent = Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                    startActivity(intent)
-                }
-                .setNegativeButton("다음에", null)
-                .show()
+            android.widget.Toast.makeText(this, "미디어 정보를 위해 알림 접근 권한을 허용해주세요.", android.widget.Toast.LENGTH_LONG).show()
+            val intent = Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+            startActivity(intent)
         }
     }
 
@@ -289,7 +283,8 @@ class MainActivity : AppCompatActivity() {
     private fun checkPermissionsAndStart() {
         val permissions = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.RECORD_AUDIO
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)

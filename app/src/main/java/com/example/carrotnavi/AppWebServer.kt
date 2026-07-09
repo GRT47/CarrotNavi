@@ -75,6 +75,20 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                 if (params.containsKey("KAKAO_REST_API_KEY")) {
                     params["KAKAO_REST_API_KEY"]?.firstOrNull()?.let { editor.putString("KAKAO_REST_API_KEY", it) }
                 }
+                if (params.containsKey("USE_KM_DISTANCE_FORMAT")) {
+                    val isKm = params["USE_KM_DISTANCE_FORMAT"]?.firstOrNull() == "true"
+                    editor.putBoolean("USE_KM_DISTANCE_FORMAT", isKm)
+                }
+                if (params.containsKey("MEDIA_BG_STYLE")) {
+                    params["MEDIA_BG_STYLE"]?.firstOrNull()?.let { editor.putString("MEDIA_BG_STYLE", it) }
+                }
+                if (params.containsKey("SHOW_ALBUM_ART_WITH_EQ")) {
+                    val showAlbum = params["SHOW_ALBUM_ART_WITH_EQ"]?.firstOrNull() == "true"
+                    editor.putBoolean("SHOW_ALBUM_ART_WITH_EQ", showAlbum)
+                }
+                if (params.containsKey("MEDIA_SPLIT_RATIO_F")) {
+                    params["MEDIA_SPLIT_RATIO_F"]?.firstOrNull()?.toFloatOrNull()?.let { editor.putFloat("MEDIA_SPLIT_RATIO_F", it) }
+                }
                 editor.apply()
                 
             } catch (e: Exception) {
@@ -106,8 +120,13 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val kakaoNativeAppKey = prefs.getString("KAKAO_NATIVE_APP_KEY", "") ?: ""
         val kakaoRestApiKey = prefs.getString("KAKAO_REST_API_KEY", "") ?: ""
 
+        val distanceFormatKm = prefs.getBoolean("USE_KM_DISTANCE_FORMAT", true)
+        val mediaBgStyle = prefs.getString("MEDIA_BG_STYLE", "album") ?: "album"
+        val showAlbumArtWithEq = prefs.getBoolean("SHOW_ALBUM_ART_WITH_EQ", false)
+        val mediaSplitRatioF = prefs.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
+
         if (session.uri == "/api/settings") {
-            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey"}"""
+            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response

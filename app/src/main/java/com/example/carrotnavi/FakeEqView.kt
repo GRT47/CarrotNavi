@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.media.audiofx.Visualizer
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -43,6 +44,9 @@ class FakeEqView @JvmOverloads constructor(
     private var animator: ValueAnimator? = null
     private var currentFraction = 0f
     
+    private var visualizer: Visualizer? = null
+    private var isUsingRealVisualizer = false
+    
     init {
         for (i in 0 until barCount) {
             heights[i] = 0.1f
@@ -62,24 +66,80 @@ class FakeEqView @JvmOverloads constructor(
         if (isAnimating) return
         isAnimating = true
         
+        try {
+            if (visualizer == null) {
+                visualizer = Visualizer(0).apply {
+                    captureSize = Visualizer.getCaptureSizeRange()[1]
+                    setDataCaptureListener(object : Visualizer.OnDataCaptureListener {
+                        override fun onWaveFormDataCapture(visualizer: Visualizer?, waveform: ByteArray?, samplingRate: Int) {}
+                        override fun onFftDataCapture(visualizer: Visualizer?, fft: ByteArray?, samplingRate: Int) {
+                            if (fft != null && isUsingRealVisualizer) {
+                                processFft(fft)
+                            }
+                        }
+                    }, Visualizer.getMaxCaptureRate() / 2, false, true)
+                    enabled = true
+                }
+            }
+            visualizer?.enabled = true
+            isUsingRealVisualizer = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            isUsingRealVisualizer = false
+            visualizer?.release()
+            visualizer = null
+        }
+        
         animator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 150
+            duration = 100
             repeatCount = ValueAnimator.INFINITE
             interpolator = LinearInterpolator()
             
             addUpdateListener {
                 val fraction = it.animatedFraction
-                currentFraction += 0.05f // For wave/circle continuous animations
-                for (i in 0 until barCount) {
-                    if (fraction < 0.1f) {
-                        targetHeights[i] = Random.nextFloat() * 0.8f + 0.1f
+                currentFraction += 0.05f 
+                
+                if (!isUsingRealVisualizer) {
+                    for (i in 0 until barCount) {
+                        if (fraction < 0.1f) {
+                            targetHeights[i] = Random.nextFloat() * 0.8f + 0.1f
+                        }
+                        val diff = targetHeights[i] - heights[i]
+                        heights[i] += diff * 0.2f
                     }
-                    val diff = targetHeights[i] - heights[i]
-                    heights[i] += diff * 0.2f
+                } else {
+                    for (i in 0 until barCount) {
+                        val diff = targetHeights[i] - heights[i]
+                        heights[i] += diff * 0.4f
+                    }
                 }
                 invalidate()
             }
             start()
+        }
+    }
+
+    private fun processFft(fft: ByteArray) {
+        val n = barCount
+        val usableLength = (fft.size / 2) - 1
+        if (usableLength <= 0) return
+        val chunkSize = Math.max(1, usableLength / n)
+        
+        for (i in 0 until n) {
+            var sum = 0f
+            for (j in 0 until chunkSize) {
+                val idx = (i * chunkSize + j + 1) * 2
+                if (idx + 1 < fft.size) {
+                    val real = fft[idx]
+                    val imag = fft[idx + 1]
+                    val mag = Math.hypot(real.toDouble(), imag.toDouble()).toFloat()
+                    sum += mag
+                }
+            }
+            val avgMag = sum / chunkSize
+            var normalized = avgMag / 100f
+            if (normalized > 1f) normalized = 1f
+            targetHeights[i] = Math.max(0.1f, normalized)
         }
     }
 
@@ -88,7 +148,16 @@ class FakeEqView @JvmOverloads constructor(
         animator?.cancel()
         animator = null
         
-        // 서서히 가라앉히기
+        try {
+            visualizer?.enabled = false
+            visualizer?.release()
+            visualizer = null
+            isUsingRealVisualizer = false
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        
+        // 서서히 가라앉기히기
         ValueAnimator.ofFloat(1f, 0f).apply {
             duration = 500
             addUpdateListener {

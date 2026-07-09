@@ -68,6 +68,8 @@
                         android:textColor="#FFFFFF"
                         android:layout_marginBottom="16dp"/>
 
+
+
                     <Switch
                         android:id="@+id/cbDistanceFormatKm"
                         android:layout_width="match_parent"
@@ -229,6 +231,15 @@
                         android:textColor="#DDDDDD"
                         android:layout_marginBottom="16dp"/>
 
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnMediaPermission"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:text="미디어 권한 허용 (필수)"
+                        app:backgroundTint="#FF9800"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="16dp"/>
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -251,6 +262,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+
             <!-- 미디어 및 화면 분할 섹션 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -269,7 +281,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="미디어 화면 분할 설정 (테스트)"
+                        android:text="미디어 화면 분할 설정"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="#FFFFFF"
@@ -318,13 +330,12 @@
                             android:textColor="#FFFFFF"/>
                     </RadioGroup>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnMediaPermission"
+                    <CheckBox
+                        android:id="@+id/cbShowAlbumArtWithEq"
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:text="미디어 권한 허용 (필수)"
-                        app:backgroundTint="#FF9800"
-                        android:textSize="16sp"
+                        android:layout_height="wrap_content"
+                        android:text="EQ 사용 시 앨범아트도 흐리게 표시"
+                        android:textColor="#DDDDDD"
                         android:layout_marginBottom="16dp"/>
 
                     <TextView
@@ -345,8 +356,10 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:stepSize="1"
-                            android:value="5"/>
+                            android:stepSize="0.5"
+                            android:valueFrom="0.5"
+                            android:valueTo="5.0"
+                            android:value="5.0"/>
                             
                         <TextView
                             android:id="@+id/tvMediaRatioValue"

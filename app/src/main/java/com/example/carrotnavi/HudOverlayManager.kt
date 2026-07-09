@@ -172,10 +172,36 @@ class HudOverlayManager(
             val btnExitApp = dialogView.findViewById<android.widget.Button>(R.id.btnExitApp)
             val btnEditApiKey = dialogView.findViewById<android.widget.Button>(R.id.btnEditApiKey)
             val btnDebugPage = dialogView.findViewById<android.widget.Button>(R.id.btnDebugPage)
+            
+            val rgMediaBgStyle = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgMediaBgStyle)
+            val rbBgAlbumArt = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgAlbumArt)
+            val rbBgEq = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEq)
+            val rbBgEqWave = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEqWave)
+            val rbBgEqCircle = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEqCircle)
+            val cbShowAlbumArtWithEq = dialogView.findViewById<android.widget.CheckBox>(R.id.cbShowAlbumArtWithEq)
+            
+            val sliderMediaRatio = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderMediaRatio)
+            val tvMediaRatioValue = dialogView.findViewById<android.widget.TextView>(R.id.tvMediaRatioValue)
+
             val btnCloseSettings = dialogView.findViewById<android.widget.ImageView>(R.id.btnCloseSettings)
             val btnCheckUpdate = dialogView.findViewById<android.widget.Button>(R.id.btnCheckUpdate)
-
+            
             cbDistanceFormatKm.isChecked = sp.getBoolean("USE_KM_DISTANCE_FORMAT", true)
+            
+            val currentStyle = sp.getString("MEDIA_BG_STYLE", "album")
+            when (currentStyle) {
+                "eq", "eq_bar" -> rbBgEq.isChecked = true
+                "eq_wave" -> rbBgEqWave.isChecked = true
+                "eq_circle" -> rbBgEqCircle.isChecked = true
+                else -> rbBgAlbumArt.isChecked = true
+            }
+            cbShowAlbumArtWithEq.isChecked = sp.getBoolean("SHOW_ALBUM_ART_WITH_EQ", false)
+            
+            val currentRatio = sp.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
+            sliderMediaRatio.value = currentRatio
+            fun fmt(v: Float) = if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()
+            tvMediaRatioValue.text = "${fmt(currentRatio)} : ${fmt(5f - currentRatio)}"
+            
             cbBackgroundLocation.isChecked = sp.getBoolean("REQ_BACKGROUND", false)
 
             val isBoostEnabled = sp.getBoolean("BLOCK_SPEED_ENABLED", false)
@@ -187,9 +213,7 @@ class HudOverlayManager(
                 llBoostSettingsContainer.visibility = if (isChecked) android.view.View.VISIBLE else android.view.View.GONE
             }
 
-            cbDistanceFormatKm.setOnCheckedChangeListener { _, isChecked ->
-                sp.edit().putBoolean("USE_KM_DISTANCE_FORMAT", isChecked).apply()
-            }
+
             cbBackgroundLocation.setOnCheckedChangeListener { _, isChecked ->
                 sp.edit().putBoolean("REQ_BACKGROUND", isChecked).apply()
             }
@@ -220,8 +244,6 @@ class HudOverlayManager(
             }
 
             val btnMediaPermission = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnMediaPermission)
-            val sliderMediaRatio = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderMediaRatio)
-            val tvMediaRatioValue = dialogView.findViewById<android.widget.TextView>(R.id.tvMediaRatioValue)
 
             btnMediaPermission?.setOnClickListener {
                 dialog.dismiss()
@@ -233,42 +255,7 @@ class HudOverlayManager(
                 }
             }
 
-            sliderMediaRatio?.valueFrom = 0.5f
-            sliderMediaRatio?.valueTo = 5.0f
-            sliderMediaRatio?.stepSize = 0.5f
-            val ratio = if (sp.contains("MEDIA_SPLIT_RATIO_F")) sp.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f) else {
-                val r = sp.getInt("MEDIA_SPLIT_RATIO", 4).toFloat()
-                if (r >= 5f) 5f else r
-            }
-            sliderMediaRatio?.value = ratio
-            
-            fun fmt(v: Float) = if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()
-            tvMediaRatioValue?.text = "${fmt(ratio)} : ${fmt(5f - ratio)}"
-            sliderMediaRatio?.addOnChangeListener { _, value, _ ->
-                val mapWeight = value
-                val mediaWeight = 5f - mapWeight
-                tvMediaRatioValue?.text = "${fmt(mapWeight)} : ${fmt(mediaWeight)}"
-                sp.edit().putFloat("MEDIA_SPLIT_RATIO_F", mapWeight).apply()
-            }
-            
-            val rgMediaBgStyle = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgMediaBgStyle)
-            val bgStyle = sp.getString("MEDIA_BG_STYLE", "album")
-            when (bgStyle) {
-                "eq", "eq_bar" -> rgMediaBgStyle?.check(R.id.rbBgEq)
-                "eq_wave" -> rgMediaBgStyle?.check(R.id.rbBgEqWave)
-                "eq_circle" -> rgMediaBgStyle?.check(R.id.rbBgEqCircle)
-                else -> rgMediaBgStyle?.check(R.id.rbBgAlbumArt)
-            }
-            
-            rgMediaBgStyle?.setOnCheckedChangeListener { _, checkedId ->
-                val style = when (checkedId) {
-                    R.id.rbBgEq -> "eq_bar"
-                    R.id.rbBgEqWave -> "eq_wave"
-                    R.id.rbBgEqCircle -> "eq_circle"
-                    else -> "album"
-                }
-                sp.edit().putString("MEDIA_BG_STYLE", style).apply()
-            }
+
             
             try {
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
@@ -296,6 +283,30 @@ class HudOverlayManager(
 
             btnCloseSettings.setOnClickListener {
                 dialog.dismiss()
+            }
+
+            cbDistanceFormatKm.setOnCheckedChangeListener { _, isChecked ->
+                sp.edit().putBoolean("USE_KM_DISTANCE_FORMAT", isChecked).apply()
+            }
+
+            rgMediaBgStyle.setOnCheckedChangeListener { _, checkedId ->
+                val style = when (checkedId) {
+                    R.id.rbBgEq -> "eq_bar"
+                    R.id.rbBgEqWave -> "eq_wave"
+                    R.id.rbBgEqCircle -> "eq_circle"
+                    else -> "album"
+                }
+                sp.edit().putString("MEDIA_BG_STYLE", style).apply()
+            }
+
+            cbShowAlbumArtWithEq.setOnCheckedChangeListener { _, isChecked ->
+                sp.edit().putBoolean("SHOW_ALBUM_ART_WITH_EQ", isChecked).apply()
+            }
+
+            sliderMediaRatio.addOnChangeListener { _, value, _ ->
+                fun fmt(v: Float) = if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()
+                tvMediaRatioValue.text = "${fmt(value)} : ${fmt(5f - value)}"
+                sp.edit().putFloat("MEDIA_SPLIT_RATIO_F", value).apply()
             }
 
             btnEditApiKey.setOnClickListener {

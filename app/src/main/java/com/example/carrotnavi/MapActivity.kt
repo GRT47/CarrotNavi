@@ -89,9 +89,10 @@ private var navigationFragment: NavigationFragment? = null
         ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
         
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        val showAlbumWithEq = sharedPref.getBoolean("SHOW_ALBUM_ART_WITH_EQ", false)
         val bgStyle = sharedPref.getString("MEDIA_BG_STYLE", "album")
         if (bgStyle == "eq" || bgStyle == "eq_bar" || bgStyle == "eq_wave" || bgStyle == "eq_circle") {
-            ivAlbumArt?.visibility = android.view.View.GONE
+            ivAlbumArt?.visibility = if (showAlbumWithEq) android.view.View.VISIBLE else android.view.View.GONE
             fakeEqView?.visibility = android.view.View.VISIBLE
             
             val styleInt = when (bgStyle) {
@@ -155,7 +156,7 @@ private var navigationFragment: NavigationFragment? = null
                     updateMediaLayout(resources.configuration.orientation)
                 }
             }
-            "MEDIA_BG_STYLE" -> {
+            "MEDIA_BG_STYLE", "SHOW_ALBUM_ART_WITH_EQ" -> {
                 runOnUiThread {
                     updateMediaUIFromService()
                 }

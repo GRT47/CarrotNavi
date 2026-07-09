@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.carrotnavi"
         minSdk = 26
         targetSdk = 36
-        versionCode = 44
-        versionName = "2.0.2"
+        versionCode = 45
+        versionName = "2.0.3"
     }
 
     buildTypes {
