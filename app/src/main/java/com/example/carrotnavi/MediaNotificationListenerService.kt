@@ -10,6 +10,11 @@ import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import android.service.notification.NotificationListenerService
 import android.util.Log
+import android.graphics.BitmapFactory
+import org.json.JSONObject
+import java.net.URL
+import java.net.URLEncoder
+import java.io.InputStream
 
 class MediaNotificationListenerService : NotificationListenerService() {
     private var mediaSessionManager: MediaSessionManager? = null
@@ -154,6 +159,11 @@ class MediaNotificationListenerService : NotificationListenerService() {
             duration = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
             
             broadcastMediaState()
+
+            // 앨범아트가 없고 제목과 아티스트 정보가 있는 경우 iTunes API로 검색
+            if (currentAlbumArt == null && currentTitle != "알 수 없는 제목" && currentArtist != "아티스트 없음") {
+                fetchAlbumArtFromITunes(currentArtist, currentTitle)
+            }
         }
 
         override fun onPlaybackStateChanged(state: PlaybackState?) {
@@ -164,5 +174,45 @@ class MediaNotificationListenerService : NotificationListenerService() {
             
             broadcastMediaState()
         }
+    }
+
+    private fun fetchAlbumArtFromITunes(artist: String, title: String) {
+        Thread {
+            try {
+                val query = URLEncoder.encode("$artist $title", "UTF-8")
+                val url = URL("https://itunes.apple.com/search?term=$query&entity=song&limit=1")
+                val connection = url.openConnection()
+                connection.connectTimeout = 3000
+                connection.readTimeout = 3000
+                
+                val jsonString = connection.inputStream.bufferedReader().use { it.readText() }
+                val jsonObject = JSONObject(jsonString)
+                val results = jsonObject.optJSONArray("results")
+                
+                if (results != null && results.length() > 0) {
+                    val firstResult = results.getJSONObject(0)
+                    val artworkUrl = firstResult.optString("artworkUrl100")
+                    if (artworkUrl.isNotEmpty()) {
+                        // 100x100 이미지를 600x600으로 변경하여 고화질 앨범아트 가져오기
+                        val highResUrl = artworkUrl.replace("100x100bb.jpg", "600x600bb.jpg")
+                        
+                        val imgConnection = URL(highResUrl).openConnection()
+                        imgConnection.connectTimeout = 5000
+                        imgConnection.readTimeout = 5000
+                        val inputStream: InputStream = imgConnection.inputStream
+                        val bitmap = BitmapFactory.decodeStream(inputStream)
+                        inputStream.close()
+                        
+                        // 백그라운드 작업이 끝난 후, 현재 재생중인 곡이 바뀌지 않았는지 확인
+                        if (currentArtist == artist && currentTitle == title && bitmap != null) {
+                            currentAlbumArt = bitmap
+                            broadcastMediaState()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MediaService", "Failed to fetch album art from iTunes", e)
+            }
+        }.start()
     }
 }
