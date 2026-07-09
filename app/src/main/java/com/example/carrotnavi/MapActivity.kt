@@ -519,6 +519,25 @@ private var navigationFragment: NavigationFragment? = null
         sendBroadcast(intent)
     }
 
+    override fun onNewIntent(newIntent: android.content.Intent) {
+        super.onNewIntent(newIntent)
+        setIntent(newIntent)
+        
+        val destPlaceName = newIntent.getStringExtra("dest_place_name")
+        if (!destPlaceName.isNullOrEmpty()) {
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                val naviIntent = android.content.Intent(this@MapActivity, KakaoMapActivity::class.java).apply {
+                    putExtras(newIntent)
+                }
+                startActivity(naviIntent)
+                
+                newIntent.removeExtra("dest_place_name")
+                newIntent.removeExtra("dest_lat")
+                newIntent.removeExtra("dest_lng")
+            }, 500)
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         try {

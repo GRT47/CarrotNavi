@@ -238,6 +238,7 @@ class MainActivity : AppCompatActivity() {
                             putExtra("dest_address_name", doc.address_name)
                             putExtra("dest_x", doc.x)
                             putExtra("dest_y", doc.y)
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                         }
                         startActivity(newIntent)
                     } else if (lines.size > 1) {
@@ -254,6 +255,7 @@ class MainActivity : AppCompatActivity() {
                                         putExtra("dest_address_name", doc.address_name)
                                         putExtra("dest_x", doc.x)
                                         putExtra("dest_y", doc.y)
+                                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                                     }
                                     startActivity(newIntent)
                                 } else {
@@ -319,7 +321,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startMapActivity() {
-        val intent = Intent(this, MapActivity::class.java)
+        val intent = Intent(this, MapActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
         startActivity(intent)
     }
 
