@@ -251,6 +251,25 @@ class HudOverlayManager(
                 sp.edit().putFloat("MEDIA_SPLIT_RATIO_F", mapWeight).apply()
             }
             
+            val rgMediaBgStyle = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgMediaBgStyle)
+            val bgStyle = sp.getString("MEDIA_BG_STYLE", "album")
+            when (bgStyle) {
+                "eq", "eq_bar" -> rgMediaBgStyle?.check(R.id.rbBgEq)
+                "eq_wave" -> rgMediaBgStyle?.check(R.id.rbBgEqWave)
+                "eq_circle" -> rgMediaBgStyle?.check(R.id.rbBgEqCircle)
+                else -> rgMediaBgStyle?.check(R.id.rbBgAlbumArt)
+            }
+            
+            rgMediaBgStyle?.setOnCheckedChangeListener { _, checkedId ->
+                val style = when (checkedId) {
+                    R.id.rbBgEq -> "eq_bar"
+                    R.id.rbBgEqWave -> "eq_wave"
+                    R.id.rbBgEqCircle -> "eq_circle"
+                    else -> "album"
+                }
+                sp.edit().putString("MEDIA_BG_STYLE", style).apply()
+            }
+            
             try {
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
                 tvAppVersion.text = "버전 ${pInfo.versionName}"

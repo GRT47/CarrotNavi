@@ -23,7 +23,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                             val sendIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
                                 putExtra(Intent.EXTRA_TEXT, searchText)
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 setPackage(context.packageName)
                             }
                             context.startActivity(sendIntent)

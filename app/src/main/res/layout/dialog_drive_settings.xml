@@ -275,6 +275,49 @@
                         android:textColor="#FFFFFF"
                         android:layout_marginBottom="16dp"/>
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="미디어 뒷배경 스타일"
+                        android:textColor="#DDDDDD"
+                        android:layout_marginBottom="8dp"/>
+
+                    <RadioGroup
+                        android:id="@+id/rgMediaBgStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+                        
+                        <RadioButton
+                            android:id="@+id/rbBgAlbumArt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="앨범아트"
+                            android:textColor="#FFFFFF"/>
+                            
+                        <RadioButton
+                            android:id="@+id/rbBgEq"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="EQ 시각화 (막대)"
+                            android:textColor="#FFFFFF"/>
+                            
+                        <RadioButton
+                            android:id="@+id/rbBgEqWave"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="EQ 시각화 (물결)"
+                            android:textColor="#FFFFFF"/>
+                            
+                        <RadioButton
+                            android:id="@+id/rbBgEqCircle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="EQ 시각화 (원형)"
+                            android:textColor="#FFFFFF"/>
+                    </RadioGroup>
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnMediaPermission"
                         android:layout_width="match_parent"

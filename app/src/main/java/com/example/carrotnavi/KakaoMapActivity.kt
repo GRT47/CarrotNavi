@@ -93,6 +93,8 @@ class KakaoMapActivity : AppCompatActivity(),
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "com.example.carrotnavi.ACTION_CANCEL_ROUTE") {
                 Log.d("KakaoMapActivity", "Cancel Route received, stopping guidance")
+                sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
+                RouteInfoRepository.updateRouteInfo("", 0, 0, "tmap")
                 KNSDK.sharedGuidance()?.stop()
                 if (!isFinishing) finish()
             }
@@ -143,10 +145,30 @@ class KakaoMapActivity : AppCompatActivity(),
         val btnPlayPause = binding.root.findViewById<android.widget.ImageButton>(R.id.btnPlayPause)
         val tvDuration = binding.root.findViewById<android.widget.TextView>(R.id.tvDuration)
         
+        val fakeEqView = binding.root.findViewById<com.example.carrotnavi.FakeEqView>(R.id.fakeEqView)
+        
         tvMediaTitle?.text = title
         tvMediaArtist?.text = artist
         ivAlbumArt?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
         ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+        
+        val bgStyle = sharedPref.getString("MEDIA_BG_STYLE", "album")
+        if (bgStyle == "eq" || bgStyle == "eq_bar" || bgStyle == "eq_wave" || bgStyle == "eq_circle") {
+            ivAlbumArt?.visibility = android.view.View.GONE
+            fakeEqView?.visibility = android.view.View.VISIBLE
+            
+            val styleInt = when (bgStyle) {
+                "eq_wave" -> com.example.carrotnavi.FakeEqView.STYLE_WAVE
+                "eq_circle" -> com.example.carrotnavi.FakeEqView.STYLE_CIRCLE
+                else -> com.example.carrotnavi.FakeEqView.STYLE_BAR
+            }
+            fakeEqView?.setEqStyle(styleInt)
+            fakeEqView?.setPlaying(isPlaying)
+        } else {
+            ivAlbumArt?.visibility = android.view.View.VISIBLE
+            fakeEqView?.visibility = android.view.View.GONE
+            fakeEqView?.setPlaying(false)
+        }
         
         btnPlayPause?.setImageResource(if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24)
         
@@ -163,6 +185,10 @@ class KakaoMapActivity : AppCompatActivity(),
         if (key == "MEDIA_SPLIT_RATIO" || key == "MEDIA_SPLIT_RATIO_F") {
             runOnUiThread {
                 updateMediaLayout(resources.configuration.orientation)
+            }
+        } else if (key == "MEDIA_BG_STYLE") {
+            runOnUiThread {
+                updateMediaUIFromService()
             }
         }
     }

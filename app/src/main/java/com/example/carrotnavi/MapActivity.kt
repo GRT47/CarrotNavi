@@ -81,10 +81,31 @@ private var navigationFragment: NavigationFragment? = null
         val btnPlayPause = binding.root.findViewById<android.widget.ImageButton>(R.id.btnPlayPause)
         val tvDuration = binding.root.findViewById<android.widget.TextView>(R.id.tvDuration)
         
+        val fakeEqView = binding.root.findViewById<com.example.carrotnavi.FakeEqView>(R.id.fakeEqView)
+        
         tvMediaTitle?.text = title
         tvMediaArtist?.text = artist
         ivAlbumArt?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
         ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+        
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        val bgStyle = sharedPref.getString("MEDIA_BG_STYLE", "album")
+        if (bgStyle == "eq" || bgStyle == "eq_bar" || bgStyle == "eq_wave" || bgStyle == "eq_circle") {
+            ivAlbumArt?.visibility = android.view.View.GONE
+            fakeEqView?.visibility = android.view.View.VISIBLE
+            
+            val styleInt = when (bgStyle) {
+                "eq_wave" -> com.example.carrotnavi.FakeEqView.STYLE_WAVE
+                "eq_circle" -> com.example.carrotnavi.FakeEqView.STYLE_CIRCLE
+                else -> com.example.carrotnavi.FakeEqView.STYLE_BAR
+            }
+            fakeEqView?.setEqStyle(styleInt)
+            fakeEqView?.setPlaying(isPlaying)
+        } else {
+            ivAlbumArt?.visibility = android.view.View.VISIBLE
+            fakeEqView?.visibility = android.view.View.GONE
+            fakeEqView?.setPlaying(false)
+        }
         
         btnPlayPause?.setImageResource(if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24)
         
@@ -97,11 +118,17 @@ private var navigationFragment: NavigationFragment? = null
         }
     }
 
+    private var pendingSafeDriveRestart = false
+
     private val cancelRouteReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "com.example.carrotnavi.ACTION_CANCEL_ROUTE") {
                 Log.d("MapActivity", "Cancel Route received, stopping navigation")
-                navigationFragment?.startSafeDrive()
+                if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+                    navigationFragment?.startSafeDrive()
+                } else {
+                    pendingSafeDriveRestart = true
+                }
             }
         }
     }
@@ -128,6 +155,11 @@ private var navigationFragment: NavigationFragment? = null
                     updateMediaLayout(resources.configuration.orientation)
                 }
             }
+            "MEDIA_BG_STYLE" -> {
+                runOnUiThread {
+                    updateMediaUIFromService()
+                }
+            }
         }
     }
 
@@ -135,6 +167,10 @@ private var navigationFragment: NavigationFragment? = null
         super.onConfigurationChanged(newConfig)
         if (::binding.isInitialized) {
             updateMediaLayout(newConfig.orientation)
+        }
+        if (!isResumedState) {
+            needFragmentRecreate = true
+            Log.d("MapActivity", "Orientation changed in background, will recreate fragment view on resume")
         }
     }
 
@@ -410,11 +446,15 @@ private var navigationFragment: NavigationFragment? = null
                     Log.d("MapActivity", "NavigationScreenState changed: $stateName")
                     if (stateName.contains("DefaultScreen")) {
                         // TMap Safe Driving has ended (probably user clicked X).
-                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                            if (!isFinishing) {
-                                frag.startSafeDrive()
-                            }
-                        }, 500)
+                        if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                if (!isFinishing) {
+                                    frag.startSafeDrive()
+                                }
+                            }, 500)
+                        } else {
+                            pendingSafeDriveRestart = true
+                        }
                     }
                 }
             })
@@ -508,15 +548,48 @@ private var navigationFragment: NavigationFragment? = null
             startService(intent)
         }
     }
+    private var isResumedState = false
+    private var needFragmentRecreate = false
+
+    override fun onPause() {
+        super.onPause()
+        isResumedState = false
+    }
 
     override fun onResume() {
         super.onResume()
+        isResumedState = true
+        
+        if (needFragmentRecreate || pendingSafeDriveRestart) {
+            needFragmentRecreate = false
+            navigationFragment?.let {
+                supportFragmentManager.beginTransaction()
+                    .detach(it)
+                    .attach(it)
+                    .commitAllowingStateLoss()
+                Log.d("MapActivity", "Recreated navigationFragment view due to background orientation change or route cancel")
+            }
+        }
         updateMediaUIFromService()
         val intent = android.content.Intent(MediaNotificationListenerService.ACTION_MEDIA_CONTROL).apply {
             setPackage(packageName)
             putExtra("command", "refresh")
         }
         sendBroadcast(intent)
+        
+        if (pendingSafeDriveRestart) {
+            pendingSafeDriveRestart = false
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                if (!isFinishing) {
+                    try {
+                        navigationFragment?.startSafeDrive()
+                        Log.d("MapActivity", "startSafeDrive() called from onResume after route cancel")
+                    } catch(e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }, 1000)
+        }
     }
 
     override fun onNewIntent(newIntent: android.content.Intent) {
@@ -534,7 +607,7 @@ private var navigationFragment: NavigationFragment? = null
                 newIntent.removeExtra("dest_place_name")
                 newIntent.removeExtra("dest_lat")
                 newIntent.removeExtra("dest_lng")
-            }, 500)
+            }, 1000)
         }
     }
 

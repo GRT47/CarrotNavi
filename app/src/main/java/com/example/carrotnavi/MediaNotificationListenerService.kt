@@ -162,11 +162,18 @@ class MediaNotificationListenerService : NotificationListenerService() {
                 ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART)
             duration = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
             
-            Log.d("MediaService", "onMetadataChanged: $title - $artist, albumArt is ${if(currentAlbumArt != null) "NOT null (${currentAlbumArt?.width}x${currentAlbumArt?.height})" else "null"}")
+            Log.d("MediaService", "onMetadataChanged: title=[$title], artist=[$artist], albumArt is ${if(currentAlbumArt != null) "NOT null (${currentAlbumArt?.width}x${currentAlbumArt?.height})" else "null"}")
             
             // 만약 최근에 iTunes에서 가져온 고화질 앨범아트가 현재 재생 중인 곡과 일치하면, 원본 대신 고화질 적용
-            if (fetchedAlbumArt != null && lastFetchedArtist == currentArtist && lastFetchedTitle == currentTitle) {
-                currentAlbumArt = fetchedAlbumArt
+            if (fetchedAlbumArt != null) {
+                if (lastFetchedArtist == currentArtist && lastFetchedTitle == currentTitle) {
+                    Log.d("MediaService", "Overriding currentAlbumArt with fetchedAlbumArt (600x600)!")
+                    currentAlbumArt = fetchedAlbumArt
+                } else {
+                    Log.d("MediaService", "fetchedAlbumArt is NOT null, but mismatch! lastArtist=[$lastFetchedArtist], curArtist=[$currentArtist], lastTitle=[$lastFetchedTitle], curTitle=[$currentTitle]")
+                }
+            } else {
+                Log.d("MediaService", "fetchedAlbumArt is null. No override applied.")
             }
             
             broadcastMediaState()
