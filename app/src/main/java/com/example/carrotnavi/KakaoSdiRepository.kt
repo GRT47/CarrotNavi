@@ -1,4 +1,4 @@
-﻿package com.example.carrotnavi
+package com.example.carrotnavi
 
 import android.os.Bundle
 import androidx.lifecycle.LiveData
@@ -11,6 +11,7 @@ object KakaoSdiRepository {
 
     private val currentBundle = Bundle().apply { putString("navitype", "kakao") }
 
+    @Synchronized
     fun updateLocation(speed: Int, roadName: String, roadLimitSpeed: Int, rawData: String = "", tbtDist: Int = -1, tbtTurnType: Int = -1, tbtText: String = "", lat: Double = 0.0, lon: Double = 0.0) {
         val tbtJson = JSONObject()
         tbtJson.put("szPosRoadName", roadName)
@@ -28,6 +29,7 @@ object KakaoSdiRepository {
         _observableKakaoData.postValue(currentBundle.clone() as Bundle)
     }
 
+    @Synchronized
     fun updateRouteInfo(remainDist: Int, remainTime: Int, goalName: String = "", goalPosX: Double = 0.0, goalPosY: Double = 0.0) {
         currentBundle.putInt("nGoPosDist", remainDist)
         currentBundle.putInt("nGoPosTime", remainTime)
@@ -43,6 +45,7 @@ object KakaoSdiRepository {
     }
 
     // Maps KNSafety to Tmap's firstSDIInfo JSON structure
+    @Synchronized
     fun updateSafeties(roadLimitSpeed: Int, sdiType1: Int, speedLimit1: Int, dist1: Int, isBlock1: Boolean, blockAvgSpeed: Int, sdiType2: Int, speedLimit2: Int, dist2: Int) {
         currentBundle.putInt("limitSpeed", roadLimitSpeed)
         

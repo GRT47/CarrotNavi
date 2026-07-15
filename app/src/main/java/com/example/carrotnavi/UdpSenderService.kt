@@ -47,13 +47,19 @@ class UdpSenderService : Service() {
     @Volatile
     private var currentGpsStatusText = "탐색 중"
 
+    private var loopsStarted = java.util.concurrent.atomic.AtomicBoolean(false)
+
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(1, createNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
-        } else {
-            startForeground(1, createNotification())
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(1, createNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+            } else {
+                startForeground(1, createNotification())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         
         try {
@@ -107,9 +113,11 @@ class UdpSenderService : Service() {
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         targetIp = sharedPref.getString("TARGET_IP", "255.255.255.255") ?: "255.255.255.255"
 
-        startObservingEDC()
-        startSendingLoop()
-        startReceivingLoop()
+        if (loopsStarted.compareAndSet(false, true)) {
+            startObservingEDC()
+            startSendingLoop()
+            startReceivingLoop()
+        }
 
         return START_STICKY
     }

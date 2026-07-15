@@ -817,6 +817,7 @@ class KakaoMapActivity : AppCompatActivity(),
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        if (!::binding.isInitialized) return
         
         val destPlaceName = intent.getStringExtra("dest_place_name")
         if (destPlaceName != null) {
@@ -833,6 +834,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     private fun startRouteGuidance(doc: KakaoDocument) {
+        if (isFinishing || isDestroyed) return
         var startPoi: KNPOI? = null
         val gpsManager = com.kakaomobility.knsdk.KNSDK.sharedGpsManager()
         val currentGps = gpsManager?.recentGpsData
@@ -915,7 +917,10 @@ class KakaoMapActivity : AppCompatActivity(),
         sharedPref.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
         if (::hudOverlayManager.isInitialized) hudOverlayManager.onDestroy()
-        locationManager.removeUpdates(this)
+        if (::locationManager.isInitialized) locationManager.removeUpdates(this)
+        previewTimer?.cancel()
+        previewTimer = null
+        mediaProgressHandler.removeCallbacksAndMessages(null)
         
         // 인스턴스 재생성 시 이전 인스턴스의 onDestroy가 새 인스턴스의 초기화를 방해하지 않도록 조건 추가
         if (isFinishing || hasStartedRouteGuidance) {
