@@ -53,7 +53,7 @@ class HudOverlayManager(
                 isOverlayVisible = sp.getBoolean("OVERLAY_VISIBLE", true)
                 updateOverlayVisibility()
             }
-            "BLOCK_SPEED_ENABLED", "BLOCK_SPEED_OFFSET", "BLOCK_SPEED_FAKE_DROP", "BLOCK_SPEED_BOOST_MODE", "USE_KM_DISTANCE_FORMAT", "REQ_BACKGROUND" -> {
+            "BLOCK_SPEED_ENABLED", "BLOCK_SPEED_OFFSET", "BLOCK_SPEED_FAKE_DROP", "BLOCK_SPEED_BOOST_MODE", "USE_KM_DISTANCE_FORMAT", "REQ_BACKGROUND", "AUDIO_DUCKING_MODE", "VOICE_VOLUME" -> {
                 activeDialogView?.let { view ->
                     val cbDistanceFormatKm = view.findViewById<android.widget.Switch>(R.id.cbDistanceFormatKm)
                     val cbBackgroundLocation = view.findViewById<android.widget.Switch>(R.id.cbBackgroundLocation)
@@ -93,6 +93,22 @@ class HudOverlayManager(
                     val mode = sp.getInt("BLOCK_SPEED_BOOST_MODE", 0)
                     if (mode == 0 && !rbBoostProgressive.isChecked) rbBoostProgressive.isChecked = true
                     if (mode == 1 && !rbBoostFixed.isChecked) rbBoostFixed.isChecked = true
+                    
+                    val duckingMode = sp.getInt("AUDIO_DUCKING_MODE", 1)
+                    val rbAudioDuckingNone = view.findViewById<android.widget.RadioButton>(R.id.rbAudioDuckingNone)
+                    val rbAudioDuckingVolume = view.findViewById<android.widget.RadioButton>(R.id.rbAudioDuckingVolume)
+                    val rbAudioDuckingPause = view.findViewById<android.widget.RadioButton>(R.id.rbAudioDuckingPause)
+                    if (duckingMode == 0 && !rbAudioDuckingNone.isChecked) rbAudioDuckingNone.isChecked = true
+                    if (duckingMode == 1 && !rbAudioDuckingVolume.isChecked) rbAudioDuckingVolume.isChecked = true
+                    if (duckingMode == 2 && !rbAudioDuckingPause.isChecked) rbAudioDuckingPause.isChecked = true
+                    
+                    val voiceVol = sp.getFloat("VOICE_VOLUME", 1.0f)
+                    val sliderVoiceVolume = view.findViewById<com.google.android.material.slider.Slider>(R.id.sliderVoiceVolume)
+                    val tvVoiceVolumeValue = view.findViewById<android.widget.TextView>(R.id.tvVoiceVolumeValue)
+                    if (sliderVoiceVolume.value != voiceVol) {
+                        sliderVoiceVolume.value = voiceVol
+                        tvVoiceVolumeValue.text = "${(voiceVol * 100).toInt()}%"
+                    }
                 }
             }
         }
@@ -158,6 +174,12 @@ class HudOverlayManager(
 
             val cbDistanceFormatKm = dialogView.findViewById<android.widget.Switch>(R.id.cbDistanceFormatKm)
             val cbBackgroundLocation = dialogView.findViewById<android.widget.Switch>(R.id.cbBackgroundLocation)
+            val rgAudioDuckingMode = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgAudioDuckingMode)
+            val rbAudioDuckingNone = dialogView.findViewById<android.widget.RadioButton>(R.id.rbAudioDuckingNone)
+            val rbAudioDuckingVolume = dialogView.findViewById<android.widget.RadioButton>(R.id.rbAudioDuckingVolume)
+            val rbAudioDuckingPause = dialogView.findViewById<android.widget.RadioButton>(R.id.rbAudioDuckingPause)
+            val sliderVoiceVolume = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderVoiceVolume)
+            val tvVoiceVolumeValue = dialogView.findViewById<android.widget.TextView>(R.id.tvVoiceVolumeValue)
             val swBoostEnable = dialogView.findViewById<android.widget.Switch>(R.id.swBoostEnable)
             val llBoostSettingsContainer = dialogView.findViewById<android.widget.LinearLayout>(R.id.llBoostSettingsContainer)
             val sliderOffset = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderOffset)
@@ -204,6 +226,23 @@ class HudOverlayManager(
             
             cbBackgroundLocation.isChecked = sp.getBoolean("REQ_BACKGROUND", false)
 
+            // 0: 사용 안함, 1: 오디오 포커스(볼륨 깎기), 2: 미디어 일시정지
+            val duckingMode = sp.getInt("AUDIO_DUCKING_MODE", 1)
+            when (duckingMode) {
+                0 -> rbAudioDuckingNone?.isChecked = true
+                2 -> rbAudioDuckingPause?.isChecked = true
+                else -> rbAudioDuckingVolume?.isChecked = true
+            }
+            
+            rgAudioDuckingMode?.setOnCheckedChangeListener { _, checkedId ->
+                val mode = when (checkedId) {
+                    R.id.rbAudioDuckingNone -> 0
+                    R.id.rbAudioDuckingPause -> 2
+                    else -> 1
+                }
+                sp.edit().putInt("AUDIO_DUCKING_MODE", mode).apply()
+            }
+
             val isBoostEnabled = sp.getBoolean("BLOCK_SPEED_ENABLED", false)
             swBoostEnable.isChecked = isBoostEnabled
             llBoostSettingsContainer.visibility = if (isBoostEnabled) android.view.View.VISIBLE else android.view.View.GONE
@@ -225,6 +264,15 @@ class HudOverlayManager(
                 tvOffsetValue.text = "${value.toInt()} km/h"
                 sp.edit().putInt("BLOCK_SPEED_OFFSET", value.toInt()).apply()
             }
+            
+            val voiceVol = sp.getFloat("VOICE_VOLUME", 1.0f)
+            sliderVoiceVolume.value = voiceVol
+            tvVoiceVolumeValue.text = "${(voiceVol * 100).toInt()}%"
+            sliderVoiceVolume.addOnChangeListener { _, value, _ ->
+                tvVoiceVolumeValue.text = "${(value * 100).toInt()}%"
+                sp.edit().putFloat("VOICE_VOLUME", value).apply()
+            }
+
 
             val mode = sp.getInt("BLOCK_SPEED_BOOST_MODE", 0)
             if (mode == 0) rbBoostProgressive.isChecked = true else rbBoostFixed.isChecked = true

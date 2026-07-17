@@ -89,6 +89,14 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                 if (params.containsKey("MEDIA_SPLIT_RATIO_F")) {
                     params["MEDIA_SPLIT_RATIO_F"]?.firstOrNull()?.toFloatOrNull()?.let { editor.putFloat("MEDIA_SPLIT_RATIO_F", it) }
                 }
+                if (params.containsKey("AUDIO_DUCKING_MODE")) {
+                    params["AUDIO_DUCKING_MODE"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("AUDIO_DUCKING_MODE", it) }
+                }
+                if (params.containsKey("VOICE_VOLUME")) {
+                    params["VOICE_VOLUME"]?.firstOrNull()?.toFloatOrNull()?.let {
+                        editor.putFloat("VOICE_VOLUME", it)
+                    }
+                }
                 editor.apply()
                 
             } catch (e: Exception) {

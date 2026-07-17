@@ -191,6 +191,10 @@ class KakaoMapActivity : AppCompatActivity(),
             runOnUiThread {
                 updateMediaUIFromService()
             }
+        } else if (key == "VOICE_VOLUME") {
+            if (::naviView.isInitialized) {
+                naviView.sndVolume = sharedPreferences.getFloat("VOICE_VOLUME", 1.0f)
+            }
         }
     }
     companion object {
@@ -200,6 +204,8 @@ class KakaoMapActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE).edit().putBoolean("IS_DEBUG_MODE", false).apply()
         super.onCreate(savedInstanceState)
+        
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -229,6 +235,8 @@ class KakaoMapActivity : AppCompatActivity(),
         sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         sharedPref.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
         sharedPref.edit().putString("ACTIVE_NAVI", "kakao").apply()
+        VoiceDuckingManager.init(this)
+        startUdpSenderService()
 
         val dbPath = filesDir.absolutePath + "/knsdk"
         val nativeAppKey = sharedPref.getString("KAKAO_NATIVE_APP_KEY", "") ?: ""
@@ -519,8 +527,8 @@ class KakaoMapActivity : AppCompatActivity(),
                 KNRouteAvoidOption.KNRouteAvoidOption_None.value
             )
             
-            // 안내음성 기본 볼륨을 0으로 설정
-            naviView.sndVolume = 0.0f
+            // 안내음성 볼륨을 SharedPreferences 설정값으로 설정
+            naviView.sndVolume = sharedPref.getFloat("VOICE_VOLUME", 1.0f)
         }
     }
 
@@ -805,9 +813,12 @@ class KakaoMapActivity : AppCompatActivity(),
     override fun shouldPlayVoiceGuide(guidance: KNGuidance, voiceGuide: com.kakaomobility.knsdk.guidance.knguidance.voiceguide.KNGuide_Voice, data: MutableList<ByteArray>): Boolean = true
     override fun willPlayVoiceGuide(guidance: KNGuidance, voiceGuide: com.kakaomobility.knsdk.guidance.knguidance.voiceguide.KNGuide_Voice) {
         if(::naviView.isInitialized) naviView.willPlayVoiceGuide(guidance, voiceGuide)
+        val audioManager = getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager
+        VoiceDuckingManager.onVoiceStart(audioManager, "kakao")
     }
     override fun didFinishPlayVoiceGuide(guidance: KNGuidance, voiceGuide: com.kakaomobility.knsdk.guidance.knguidance.voiceguide.KNGuide_Voice) {
         if(::naviView.isInitialized) naviView.didFinishPlayVoiceGuide(guidance, voiceGuide)
+        VoiceDuckingManager.onVoiceEnd("kakao")
     }
     override fun didUpdateCitsGuide(guidance: KNGuidance, citsGuide: com.kakaomobility.knsdk.guidance.knguidance.citsguide.KNGuide_Cits) {
         if(::naviView.isInitialized) naviView.didUpdateCitsGuide(guidance, citsGuide)
@@ -918,6 +929,7 @@ class KakaoMapActivity : AppCompatActivity(),
         sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
         if (::hudOverlayManager.isInitialized) hudOverlayManager.onDestroy()
         if (::locationManager.isInitialized) locationManager.removeUpdates(this)
+        
         previewTimer?.cancel()
         previewTimer = null
         mediaProgressHandler.removeCallbacksAndMessages(null)

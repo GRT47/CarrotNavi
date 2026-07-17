@@ -17,6 +17,8 @@ class WebServerService : Service() {
     private var registrationListener: android.net.nsd.NsdManager.RegistrationListener? = null
     private val SERVICE_NAME = "carrotnavi"
     private val SERVICE_TYPE = "_http._tcp."
+    private var lastIpAddress: String? = null
+    private var ipMonitorTimer: java.util.Timer? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -33,6 +35,7 @@ class WebServerService : Service() {
             android.util.Log.d("WebServerService", "Web server started on port 8080")
             registerService(8080)
             startIpReporting()
+            startIpMonitor()
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -70,6 +73,32 @@ class WebServerService : Service() {
         )
     }
 
+    private fun restartNsd(port: Int) {
+        registrationListener?.let {
+            try {
+                nsdManager?.unregisterService(it)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        registerService(port)
+    }
+
+    private fun startIpMonitor() {
+        lastIpAddress = getLocalIpAddress()
+        ipMonitorTimer = java.util.Timer()
+        ipMonitorTimer?.scheduleAtFixedRate(object : java.util.TimerTask() {
+            override fun run() {
+                val currentIp = getLocalIpAddress()
+                if (currentIp != null && currentIp != lastIpAddress) {
+                    android.util.Log.d("WebServerService", "IP changed from $lastIpAddress to $currentIp, restarting NSD")
+                    lastIpAddress = currentIp
+                    restartNsd(8080)
+                }
+            }
+        }, 1000, 1000)
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY
     }
@@ -82,6 +111,8 @@ class WebServerService : Service() {
         }
         reportTimer?.cancel()
         reportTimer = null
+        ipMonitorTimer?.cancel()
+        ipMonitorTimer = null
         android.util.Log.d("WebServerService", "Web server stopped")
     }
 

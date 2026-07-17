@@ -54,7 +54,7 @@ class UdpSenderService : Service() {
         createNotificationChannel()
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(1, createNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+                startForeground(1, createNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or 2 /* FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK */)
             } else {
                 startForeground(1, createNotification())
             }

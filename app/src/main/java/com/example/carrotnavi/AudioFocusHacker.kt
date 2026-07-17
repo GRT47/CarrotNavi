@@ -12,7 +12,8 @@ object AudioFocusHacker {
         streamType: Int,
         durationHint: Int
     ): Int {
-        Log.e("TmapVolume", "[AudioFocusHacker] requestAudioFocus(old) intercepted! NOP!")
+        Log.d("TmapVolume", "[AudioFocusHacker] requestAudioFocus(old) intercepted! Routing to VoiceDuckingManager.")
+        VoiceDuckingManager.onVoiceStart(am, "tmap_old")
         return AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     }
 
@@ -21,7 +22,8 @@ object AudioFocusHacker {
         am: AudioManager,
         request: AudioFocusRequest
     ): Int {
-        Log.e("TmapVolume", "[AudioFocusHacker] requestAudioFocus(new) intercepted! NOP!")
+        Log.d("TmapVolume", "[AudioFocusHacker] requestAudioFocus(new) intercepted! Routing to VoiceDuckingManager.")
+        VoiceDuckingManager.onVoiceStart(am, "tmap_new")
         return AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     }
 
@@ -30,7 +32,8 @@ object AudioFocusHacker {
         am: AudioManager,
         l: AudioManager.OnAudioFocusChangeListener
     ): Int {
-        Log.e("TmapVolume", "[AudioFocusHacker] abandonAudioFocus(old) intercepted! NOP!")
+        Log.d("TmapVolume", "[AudioFocusHacker] abandonAudioFocus(old) intercepted! Routing to VoiceDuckingManager.")
+        VoiceDuckingManager.onVoiceEnd("tmap_old")
         return AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     }
 
@@ -39,7 +42,8 @@ object AudioFocusHacker {
         am: AudioManager,
         request: AudioFocusRequest
     ): Int {
-        Log.e("TmapVolume", "[AudioFocusHacker] abandonAudioFocusRequest(new) intercepted! NOP!")
+        Log.d("TmapVolume", "[AudioFocusHacker] abandonAudioFocusRequest(new) intercepted! Routing to VoiceDuckingManager.")
+        VoiceDuckingManager.onVoiceEnd("tmap_new")
         return AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     }
 }

@@ -36,7 +36,7 @@ class MapActivity : AppCompatActivity() {
 
 private var navigationFragment: NavigationFragment? = null
     private var isOverlayVisible = true
-
+    
     private val mediaProgressHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val mediaProgressRunnable = object : Runnable {
         override fun run() {
@@ -161,6 +161,19 @@ private var navigationFragment: NavigationFragment? = null
                     updateMediaUIFromService()
                 }
             }
+            "VOICE_VOLUME" -> {
+                val voiceRatio = sharedPreferences.getFloat("VOICE_VOLUME", 1.0f)
+                var maxVol = 10
+                try {
+                    for (m in TmapUISDK::class.java.methods) {
+                        if (m.name == "getMaxVolume") {
+                            maxVol = if (m.parameterTypes.isEmpty()) m.invoke(null) as Int else m.invoke(null, this@MapActivity) as Int
+                            break
+                        }
+                    }
+                } catch (e: Exception) {}
+                TmapUISDK.setVolume(this@MapActivity, (maxVol * voiceRatio).toInt())
+            }
         }
     }
 
@@ -247,6 +260,8 @@ private var navigationFragment: NavigationFragment? = null
 
         // 현재 앱이 Tmap 모드임을 명시적으로 설정하여 JSON 로그 송신 오류 수정
         sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
+        VoiceDuckingManager.init(this)
+        startUdpSenderService()
 
         hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this, hudBinding, this)
@@ -269,16 +284,17 @@ private var navigationFragment: NavigationFragment? = null
             return
         }
 
-        val filter = android.content.IntentFilter("com.example.carrotnavi.ACTION_CANCEL_ROUTE")
-        val mediaFilter = android.content.IntentFilter("com.example.carrotnavi.ACTION_MEDIA_UPDATE")
+        val intentFilter = android.content.IntentFilter("com.example.carrotnavi.ACTION_MEDIA_UPDATE")
+        val cancelRouteFilter = android.content.IntentFilter("com.example.carrotnavi.ACTION_CANCEL_ROUTE")
+        
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(cancelRouteReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-            registerReceiver(mediaUpdateReceiver, mediaFilter, Context.RECEIVER_NOT_EXPORTED)
+            registerReceiver(mediaUpdateReceiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
+            registerReceiver(cancelRouteReceiver, cancelRouteFilter, Context.RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(cancelRouteReceiver, filter)
-            registerReceiver(mediaUpdateReceiver, mediaFilter)
+            registerReceiver(mediaUpdateReceiver, intentFilter)
+            registerReceiver(cancelRouteReceiver, cancelRouteFilter)
         }
-
+        
         updateMediaLayout(resources.configuration.orientation)
         
         // request current media info manually
@@ -481,10 +497,31 @@ private var navigationFragment: NavigationFragment? = null
                     Log.e("SdiDebug", "observableEDCData class: ${it.javaClass.name}")
                     Log.e("SdiDebug", "observableEDCData: $it")
                     
-                    TmapUISDK.setVolume(this@MapActivity, 0)
+                    val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+                    val voiceRatio = sp.getFloat("VOICE_VOLUME", 1.0f)
+                    var maxVol = 10
+                    try {
+                        for (m in TmapUISDK::class.java.methods) {
+                            if (m.name == "getMaxVolume") {
+                                maxVol = if (m.parameterTypes.isEmpty()) m.invoke(null) as Int else m.invoke(null, this@MapActivity) as Int
+                                break
+                            }
+                        }
+                    } catch (e: Exception) {}
+                    TmapUISDK.setVolume(this@MapActivity, (maxVol * voiceRatio).toInt())
                     
                     // 도로 기본 제한속도 추출 및 UI 업데이트
-                    val realRoadLimit = getRoadLimitSpeedFromEngine()
+                    var realRoadLimit = getRoadLimitSpeedFromEngine()
+                    if (realRoadLimit <= 0 && data is android.os.Bundle) {
+                        val limitObj = data.get("limitSpeed")
+                        val currentLimitSpeed = when (limitObj) {
+                            is Int -> limitObj
+                            is Double -> limitObj.toInt()
+                            is String -> limitObj.toIntOrNull() ?: 0
+                            else -> 0
+                        }
+                        realRoadLimit = currentLimitSpeed
+                    }
                     runOnUiThread {
                         if (realRoadLimit >= 30 && hudOverlayManager.isOverlayVisible) {
                             hudBinding.llRoadSpeedLimit?.visibility = android.view.View.VISIBLE
@@ -615,9 +652,12 @@ private var navigationFragment: NavigationFragment? = null
     override fun onDestroy() {
         super.onDestroy()
         try {
-            unregisterReceiver(cancelRouteReceiver)
             unregisterReceiver(mediaUpdateReceiver)
         } catch (e: Exception) {}
+        try {
+            unregisterReceiver(cancelRouteReceiver)
+        } catch (e: Exception) {}
+        
         if (::hudOverlayManager.isInitialized) {
             hudOverlayManager.onDestroy()
         }

@@ -199,6 +199,98 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- 오디오 설정 섹션 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#1E1E1E"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="오디오 설정"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        android:layout_marginBottom="16dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="안내 시 다른 미디어 처리 방식"
+                        android:textColor="#DDDDDD"
+                        android:layout_marginBottom="8dp"/>
+                        
+                    <RadioGroup
+                        android:id="@+id/rgAudioDuckingMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+                        <RadioButton
+                            android:id="@+id/rbAudioDuckingNone"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFFF"
+                            android:text="사용 안함 (기본)"/>
+                        <RadioButton
+                            android:id="@+id/rbAudioDuckingVolume"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFFF"
+                            android:text="볼륨 줄이기 (오디오 포커스)"/>
+                        <RadioButton
+                            android:id="@+id/rbAudioDuckingPause"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFFF"
+                            android:text="강제 일시정지 후 재생 (샤오미 등)"/>
+                    </RadioGroup>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="내비게이션 안내 음량"
+                        android:textColor="#DDDDDD"
+                        android:layout_marginBottom="8dp"/>
+                        
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/sliderVoiceVolume"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:valueFrom="0.0"
+                            android:valueTo="1.0"
+                            android:stepSize="0.1"
+                            android:value="1.0"/>
+                            
+                        <TextView
+                            android:id="@+id/tvVoiceVolumeValue"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:text="100%"
+                            android:textColor="#FFFFFF"
+                            android:gravity="end"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- 권한 및 시스템 섹션 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

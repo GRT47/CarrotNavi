@@ -157,9 +157,13 @@ class MediaNotificationListenerService : NotificationListenerService() {
                 ?: metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE)
                 ?: "아티스트 없음"
             currentTitle = title
-            currentArtist = artist
-            currentAlbumArt = (metadata?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
-                ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART))?.copy(android.graphics.Bitmap.Config.ARGB_8888, false)
+            if (metadata != null) {
+                val bitmap = metadata.getBitmap(android.media.MediaMetadata.METADATA_KEY_ALBUM_ART)
+                    ?: metadata.getBitmap(android.media.MediaMetadata.METADATA_KEY_ART)
+                currentAlbumArt = bitmap?.copy(android.graphics.Bitmap.Config.ARGB_8888, false)
+            } else {
+                currentAlbumArt = null
+            }
             duration = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
             
             Log.d("MediaService", "onMetadataChanged: title=[$title], artist=[$artist], albumArt is ${if(currentAlbumArt != null) "NOT null (${currentAlbumArt?.width}x${currentAlbumArt?.height})" else "null"}")
