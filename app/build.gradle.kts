@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.carrotnavi"
         minSdk = 26
         targetSdk = 36
-        versionCode = 46
-        versionName = "2.0.5"
+        versionCode = 47
+        versionName = "2.0.6"
     }
 
     buildTypes {
@@ -76,6 +76,9 @@ dependencies {
 
   // NanoHTTPD for embedded web server
   implementation("org.nanohttpd:nanohttpd:2.3.1")
+
+  // Java-WebSocket for WebSocket v2 Server
+  implementation("org.java-websocket:Java-WebSocket:1.5.3")
 
   // Instrumented tests: jUnit rules and runners
   androidTestImplementation(libs.androidx.test.core)

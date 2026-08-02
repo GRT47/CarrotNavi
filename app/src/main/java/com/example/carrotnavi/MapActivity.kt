@@ -34,8 +34,10 @@ class MapActivity : AppCompatActivity() {
         searchRetrofit.create(KakaoSearchApi::class.java)
     }
 
-private var navigationFragment: NavigationFragment? = null
+    private var navigationFragment: NavigationFragment? = null
     private var isOverlayVisible = true
+    private var isTmapInitialized = false
+    private var tmapInitRetryCount = 0
     
     private val mediaProgressHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val mediaProgressRunnable = object : Runnable {
@@ -361,9 +363,23 @@ private var navigationFragment: NavigationFragment? = null
 
     
     private fun initTmapSdk(appKey: String) {
+        if (isTmapInitialized) return
+
+        if (!NetworkUtil.isNetworkAvailable(this)) {
+            runOnUiThread {
+                Toast.makeText(this@MapActivity, "네트워크 연결 대기 중...", Toast.LENGTH_SHORT).show()
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    initTmapSdk(appKey)
+                }, 3000)
+            }
+            return
+        }
+
         // TmapUISDK 초기화
         initialize(this, "", appKey, "", "", object : TmapUISDK.InitializeListener {
             override fun onSuccess() {
+                isTmapInitialized = true
+                tmapInitRetryCount = 0
                 runOnUiThread {
                     
                     try {
@@ -398,7 +414,11 @@ private var navigationFragment: NavigationFragment? = null
 
             override fun onFail(errorCode: Int, errorMsg: String?) {
                 runOnUiThread {
-                    Toast.makeText(this@MapActivity, "Tmap SDK 초기화 실패: $errorMsg", Toast.LENGTH_LONG).show()
+                    tmapInitRetryCount++
+                    Toast.makeText(this@MapActivity, "네트워크 불안정으로 지도 초기화 재시도 중... ($tmapInitRetryCount)", Toast.LENGTH_LONG).show()
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        initTmapSdk(appKey)
+                    }, 3000)
                 }
             }
 

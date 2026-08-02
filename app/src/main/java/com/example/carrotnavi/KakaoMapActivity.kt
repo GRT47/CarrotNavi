@@ -89,6 +89,27 @@ class KakaoMapActivity : AppCompatActivity(),
     private var lastRoadType: com.kakaomobility.knsdk.KNRoadType? = null
     private var currentSafetyGuide: com.kakaomobility.knsdk.guidance.knguidance.safetyguide.KNGuide_Safety? = null
 
+    private var v2Client: com.example.carrotnavi.v2.OpenpilotV2Client? = null
+    private var streamingManager: com.example.carrotnavi.v2.VideoStreamingManager? = null
+    private var presentation: com.example.carrotnavi.v2.MapPresentation? = null
+
+    private fun startV2Stream() {
+        val ip = sharedPref.getString("TARGET_UDP_IP", "192.168.1.33") ?: "192.168.1.33"
+        v2Client = com.example.carrotnavi.v2.OpenpilotV2Client(ip) { sessionId, streamHandle, manifestRev ->
+            runOnUiThread {
+                streamingManager = com.example.carrotnavi.v2.VideoStreamingManager(this, v2Client!!.renderClient!!, sessionId, streamHandle, manifestRev)
+                streamingManager?.start()
+                
+                val display = streamingManager?.display
+                if (display != null) {
+                    presentation = com.example.carrotnavi.v2.MapPresentation(this, display)
+                    presentation?.show()
+                }
+            }
+        }
+        v2Client?.start()
+    }
+
     private val cancelRouteReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "com.example.carrotnavi.ACTION_CANCEL_ROUTE") {
@@ -201,6 +222,9 @@ class KakaoMapActivity : AppCompatActivity(),
         private var knsdkInitialized = false
     }
 
+    private var kakaoInitRetryCount = 0
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE).edit().putBoolean("IS_DEBUG_MODE", false).apply()
         super.onCreate(savedInstanceState)
@@ -252,28 +276,46 @@ class KakaoMapActivity : AppCompatActivity(),
             } else {
                 Log.d("CarrotNavi", "Installing KNSDK to: $dbPath")
                 KNSDK.install(application, dbPath)
-                KNSDK.initializeWithAppKey(
-                    nativeAppKey,
-                    "1.0",
-                    "user_001",
-                    "ko",
-                    com.kakaomobility.knsdk.KNLanguageType.KNLanguageType_KOREAN
-                ) { error ->
-                    runOnUiThread {
-                        if (error == null) {
-                            Log.d("CarrotNavi", "KNSDK Init Success")
-                            knsdkInitialized = true
-                            setupContentAndStart()
-                        } else {
-                            Log.e("CarrotNavi", "KNSDK Init Failed: ${error.code} / ${error.msg}")
-                            Toast.makeText(this@KakaoMapActivity, "지도 초기화 실패: ${error.msg}", Toast.LENGTH_LONG).show()
-                            finish()
-                        }
-                    }
-                }
+                initKakaoSdk(nativeAppKey)
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    private fun initKakaoSdk(nativeAppKey: String) {
+        if (!NetworkUtil.isNetworkAvailable(this)) {
+            runOnUiThread {
+                Toast.makeText(this@KakaoMapActivity, "네트워크 연결 대기 중...", Toast.LENGTH_SHORT).show()
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    initKakaoSdk(nativeAppKey)
+                }, 3000)
+            }
+            return
+        }
+
+        KNSDK.initializeWithAppKey(
+            nativeAppKey,
+            "1.0",
+            "user_001",
+            "ko",
+            com.kakaomobility.knsdk.KNLanguageType.KNLanguageType_KOREAN
+        ) { error ->
+            runOnUiThread {
+                if (error == null) {
+                    Log.d("CarrotNavi", "KNSDK Init Success")
+                    knsdkInitialized = true
+                    kakaoInitRetryCount = 0
+                    setupContentAndStart()
+                } else {
+                    kakaoInitRetryCount++
+                    Log.e("CarrotNavi", "KNSDK Init Failed: ${error.code} / ${error.msg}")
+                    Toast.makeText(this@KakaoMapActivity, "네트워크 불안정으로 지도 초기화 재시도 중... ($kakaoInitRetryCount)", Toast.LENGTH_LONG).show()
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        initKakaoSdk(nativeAppKey)
+                    }, 3000)
+                }
+            }
         }
     }
 
@@ -335,6 +377,8 @@ class KakaoMapActivity : AppCompatActivity(),
         }
 
         startUdpSenderService()
+        
+        startV2Stream()
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         try {
@@ -934,7 +978,16 @@ class KakaoMapActivity : AppCompatActivity(),
         previewTimer = null
         mediaProgressHandler.removeCallbacksAndMessages(null)
         
-        // 인스턴스 재생성 시 이전 인스턴스의 onDestroy가 새 인스턴스의 초기화를 방해하지 않도록 조건 추가
+        try {
+            presentation?.dismiss()
+            streamingManager?.stop()
+            v2Client?.stop()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        // 백스택 복귀시 카카오 안내가 종료되게 하되,
+        // 종료될 때 onDestroy가 또 불려서 TMAP 복귀를 방해하지 않도록 조건 추가
         if (isFinishing || hasStartedRouteGuidance) {
             KNSDK.sharedGuidance()?.stop()
         }
