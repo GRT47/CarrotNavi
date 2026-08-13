@@ -347,6 +347,45 @@ class KakaoMapActivity : AppCompatActivity(),
             startActivity(searchIntent)
         }
         
+        // 안드로이드 기본 GPS 상태 리스너 등록
+        try {
+            val locationManager = getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+            locationManager.registerGnssStatusCallback(object : android.location.GnssStatus.Callback() {
+                override fun onStarted() {
+                    hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.YELLOW)
+                    hudBinding.tvGpsStatus?.text = "탐색 중"
+                    hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.YELLOW)
+                }
+                override fun onStopped() {
+                    hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.RED)
+                    hudBinding.tvGpsStatus?.text = "끊김 (NO)"
+                    hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.RED)
+                }
+                override fun onFirstFix(ttffMillis: Int) {
+                    hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.GREEN)
+                    hudBinding.tvGpsStatus?.text = "수신 양호"
+                    hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.GREEN)
+                }
+                override fun onSatelliteStatusChanged(status: android.location.GnssStatus) {
+                    var usedInFix = 0
+                    for (i in 0 until status.satelliteCount) {
+                        if (status.usedInFix(i)) usedInFix++
+                    }
+                    if (usedInFix >= 4) {
+                        hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.GREEN)
+                        hudBinding.tvGpsStatus?.text = "GOOD (위성 $usedInFix)"
+                        hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.GREEN)
+                    } else {
+                        hudBinding.ivGpsIcon?.setColorFilter(android.graphics.Color.RED)
+                        hudBinding.tvGpsStatus?.text = "BAD (위성 $usedInFix)"
+                        hudBinding.tvGpsStatus?.setTextColor(android.graphics.Color.RED)
+                    }
+                }
+            }, android.os.Handler(android.os.Looper.getMainLooper()))
+        } catch (e: SecurityException) {
+            Log.e("KakaoMapActivity", "GPS Permission Error")
+        }
+
         setupUI()
         setupObservers()
         
