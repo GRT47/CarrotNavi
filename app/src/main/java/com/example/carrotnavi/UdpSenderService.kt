@@ -180,7 +180,7 @@ class UdpSenderService : Service() {
                         
                         // Fallback logic for point camera (사용자 피드백 반영)
                         val sdiType = json.optInt("nSdiType", 0)
-                        val sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
+                        var sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
                         var sdiDist = json.optInt("nSdiDist", 0)
                         val bSdiBlockSection = json.optBoolean("bSdiBlockSection", false)
                         
@@ -193,6 +193,16 @@ class UdpSenderService : Service() {
                         if (nSdiBlockType > 0) {
                             json.put("nSdiBlockType", nSdiBlockType)
                             json.put("nSdiSection", 1) // 사용자 요청에 따라 강제로 1 고정
+                            
+                            // 오픈파일럿 최신 버전(carrot_serv.py)은 구간단속 진행 중일지라도 nSdiSpeedLimit > 0 조건을 필수적으로 체크하므로,
+                            // sdiSpeedLimit이 0으로 빠져있다면 구간단속 제한속도(nSdiBlockSpeed) 값으로 복사해 줍니다.
+                            if (sdiSpeedLimit <= 0) {
+                                val blockSpeed = json.optInt("nSdiBlockSpeed", 0)
+                                if (blockSpeed > 0) {
+                                    sdiSpeedLimit = blockSpeed
+                                    json.put("nSdiSpeedLimit", sdiSpeedLimit)
+                                }
+                            }
                         }
 
                         // 구간단속 제한속도 상향 로직 (평균속도는 원본 유지, 제한속도만 뻥튀기)
