@@ -147,16 +147,20 @@ class MediaNotificationListenerService : NotificationListenerService() {
     private val mediaCallback = object : MediaController.Callback() {
         override fun onMetadataChanged(metadata: MediaMetadata?) {
             super.onMetadataChanged(metadata)
-            val title = metadata?.getString(MediaMetadata.METADATA_KEY_TITLE)
-                ?: metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE) 
-                ?: "알 수 없는 제목"
-            val artist = metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST) 
-                ?: metadata?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST)
-                ?: metadata?.getString(MediaMetadata.METADATA_KEY_AUTHOR)
-                ?: metadata?.getString(MediaMetadata.METADATA_KEY_WRITER)
-                ?: metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE)
-                ?: "아티스트 없음"
-            currentTitle = title
+            var title = metadata?.getString(MediaMetadata.METADATA_KEY_TITLE)
+            if (title.isNullOrBlank()) title = metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE)
+            if (title.isNullOrBlank()) title = "알 수 없는 제목"
+
+            var artist = metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST)
+            if (artist.isNullOrBlank()) artist = metadata?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST)
+            if (artist.isNullOrBlank()) artist = metadata?.getString(MediaMetadata.METADATA_KEY_AUTHOR)
+            if (artist.isNullOrBlank()) artist = metadata?.getString(MediaMetadata.METADATA_KEY_WRITER)
+            if (artist.isNullOrBlank()) artist = metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE)
+            if (artist.isNullOrBlank()) artist = metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_DESCRIPTION)
+            if (artist.isNullOrBlank()) artist = "아티스트 없음"
+            
+            currentTitle = title!!
+            currentArtist = artist!!
             if (metadata != null) {
                 val bitmap = metadata.getBitmap(android.media.MediaMetadata.METADATA_KEY_ALBUM_ART)
                     ?: metadata.getBitmap(android.media.MediaMetadata.METADATA_KEY_ART)
