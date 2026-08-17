@@ -88,6 +88,48 @@ def device_logs(device_id):
     
     return render_template('device_logs.html', logs=logs, selected_device=device_id, page=page, total_pages=total_pages, start_date=start_date, end_date=end_date)
 
+@app.route('/device/<device_id>/download')
+def download_logs(device_id):
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    
+    query = 'SELECT * FROM logs WHERE device_id = ?'
+    params = [device_id]
+    
+    if start_date:
+        query += ' AND timestamp >= ?'
+        if len(start_date) == 16:
+            params.append(start_date + ':00')
+        else:
+            params.append(start_date)
+            
+    if end_date:
+        query += ' AND timestamp <= ?'
+        if len(end_date) == 16:
+            params.append(end_date + ':59')
+        else:
+            params.append(end_date)
+            
+    query += ' ORDER BY created_at ASC'
+    
+    conn = get_db_connection()
+    logs = conn.execute(query, params).fetchall()
+    conn.close()
+    
+    def generate():
+        for log in logs:
+            line = f"[{log['timestamp']}] {log['level']} : {log['message']}"
+            if log['stacktrace']:
+                line += f"\n{log['stacktrace']}"
+            yield line + '\n'
+            
+    from flask import Response
+    filename = f"logs_{device_id}.txt"
+    if start_date or end_date:
+        filename = f"logs_{device_id}_filtered.txt"
+        
+    return Response(generate(), mimetype='text/plain', headers={"Content-Disposition": f"attachment;filename={filename}"})
+
 @app.route('/api/config', methods=['GET'])
 def get_config():
     device_id = request.args.get('device_id')
