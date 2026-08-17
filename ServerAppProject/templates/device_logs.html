@@ -31,6 +31,17 @@
                 <a href="/" class="btn" style="background-color: #6c757d; color: white; text-decoration: none;">대시보드로 돌아가기</a>
             </div>
             
+            <form method="GET" action="/device/{{ selected_device }}" style="margin-bottom: 15px; padding: 10px; background-color: #f1f3f5; border-radius: 4px; display: flex; align-items: center; gap: 10px;">
+                <label for="start_date" style="font-weight: bold; font-size: 14px;">시작일:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date or '' }}" style="padding: 5px; border: 1px solid #ced4da; border-radius: 4px;">
+                
+                <label for="end_date" style="font-weight: bold; font-size: 14px;">종료일:</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date or '' }}" style="padding: 5px; border: 1px solid #ced4da; border-radius: 4px;">
+                
+                <button type="submit" class="btn" style="background-color: #28a745; color: white;">필터 적용</button>
+                <a href="/device/{{ selected_device }}" class="btn" style="background-color: #dc3545; color: white; text-decoration: none;">초기화</a>
+            </form>
+            
             <table>
                 <thead>
                     <tr>
@@ -65,8 +76,16 @@
             </table>
 
             <div style="display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 15px;">
+                {% set query_str = '' %}
+                {% if start_date %}
+                    {% set query_str = query_str ~ '&start_date=' ~ start_date %}
+                {% endif %}
+                {% if end_date %}
+                    {% set query_str = query_str ~ '&end_date=' ~ end_date %}
+                {% endif %}
+                
                 {% if page > 1 %}
-                <a href="/device/{{ selected_device }}?page={{ page - 1 }}" class="btn" style="background-color: #007bff; color: white; text-decoration: none;">이전 페이지</a>
+                <a href="/device/{{ selected_device }}?page={{ page - 1 }}{{ query_str }}" class="btn" style="background-color: #007bff; color: white; text-decoration: none;">이전 페이지</a>
                 {% else %}
                 <button class="btn" style="background-color: #e9ecef; color: #6c757d; cursor: not-allowed;" disabled>이전 페이지</button>
                 {% endif %}
@@ -74,7 +93,7 @@
                 <span style="font-weight: bold; color: #495057;">페이지 {{ page }} / {{ total_pages }}</span>
                 
                 {% if page < total_pages %}
-                <a href="/device/{{ selected_device }}?page={{ page + 1 }}" class="btn" style="background-color: #007bff; color: white; text-decoration: none;">다음 페이지</a>
+                <a href="/device/{{ selected_device }}?page={{ page + 1 }}{{ query_str }}" class="btn" style="background-color: #007bff; color: white; text-decoration: none;">다음 페이지</a>
                 {% else %}
                 <button class="btn" style="background-color: #e9ecef; color: #6c757d; cursor: not-allowed;" disabled>다음 페이지</button>
                 {% endif %}

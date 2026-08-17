@@ -51,17 +51,36 @@ def index():
 @app.route('/device/<device_id>')
 def device_logs(device_id):
     page = request.args.get('page', 1, type=int)
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    
     per_page = 100
     offset = (page - 1) * per_page
     
+    query = 'SELECT * FROM logs WHERE device_id = ?'
+    count_query = 'SELECT COUNT(*) FROM logs WHERE device_id = ?'
+    params = [device_id]
+    
+    if start_date:
+        query += ' AND timestamp >= ?'
+        count_query += ' AND timestamp >= ?'
+        params.append(start_date + 'T00:00:00')
+        
+    if end_date:
+        query += ' AND timestamp <= ?'
+        count_query += ' AND timestamp <= ?'
+        params.append(end_date + 'T23:59:59')
+        
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
+    
     conn = get_db_connection()
-    # Get total count for pagination
-    total_count = conn.execute('SELECT COUNT(*) FROM logs WHERE device_id = ?', (device_id,)).fetchone()[0]
+    total_count = conn.execute(count_query, params).fetchone()[0]
     total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
     
-    logs = conn.execute('SELECT * FROM logs WHERE device_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?', (device_id, per_page, offset)).fetchall()
+    logs = conn.execute(query, params + [per_page, offset]).fetchall()
     conn.close()
-    return render_template('device_logs.html', logs=logs, selected_device=device_id, page=page, total_pages=total_pages)
+    
+    return render_template('device_logs.html', logs=logs, selected_device=device_id, page=page, total_pages=total_pages, start_date=start_date, end_date=end_date)
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
