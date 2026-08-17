@@ -25,9 +25,15 @@ object RemoteLogManager {
 
     fun init(context: Context) {
         prefs = context.getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val targetIp = prefs.getString("TARGET_UDP_IP", "192.168.43.1") ?: "192.168.43.1"
-        LOG_SERVER_URL = "http://$targetIp:5000"
-        
+        val serverUrl = prefs.getString("LOG_SERVER_URL", "") ?: ""
+        if (serverUrl.isNotEmpty()) {
+            LOG_SERVER_URL = if (serverUrl.startsWith("http")) serverUrl else "http://$serverUrl"
+        } else {
+            // Fallback to TARGET_UDP_IP if LOG_SERVER_URL is not set (for backward compatibility, but won't send if empty)
+            val targetIp = prefs.getString("TARGET_UDP_IP", "192.168.43.1") ?: "192.168.43.1"
+            LOG_SERVER_URL = "http://$targetIp:5000"
+        }
+
         deviceId = prefs.getString("DEVICE_ID", null) ?: generateDeviceId(context).also {
             prefs.edit().putString("DEVICE_ID", it).apply()
         }

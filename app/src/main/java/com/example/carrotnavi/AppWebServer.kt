@@ -46,6 +46,10 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                 if (params.containsKey("TARGET_UDP_IP")) {
                     params["TARGET_UDP_IP"]?.firstOrNull()?.let { editor.putString("TARGET_UDP_IP", it) }
                 }
+                if (params.containsKey("LOG_SERVER_URL")) {
+                    params["LOG_SERVER_URL"]?.firstOrNull()?.let { editor.putString("LOG_SERVER_URL", it) }
+                }
+
                 if (params.containsKey("TARGET_UDP_PORT")) {
                     params["TARGET_UDP_PORT"]?.firstOrNull()?.toIntOrNull()?.let { editor.putInt("TARGET_UDP_PORT", it) }
                 }
@@ -117,6 +121,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
 
         // Handle GET Request
         val targetIp = prefs.getString("TARGET_UDP_IP", "255.255.255.255")
+        val logServerUrl = prefs.getString("LOG_SERVER_URL", "")
         val targetPort = prefs.getInt("TARGET_UDP_PORT", 7706)
         val isDebugOverlayVisible = prefs.getBoolean("DEBUG_OVERLAY_VISIBLE", false)
         val blockSpeedEnabled = prefs.getBoolean("BLOCK_SPEED_ENABLED", false)
@@ -134,7 +139,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val mediaSplitRatioF = prefs.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
 
         if (session.uri == "/api/settings") {
-            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF}"""
+            val json = """{"TARGET_UDP_IP":"$targetIp", "LOG_SERVER_URL":"$logServerUrl", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response
@@ -178,6 +183,12 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                             <label>UDP 대상 IP</label>
                             <input type="text" name="TARGET_UDP_IP" value="$targetIp">
                             <div class="hint">기본값: 255.255.255.255</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>관제 서버 URL (옵션)</label>
+                            <input type="text" name="LOG_SERVER_URL" value="$logServerUrl" placeholder="예: 192.168.43.1:5000">
+                            <div class="hint">미입력 시 UDP 대상 IP를 사용합니다</div>
                         </div>
 
                         <div class="form-group">
