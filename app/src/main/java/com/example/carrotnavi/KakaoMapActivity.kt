@@ -683,13 +683,16 @@ class KakaoMapActivity : AppCompatActivity(),
                     s2Dist = curLoc?.distToLocation(s2.location) ?: s2.location.distFromS
                 }
                 
+                val isBlock1 = (s1Type == 2)
+                val blockAvgSpeed1 = if (isBlock1) s1Limit else 0
+
                 KakaoSdiRepository.updateSafeties(
                     roadLimitSpeed = 0, // Ignored, handled by updateLocation
                     sdiType1 = s1Type,
                     speedLimit1 = s1Limit,
                     dist1 = s1Dist,
-                    isBlock1 = false,
-                    blockAvgSpeed = 0,
+                    isBlock1 = isBlock1,
+                    blockAvgSpeed = blockAvgSpeed1,
                     sdiType2 = s2Type,
                     speedLimit2 = s2Limit,
                     dist2 = s2Dist
