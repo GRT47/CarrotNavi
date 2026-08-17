@@ -44,7 +44,11 @@ init_db()
 @app.route('/')
 def index():
     conn = get_db_connection()
-    devices = conn.execute('SELECT * FROM devices ORDER BY last_seen DESC').fetchall()
+    devices = conn.execute('''
+        SELECT *, 
+        (julianday('now') - julianday(last_seen)) * 86400 AS seconds_since_last_seen 
+        FROM devices ORDER BY last_seen DESC
+    ''').fetchall()
     conn.close()
     return render_template('index.html', devices=devices)
 

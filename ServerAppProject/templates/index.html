@@ -30,6 +30,7 @@
                 <thead>
                     <tr>
                         <th>기기 ID</th>
+                        <th>상태</th>
                         <th>마지막 접속</th>
                         <th>로깅 상태</th>
                         <th>설정 변경</th>
@@ -42,6 +43,13 @@
                             <a href="/device/{{ device.device_id }}" style="color: #007bff; text-decoration: none; font-weight: bold;">
                                 {{ device.device_id }}
                             </a>
+                        </td>
+                        <td>
+                            {% if device.seconds_since_last_seen != None and device.seconds_since_last_seen < 30 %}
+                            <span style="color: #28a745; font-weight:bold;">🟢 온라인</span>
+                            {% else %}
+                            <span style="color: #dc3545; font-weight:bold;">🔴 오프라인</span>
+                            {% endif %}
                         </td>
                         <td>{{ device.last_seen }}</td>
                         <td>
