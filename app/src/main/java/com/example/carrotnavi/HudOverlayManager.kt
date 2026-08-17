@@ -307,7 +307,8 @@ class HudOverlayManager(
             
             try {
                 val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
-                tvAppVersion.text = "버전 ${pInfo.versionName}"
+                val deviceId = sp.getString("DEVICE_ID", "알 수 없음")
+                tvAppVersion.text = "버전 ${pInfo.versionName} / 기기ID: $deviceId"
                 val toolbar = dialogView.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbarSettings)
                 val titleStr = "상세 설정  v${pInfo.versionName}"
                 val spannable = android.text.SpannableString(titleStr)

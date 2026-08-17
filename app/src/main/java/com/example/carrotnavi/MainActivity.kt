@@ -72,7 +72,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         
         // 앱 버전 표시
-        binding.tvAppVersion.text = "버전 ${BuildConfig.VERSION_NAME}"
+        val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+        val deviceId = sp.getString("DEVICE_ID", "알 수 없음")
+        binding.tvAppVersion.text = "버전 ${BuildConfig.VERSION_NAME} / 기기ID: $deviceId"
         
         binding.btnCheckUpdate?.setOnClickListener {
             AutoUpdater.checkForUpdates(this, isManual = true)
