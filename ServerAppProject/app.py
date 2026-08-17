@@ -64,12 +64,18 @@ def device_logs(device_id):
     if start_date:
         query += ' AND timestamp >= ?'
         count_query += ' AND timestamp >= ?'
-        params.append(start_date + 'T00:00:00')
+        if len(start_date) == 16: # format: YYYY-MM-DDTHH:MM
+            params.append(start_date + ':00')
+        else:
+            params.append(start_date)
         
     if end_date:
         query += ' AND timestamp <= ?'
         count_query += ' AND timestamp <= ?'
-        params.append(end_date + 'T23:59:59')
+        if len(end_date) == 16:
+            params.append(end_date + ':59')
+        else:
+            params.append(end_date)
         
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
     

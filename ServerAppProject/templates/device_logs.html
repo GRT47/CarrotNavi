@@ -32,11 +32,11 @@
             </div>
             
             <form method="GET" action="/device/{{ selected_device }}" style="margin-bottom: 15px; padding: 10px; background-color: #f1f3f5; border-radius: 4px; display: flex; align-items: center; gap: 10px;">
-                <label for="start_date" style="font-weight: bold; font-size: 14px;">시작일:</label>
-                <input type="date" id="start_date" name="start_date" value="{{ start_date or '' }}" style="padding: 5px; border: 1px solid #ced4da; border-radius: 4px;">
+                <label for="start_date" style="font-weight: bold; font-size: 14px;">시작:</label>
+                <input type="datetime-local" id="start_date" name="start_date" value="{{ start_date or '' }}" style="padding: 5px; border: 1px solid #ced4da; border-radius: 4px;">
                 
-                <label for="end_date" style="font-weight: bold; font-size: 14px;">종료일:</label>
-                <input type="date" id="end_date" name="end_date" value="{{ end_date or '' }}" style="padding: 5px; border: 1px solid #ced4da; border-radius: 4px;">
+                <label for="end_date" style="font-weight: bold; font-size: 14px;">종료:</label>
+                <input type="datetime-local" id="end_date" name="end_date" value="{{ end_date or '' }}" style="padding: 5px; border: 1px solid #ced4da; border-radius: 4px;">
                 
                 <button type="submit" class="btn" style="background-color: #28a745; color: white;">필터 적용</button>
                 <a href="/device/{{ selected_device }}" class="btn" style="background-color: #dc3545; color: white; text-decoration: none;">초기화</a>
