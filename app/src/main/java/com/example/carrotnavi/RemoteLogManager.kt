@@ -56,6 +56,17 @@ object RemoteLogManager {
         }
     }
 
+    fun getDeviceId(): String {
+        return deviceId
+    }
+
+    fun regenerateDeviceId(): String {
+        val newId = generateDeviceId()
+        deviceId = newId
+        prefs.edit().putString("DEVICE_ID", newId).apply()
+        return newId
+    }
+
     private fun generateDeviceId(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         return (1..5).map { chars.random() }.joinToString("")

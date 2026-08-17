@@ -113,6 +113,13 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                 response.addHeader("Access-Control-Allow-Origin", "*")
                 return response
             }
+
+            if (session.uri == "/api/reset_device_id") {
+                RemoteLogManager.regenerateDeviceId()
+                val response = newFixedLengthResponse(Response.Status.REDIRECT, MIME_HTML, "")
+                response.addHeader("Location", "/")
+                return response
+            }
             
             // Redirect back to GET
             val response = newFixedLengthResponse(Response.Status.REDIRECT, MIME_HTML, "")
@@ -138,6 +145,8 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val mediaBgStyle = prefs.getString("MEDIA_BG_STYLE", "album") ?: "album"
         val showAlbumArtWithEq = prefs.getBoolean("SHOW_ALBUM_ART_WITH_EQ", false)
         val mediaSplitRatioF = prefs.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
+
+        val deviceId = RemoteLogManager.getDeviceId()
 
         if (session.uri == "/api/settings") {
             val json = """{"TARGET_UDP_IP":"$targetIp", "LOG_SERVER_URL":"$logServerUrl", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF}"""
@@ -180,6 +189,12 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                     <h2>🥕 CarrotNavi 원격 설정</h2>
                     <form method="POST" action="/">
                         
+                        <div class="form-group" style="background-color: #fce4ec; padding: 15px; border-radius: 8px;">
+                            <label>현재 기기 ID: <span style="color: #d81b60; font-size: 1.2em;">$deviceId</span></label>
+                            <button type="button" style="background-color: #d81b60; margin-top: 10px;" onclick="if(confirm('기기 ID를 재발급 받으시겠습니까? 기존 기기의 로그와 분리됩니다.')){var f=document.createElement('form');f.method='POST';f.action='/api/reset_device_id';document.body.appendChild(f);f.submit();}">새 기기 ID 발급</button>
+                            <div class="hint">새로 발급받으면 기존 16자리 ID를 버리고 5자리 랜덤 ID를 사용합니다.</div>
+                        </div>
+
                         <div class="form-group">
                             <label>UDP 대상 IP</label>
                             <input type="text" name="TARGET_UDP_IP" value="$targetIp">
