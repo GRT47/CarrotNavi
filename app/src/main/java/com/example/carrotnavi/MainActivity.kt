@@ -64,13 +64,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler { thread, e ->
-            try {
-                java.io.File(filesDir, "crash_${System.currentTimeMillis()}.txt").writeText(android.util.Log.getStackTraceString(e))
-            } catch (_: Exception) {}
-            defaultHandler?.uncaughtException(thread, e) ?: android.os.Process.killProcess(android.os.Process.myPid())
-        }
+        RemoteLogManager.init(this)
+        
         getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE).edit().putBoolean("IS_DEBUG_MODE", false).apply()
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)

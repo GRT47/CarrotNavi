@@ -59,6 +59,7 @@ class UdpSenderService : Service() {
                 startForeground(1, createNotification())
             }
         } catch (e: Exception) {
+            RemoteLogManager.e("UdpSenderService", "Error in startForeground", e)
             e.printStackTrace()
         }
         
@@ -517,6 +518,7 @@ class UdpSenderService : Service() {
                     }
                 }
             } catch (e: Exception) {
+                RemoteLogManager.e("UdpSenderService", "Error in receive loop", e)
                 e.printStackTrace()
             }
         }
@@ -554,7 +556,7 @@ class UdpSenderService : Service() {
                 udpSocket?.send(packet)
             }
         } catch (e: Exception) {
-            // Ignore
+            RemoteLogManager.e("UdpSenderService", "Error in sendSdiData", e)
         }
     }
 
@@ -632,7 +634,7 @@ class UdpSenderService : Service() {
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e("UdpSenderService", "Reflection error: ${e.message}")
+            RemoteLogManager.e("UdpSenderService", "Reflection error: ${e.message}", e)
         }
         return -1
     }
