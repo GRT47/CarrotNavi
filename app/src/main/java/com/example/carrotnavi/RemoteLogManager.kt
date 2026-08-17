@@ -3,7 +3,6 @@ package com.example.carrotnavi
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.provider.Settings
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +43,7 @@ object RemoteLogManager {
             LOG_SERVER_URL = "http://$targetIp:5000"
         }
 
-        deviceId = prefs.getString("DEVICE_ID", null) ?: generateDeviceId(context).also {
+        deviceId = prefs.getString("DEVICE_ID", null) ?: generateDeviceId().also {
             prefs.edit().putString("DEVICE_ID", it).apply()
         }
         
@@ -57,12 +56,9 @@ object RemoteLogManager {
         }
     }
 
-    @SuppressLint("HardwareIds")
-    private fun generateDeviceId(context: Context): String {
-        val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown"
+    private fun generateDeviceId(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        val randomStr = (1..5).map { chars.random() }.joinToString("")
-        return "${androidId}_$randomStr"
+        return (1..5).map { chars.random() }.joinToString("")
     }
 
     private fun startPollingConfig() {
