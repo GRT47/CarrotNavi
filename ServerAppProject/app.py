@@ -4,7 +4,9 @@ from datetime import datetime
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
-DB_FILE = 'logs.db'
+if not os.path.exists('data'):
+    os.makedirs('data')
+DB_FILE = 'data/logs.db'
 
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
@@ -30,7 +32,7 @@ def init_db():
     conn.execute('''
         CREATE TABLE IF NOT EXISTS devices (
             device_id TEXT PRIMARY KEY,
-            logging_enabled INTEGER DEFAULT 1,
+            logging_enabled INTEGER DEFAULT 0,
             last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -57,10 +59,10 @@ def get_config():
     device = conn.execute('SELECT logging_enabled FROM devices WHERE device_id = ?', (device_id,)).fetchone()
     
     if not device:
-        # Register new device with logging enabled by default
-        conn.execute('INSERT INTO devices (device_id, logging_enabled) VALUES (?, 1)', (device_id,))
+        # Register new device with logging disabled by default
+        conn.execute('INSERT INTO devices (device_id, logging_enabled) VALUES (?, 0)', (device_id,))
         conn.commit()
-        logging_enabled = 1
+        logging_enabled = 0
     else:
         # Update last seen
         conn.execute('UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ?', (device_id,))
