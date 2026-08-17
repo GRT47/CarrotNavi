@@ -153,6 +153,15 @@ def get_config():
     conn.close()
     return jsonify({'logging_enabled': bool(logging_enabled)}), 200
 
+@app.route('/api/devices/<device_id>/delete', methods=['POST'])
+def delete_device(device_id):
+    conn = get_db_connection()
+    conn.execute('DELETE FROM logs WHERE device_id = ?', (device_id,))
+    conn.execute('DELETE FROM devices WHERE device_id = ?', (device_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success'})
+
 @app.route('/api/logs', methods=['POST'])
 def receive_logs():
     data = request.json
