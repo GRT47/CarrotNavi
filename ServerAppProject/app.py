@@ -50,10 +50,18 @@ def index():
 
 @app.route('/device/<device_id>')
 def device_logs(device_id):
+    page = request.args.get('page', 1, type=int)
+    per_page = 100
+    offset = (page - 1) * per_page
+    
     conn = get_db_connection()
-    logs = conn.execute('SELECT * FROM logs WHERE device_id = ? ORDER BY created_at DESC LIMIT 100', (device_id,)).fetchall()
+    # Get total count for pagination
+    total_count = conn.execute('SELECT COUNT(*) FROM logs WHERE device_id = ?', (device_id,)).fetchone()[0]
+    total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
+    
+    logs = conn.execute('SELECT * FROM logs WHERE device_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?', (device_id, per_page, offset)).fetchall()
     conn.close()
-    return render_template('device_logs.html', logs=logs, selected_device=device_id)
+    return render_template('device_logs.html', logs=logs, selected_device=device_id, page=page, total_pages=total_pages)
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
@@ -76,7 +84,7 @@ def get_config():
         logging_enabled = device['logging_enabled']
         
     conn.close()
-    return jsonify({'logging_enabled': bool(logging_enabled)})
+    return jsonify({'logging_enabled': bool(logging_enabled)}), 200
 
 @app.route('/api/logs', methods=['POST'])
 def receive_logs():
@@ -87,11 +95,10 @@ def receive_logs():
     device_id = data['device_id']
     
     conn = get_db_connection()
-    # Check if logging is enabled for this device
     device = conn.execute('SELECT logging_enabled FROM devices WHERE device_id = ?', (device_id,)).fetchone()
     if device and not device['logging_enabled']:
         conn.close()
-        return jsonify({'status': 'ignored', 'reason': 'Logging disabled for this device'}), 200
+        return jsonify({'status': 'ignored'}), 200
 
     conn.execute('''
         INSERT INTO logs (device_id, timestamp, app_version, level, message, stacktrace)
@@ -105,10 +112,9 @@ def receive_logs():
         data.get('stacktrace', '')
     ))
     
-    # Update last seen
     conn.execute('''
         INSERT INTO devices (device_id, logging_enabled, last_seen) 
-        VALUES (?, 1, CURRENT_TIMESTAMP)
+        VALUES (?, 0, CURRENT_TIMESTAMP)
         ON CONFLICT(device_id) DO UPDATE SET last_seen=CURRENT_TIMESTAMP
     ''', (device_id,))
     
@@ -152,6 +158,9 @@ def receive_logs_batch():
         VALUES (?, 0, CURRENT_TIMESTAMP)
         ON CONFLICT(device_id) DO UPDATE SET last_seen=CURRENT_TIMESTAMP
     ''', (device_id,))
+    
+    # 7일 경과 로그 삭제
+    conn.execute("DELETE FROM logs WHERE created_at < datetime('now', '-7 days')")
     
     conn.commit()
     conn.close()
