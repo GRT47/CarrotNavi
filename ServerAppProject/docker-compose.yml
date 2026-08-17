@@ -7,8 +7,5 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - log_data:/app/data
+      - /volume1/docker/carrotpilot/commanav_server:/app
     restart: always
-
-volumes:
-  log_data:
