@@ -102,6 +102,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                     }
                 }
                 editor.apply()
+                RemoteLogManager.init(context)
                 
             } catch (e: Exception) {
                 e.printStackTrace()
