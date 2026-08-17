@@ -38,7 +38,11 @@
                 <tbody>
                     {% for device in devices %}
                     <tr>
-                        <td>{{ device.device_id }}</td>
+                        <td>
+                            <a href="/?device_id={{ device.device_id }}" style="color: #007bff; text-decoration: none; font-weight: bold;">
+                                {{ device.device_id }}
+                            </a>
+                        </td>
                         <td>{{ device.last_seen }}</td>
                         <td>
                             {% if device.logging_enabled %}
@@ -63,7 +67,12 @@
         </div>
 
         <div class="card">
-            <h2>최근 로그 (최대 100건)</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2>최근 로그 {% if selected_device %}({{ selected_device }}){% else %}(전체){% endif %} - 최대 100건</h2>
+                {% if selected_device %}
+                <a href="/" class="btn" style="background-color: #6c757d; color: white; text-decoration: none;">전체 로그 보기</a>
+                {% endif %}
+            </div>
             <table>
                 <thead>
                     <tr>

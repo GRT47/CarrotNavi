@@ -43,11 +43,15 @@ init_db()
 
 @app.route('/')
 def index():
+    device_id = request.args.get('device_id')
     conn = get_db_connection()
-    logs = conn.execute('SELECT * FROM logs ORDER BY created_at DESC LIMIT 100').fetchall()
+    if device_id:
+        logs = conn.execute('SELECT * FROM logs WHERE device_id = ? ORDER BY created_at DESC LIMIT 100', (device_id,)).fetchall()
+    else:
+        logs = conn.execute('SELECT * FROM logs ORDER BY created_at DESC LIMIT 100').fetchall()
     devices = conn.execute('SELECT * FROM devices ORDER BY last_seen DESC').fetchall()
     conn.close()
-    return render_template('index.html', logs=logs, devices=devices)
+    return render_template('index.html', logs=logs, devices=devices, selected_device=device_id)
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
@@ -109,6 +113,47 @@ def receive_logs():
     conn.commit()
     conn.close()
     return jsonify({'status': 'success'}), 200
+
+@app.route('/api/logs/batch', methods=['POST'])
+def receive_logs_batch():
+    data = request.json
+    if not data or 'device_id' not in data or 'logs' not in data:
+        return jsonify({'error': 'Invalid payload'}), 400
+
+    device_id = data['device_id']
+    logs = data['logs']
+    
+    conn = get_db_connection()
+    device = conn.execute('SELECT logging_enabled FROM devices WHERE device_id = ?', (device_id,)).fetchone()
+    if device and not device['logging_enabled']:
+        conn.close()
+        return jsonify({'status': 'ignored', 'reason': 'Logging disabled for this device'}), 200
+
+    insert_data = []
+    for log in logs:
+        insert_data.append((
+            device_id,
+            log.get('timestamp', datetime.now().isoformat()),
+            log.get('app_version', 'unknown'),
+            log.get('level', 'INFO'),
+            log.get('message', ''),
+            log.get('stacktrace', '')
+        ))
+
+    conn.executemany('''
+        INSERT INTO logs (device_id, timestamp, app_version, level, message, stacktrace)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', insert_data)
+    
+    conn.execute('''
+        INSERT INTO devices (device_id, logging_enabled, last_seen) 
+        VALUES (?, 0, CURRENT_TIMESTAMP)
+        ON CONFLICT(device_id) DO UPDATE SET last_seen=CURRENT_TIMESTAMP
+    ''', (device_id,))
+    
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success', 'inserted': len(insert_data)}), 200
 
 @app.route('/api/devices/<device_id>/toggle', methods=['POST'])
 def toggle_device(device_id):
