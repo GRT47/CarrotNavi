@@ -35,13 +35,7 @@ object RemoteLogManager {
 
     fun init(context: Context) {
         prefs = context.getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val serverUrl = prefs.getString("LOG_SERVER_URL", "") ?: ""
-        if (serverUrl.isNotEmpty()) {
-            LOG_SERVER_URL = if (serverUrl.startsWith("http")) serverUrl else "http://$serverUrl"
-        } else {
-            val targetIp = prefs.getString("TARGET_UDP_IP", "192.168.43.1") ?: "192.168.43.1"
-            LOG_SERVER_URL = "http://$targetIp:5000"
-        }
+        LOG_SERVER_URL = "https://comma-nav-server.leegrt.org"
 
         deviceId = prefs.getString("DEVICE_ID", null) ?: generateDeviceId().also {
             prefs.edit().putString("DEVICE_ID", it).apply()
