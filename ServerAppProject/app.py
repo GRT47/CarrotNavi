@@ -48,7 +48,7 @@ def index():
     if device_id:
         logs = conn.execute('SELECT * FROM logs WHERE device_id = ? ORDER BY created_at DESC LIMIT 100', (device_id,)).fetchall()
     else:
-        logs = conn.execute('SELECT * FROM logs ORDER BY created_at DESC LIMIT 100').fetchall()
+        logs = []
     devices = conn.execute('SELECT * FROM devices ORDER BY last_seen DESC').fetchall()
     conn.close()
     return render_template('index.html', logs=logs, devices=devices, selected_device=device_id)
