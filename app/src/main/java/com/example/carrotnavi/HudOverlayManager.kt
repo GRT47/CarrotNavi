@@ -317,6 +317,37 @@ class HudOverlayManager(
                 toolbar?.subtitle = null
             } catch (e: Exception) {}
             
+            try {
+                val interfaces = java.net.NetworkInterface.getNetworkInterfaces()
+                var ipAddress: String? = null
+                while (interfaces.hasMoreElements() && ipAddress == null) {
+                    val networkInterface = interfaces.nextElement()
+                    val addresses = networkInterface.inetAddresses
+                    while (addresses.hasMoreElements()) {
+                        val address = addresses.nextElement()
+                        if (!address.isLoopbackAddress && address is java.net.Inet4Address) {
+                            ipAddress = address.hostAddress
+                            break
+                        }
+                    }
+                }
+                
+                val serverUrl = sp.getString("IP_REPORT_SERVER_URL", "")?.trim()
+                val deviceId = sp.getString("DEVICE_ID", "carrot")?.trim()
+
+                if (ipAddress != null) {
+                    var infoText = "내부 IP: http://$ipAddress:8080/\nmDNS: http://carrotnavi.local:8080/"
+                    if (!serverUrl.isNullOrEmpty()) {
+                        val connectUrl = if (serverUrl.endsWith("/")) "${serverUrl}connect/$deviceId" else "$serverUrl/connect/$deviceId"
+                        infoText += "\n원격 접속: $connectUrl"
+                    }
+                    tvWebServerInfo?.text = infoText
+                    tvWebServerInfo?.visibility = android.view.View.VISIBLE
+                } else {
+                    tvWebServerInfo?.text = "원격 설정: Wi-Fi 연결 확인 필요"
+                }
+            } catch (e: Exception) {}
+            
             btnCheckUpdate?.setOnClickListener {
                 AutoUpdater.checkForUpdates(activity, isManual = true)
             }
@@ -325,6 +356,8 @@ class HudOverlayManager(
             
             btnExitApp.setOnClickListener {
                 dialog.dismiss()
+                activity.stopService(android.content.Intent(activity, UdpSenderService::class.java))
+                activity.stopService(android.content.Intent(activity, WebServerService::class.java))
                 activity.finishAffinity()
                 System.exit(0)
             }

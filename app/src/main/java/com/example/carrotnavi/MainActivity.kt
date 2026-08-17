@@ -82,6 +82,13 @@ class MainActivity : AppCompatActivity() {
         binding.btnCheckUpdate?.setOnClickListener {
             AutoUpdater.checkForUpdates(this, isManual = true)
         }
+        
+        binding.btnExitApp?.setOnClickListener {
+            stopService(android.content.Intent(this, UdpSenderService::class.java))
+            stopService(android.content.Intent(this, WebServerService::class.java))
+            finishAffinity()
+            System.exit(0)
+        }
 
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
 
