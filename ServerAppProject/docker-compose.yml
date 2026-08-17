@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  carrotnavi-logging:
-    build: .
-    container_name: carrotnavi_logger
+  commanav-logging:
+    image: grt47/comma_nav_server:latest
+    container_name: commanav_logger
     ports:
       - "5000:5000"
     volumes:
