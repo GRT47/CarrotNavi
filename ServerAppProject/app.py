@@ -4,6 +4,8 @@ from datetime import datetime
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+
 if not os.path.exists('data'):
     os.makedirs('data')
 DB_FILE = 'data/logs.db'
