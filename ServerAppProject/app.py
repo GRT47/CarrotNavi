@@ -43,15 +43,17 @@ init_db()
 
 @app.route('/')
 def index():
-    device_id = request.args.get('device_id')
     conn = get_db_connection()
-    if device_id:
-        logs = conn.execute('SELECT * FROM logs WHERE device_id = ? ORDER BY created_at DESC LIMIT 100', (device_id,)).fetchall()
-    else:
-        logs = []
     devices = conn.execute('SELECT * FROM devices ORDER BY last_seen DESC').fetchall()
     conn.close()
-    return render_template('index.html', logs=logs, devices=devices, selected_device=device_id)
+    return render_template('index.html', devices=devices)
+
+@app.route('/device/<device_id>')
+def device_logs(device_id):
+    conn = get_db_connection()
+    logs = conn.execute('SELECT * FROM logs WHERE device_id = ? ORDER BY created_at DESC LIMIT 100', (device_id,)).fetchall()
+    conn.close()
+    return render_template('device_logs.html', logs=logs, selected_device=device_id)
 
 @app.route('/api/config', methods=['GET'])
 def get_config():

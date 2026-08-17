@@ -24,43 +24,42 @@
     <div class="container">
         <h1>CarrotNavi 관제 서버 대시보드</h1>
         
+
         <div class="card">
-            <h2>기기 관리</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2>최근 로그 ({{ selected_device }}) - 최대 100건</h2>
+                <a href="/" class="btn" style="background-color: #6c757d; color: white; text-decoration: none;">대시보드로 돌아가기</a>
+            </div>
+            
             <table>
                 <thead>
                     <tr>
+                        <th>시간</th>
                         <th>기기 ID</th>
-                        <th>마지막 접속</th>
-                        <th>로깅 상태</th>
-                        <th>설정 변경</th>
+                        <th>앱 버전</th>
+                        <th>레벨</th>
+                        <th>메시지</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for device in devices %}
+                    {% for log in logs %}
                     <tr>
-                        <td>
-                            <a href="/device/{{ device.device_id }}" style="color: #007bff; text-decoration: none; font-weight: bold;">
-                                {{ device.device_id }}
-                            </a>
+                        <td>{{ log.timestamp }}</td>
+                        <td>{{ log.device_id }}</td>
+                        <td>{{ log.app_version }}</td>
+                        <td class="{% if log.level == 'ERROR' %}log-error{% elif log.level == 'WARN' %}log-warn{% endif %}">
+                            {{ log.level }}
                         </td>
-                        <td>{{ device.last_seen }}</td>
                         <td>
-                            {% if device.logging_enabled %}
-                            <span style="color: #28a745; font-weight:bold;">ON</span>
-                            {% else %}
-                            <span style="color: #dc3545; font-weight:bold;">OFF</span>
+                            {{ log.message }}
+                            {% if log.stacktrace %}
+                            <div class="stacktrace">{{ log.stacktrace }}</div>
                             {% endif %}
-                        </td>
-                        <td>
-                            <button class="btn {% if device.logging_enabled %}btn-off{% else %}btn-on{% endif %}" 
-                                    onclick="toggleLogging('{{ device.device_id }}')">
-                                {% if device.logging_enabled %}로깅 끄기{% else %}로깅 켜기{% endif %}
-                            </button>
                         </td>
                     </tr>
                     {% endfor %}
-                    {% if not devices %}
-                    <tr><td colspan="4" style="text-align: center;">등록된 기기가 없습니다.</td></tr>
+                    {% if not logs %}
+                    <tr><td colspan="5" style="text-align: center;">로그가 없습니다.</td></tr>
                     {% endif %}
                 </tbody>
             </table>
