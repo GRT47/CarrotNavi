@@ -33,9 +33,17 @@ def init_db():
         CREATE TABLE IF NOT EXISTS devices (
             device_id TEXT PRIMARY KEY,
             logging_enabled INTEGER DEFAULT 0,
-            last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            alias TEXT
         )
     ''')
+    
+    # Add alias column if it doesn't exist (migration)
+    try:
+        conn.execute('ALTER TABLE devices ADD COLUMN alias TEXT')
+    except sqlite3.OperationalError:
+        pass # Column already exists
+        
     conn.commit()
     conn.close()
 
@@ -88,9 +96,12 @@ def device_logs(device_id):
     total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
     
     logs = conn.execute(query, params + [per_page, offset]).fetchall()
+    device = conn.execute('SELECT * FROM devices WHERE device_id = ?', (device_id,)).fetchone()
     conn.close()
     
-    return render_template('device_logs.html', logs=logs, selected_device=device_id, page=page, total_pages=total_pages, start_date=start_date, end_date=end_date)
+    device_alias = device['alias'] if device and device['alias'] else device_id
+    
+    return render_template('device_logs.html', logs=logs, selected_device=device_id, device_alias=device_alias, page=page, total_pages=total_pages, start_date=start_date, end_date=end_date)
 
 @app.route('/device/<device_id>/download')
 def download_logs(device_id):
@@ -156,6 +167,20 @@ def get_config():
         
     conn.close()
     return jsonify({'logging_enabled': bool(logging_enabled)}), 200
+
+@app.route('/api/devices/<device_id>/alias', methods=['POST'])
+def set_device_alias(device_id):
+    data = request.json
+    alias = data.get('alias', '').strip()
+    
+    conn = get_db_connection()
+    if alias:
+        conn.execute('UPDATE devices SET alias = ? WHERE device_id = ?', (alias, device_id))
+    else:
+        conn.execute('UPDATE devices SET alias = NULL WHERE device_id = ?', (device_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success', 'alias': alias})
 
 @app.route('/api/devices/<device_id>/delete', methods=['POST'])
 def delete_device(device_id):

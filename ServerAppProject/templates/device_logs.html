@@ -26,9 +26,9 @@
         
 
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h2>최근 로그 ({{ selected_device }}) - 최대 100건</h2>
-                <a href="/" class="btn" style="background-color: #6c757d; color: white; text-decoration: none;">대시보드로 돌아가기</a>
+            <h2>최근 로그 ({% if device_alias %}{{ device_alias }}{% else %}{{ selected_device }}{% endif %}) - <span class="badge text-bg-primary">페이지당 100건</span></h2>
+            <div style="margin-bottom: 20px;">
+                <a href="/" class="btn" style="background-color: #6c757d; color: white; text-decoration: none;">← 대시보드로 돌아가기</a>
             </div>
             
             <form method="GET" action="/device/{{ selected_device }}" style="margin-bottom: 15px; padding: 10px; background-color: #f1f3f5; border-radius: 4px; display: flex; align-items: center; gap: 10px;">

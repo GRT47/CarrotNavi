@@ -40,9 +40,11 @@
                     {% for device in devices %}
                     <tr>
                         <td>
-                            <a href="/device/{{ device.device_id }}" style="color: #007bff; text-decoration: none; font-weight: bold;">
-                                {{ device.device_id }}
+                            <a href="/device/{{ device.device_id }}" style="color: #007bff; text-decoration: none; font-weight: bold; font-size: 1.1em;">
+                                {% if device.alias %}{{ device.alias }}{% else %}{{ device.device_id }}{% endif %}
                             </a>
+                            <br>
+                            <span style="font-size: 0.85em; color: #6c757d;">ID: {{ device.device_id }}</span>
                         </td>
                         <td>
                             {% if device.seconds_since_last_seen != None and device.seconds_since_last_seen < 30 %}
@@ -68,6 +70,10 @@
                                 <button class="btn" style="background-color: #343a40; color: white;" 
                                         onclick="deleteDevice('{{ device.device_id }}')">
                                     삭제
+                                </button>
+                                <button class="btn" style="background-color: #17a2b8; color: white;" 
+                                        onclick="editAlias('{{ device.device_id }}', '{{ device.alias if device.alias else '' }}')">
+                                    이름 변경
                                 </button>
                             </div>
                         </td>
@@ -101,23 +107,46 @@
         }
         
         function deleteDevice(deviceId) {
-            if(!confirm(`정말 기기 ${deviceId}를 삭제하시겠습니까? 관련된 모든 로그도 함께 삭제됩니다.`)) return;
-            
-            fetch(`/api/devices/${deviceId}/delete`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === 'success') {
-                    location.reload();
-                } else {
-                    alert('기기 삭제 실패: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('네트워크 오류가 발생했습니다.');
-            });
+            if(confirm('기기 [' + deviceId + '] 및 관련된 모든 로그를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                fetch('/api/devices/' + deviceId + '/delete', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert('기기 삭제 실패: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('네트워크 오류가 발생했습니다.');
+                });
+            }
+        }
+
+        function editAlias(deviceId, currentAlias) {
+            let newAlias = prompt('기기 [' + deviceId + ']의 표시할 이름을 입력하세요 (비워두면 원래 ID 표시):', currentAlias);
+            if (newAlias !== null) {
+                fetch('/api/devices/' + deviceId + '/alias', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alias: newAlias })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert('이름 변경 실패: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('네트워크 오류가 발생했습니다.');
+                });
+            }
         }
     </script>
 </body>
