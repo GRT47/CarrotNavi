@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  carrotnavi-logging:
+    build: .
+    container_name: carrotnavi_logger
+    ports:
+      - "5000:5000"
+    volumes:
+      - log_data:/app/data
+    restart: always
+
+volumes:
+  log_data:

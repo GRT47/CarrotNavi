@@ -1,0 +1,126 @@
+import os
+import sqlite3
+from datetime import datetime
+from flask import Flask, request, jsonify, render_template
+
+app = Flask(__name__)
+DB_FILE = 'logs.db'
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    # logs table
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            device_id TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            app_version TEXT,
+            level TEXT,
+            message TEXT,
+            stacktrace TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # devices table to track logging status
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS devices (
+            device_id TEXT PRIMARY KEY,
+            logging_enabled INTEGER DEFAULT 1,
+            last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+@app.route('/')
+def index():
+    conn = get_db_connection()
+    logs = conn.execute('SELECT * FROM logs ORDER BY created_at DESC LIMIT 100').fetchall()
+    devices = conn.execute('SELECT * FROM devices ORDER BY last_seen DESC').fetchall()
+    conn.close()
+    return render_template('index.html', logs=logs, devices=devices)
+
+@app.route('/api/config', methods=['GET'])
+def get_config():
+    device_id = request.args.get('device_id')
+    if not device_id:
+        return jsonify({'error': 'device_id required'}), 400
+        
+    conn = get_db_connection()
+    device = conn.execute('SELECT logging_enabled FROM devices WHERE device_id = ?', (device_id,)).fetchone()
+    
+    if not device:
+        # Register new device with logging enabled by default
+        conn.execute('INSERT INTO devices (device_id, logging_enabled) VALUES (?, 1)', (device_id,))
+        conn.commit()
+        logging_enabled = 1
+    else:
+        # Update last seen
+        conn.execute('UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ?', (device_id,))
+        conn.commit()
+        logging_enabled = device['logging_enabled']
+        
+    conn.close()
+    return jsonify({'logging_enabled': bool(logging_enabled)})
+
+@app.route('/api/logs', methods=['POST'])
+def receive_logs():
+    data = request.json
+    if not data or 'device_id' not in data:
+        return jsonify({'error': 'Invalid payload'}), 400
+
+    device_id = data['device_id']
+    
+    conn = get_db_connection()
+    # Check if logging is enabled for this device
+    device = conn.execute('SELECT logging_enabled FROM devices WHERE device_id = ?', (device_id,)).fetchone()
+    if device and not device['logging_enabled']:
+        conn.close()
+        return jsonify({'status': 'ignored', 'reason': 'Logging disabled for this device'}), 200
+
+    conn.execute('''
+        INSERT INTO logs (device_id, timestamp, app_version, level, message, stacktrace)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (
+        device_id,
+        data.get('timestamp', datetime.now().isoformat()),
+        data.get('app_version', 'unknown'),
+        data.get('level', 'INFO'),
+        data.get('message', ''),
+        data.get('stacktrace', '')
+    ))
+    
+    # Update last seen
+    conn.execute('''
+        INSERT INTO devices (device_id, logging_enabled, last_seen) 
+        VALUES (?, 1, CURRENT_TIMESTAMP)
+        ON CONFLICT(device_id) DO UPDATE SET last_seen=CURRENT_TIMESTAMP
+    ''', (device_id,))
+    
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success'}), 200
+
+@app.route('/api/devices/<device_id>/toggle', methods=['POST'])
+def toggle_device(device_id):
+    conn = get_db_connection()
+    device = conn.execute('SELECT logging_enabled FROM devices WHERE device_id = ?', (device_id,)).fetchone()
+    if not device:
+        conn.close()
+        return jsonify({'error': 'Device not found'}), 404
+        
+    new_status = 0 if device['logging_enabled'] else 1
+    conn.execute('UPDATE devices SET logging_enabled = ? WHERE device_id = ?', (new_status, device_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success', 'logging_enabled': bool(new_status)}), 200
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

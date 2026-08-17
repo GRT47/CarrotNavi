@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarrotNavi Logging Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; }
+        h1, h2 { color: #343a40; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        th { background-color: #f1f3f5; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .btn-on { background-color: #28a745; color: white; }
+        .btn-off { background-color: #dc3545; color: white; }
+        .log-error { color: #dc3545; font-weight: bold; }
+        .log-warn { color: #ffc107; font-weight: bold; }
+        .stacktrace { font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CarrotNavi 관제 서버 대시보드</h1>
+        
+        <div class="card">
+            <h2>기기 관리</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>기기 ID</th>
+                        <th>마지막 접속</th>
+                        <th>로깅 상태</th>
+                        <th>설정 변경</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr>
+                        <td>{{ device.device_id }}</td>
+                        <td>{{ device.last_seen }}</td>
+                        <td>
+                            {% if device.logging_enabled %}
+                            <span style="color: #28a745; font-weight:bold;">ON</span>
+                            {% else %}
+                            <span style="color: #dc3545; font-weight:bold;">OFF</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn {% if device.logging_enabled %}btn-off{% else %}btn-on{% endif %}" 
+                                    onclick="toggleLogging('{{ device.device_id }}')">
+                                {% if device.logging_enabled %}로깅 끄기{% else %}로깅 켜기{% endif %}
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not devices %}
+                    <tr><td colspan="4" style="text-align: center;">등록된 기기가 없습니다.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>최근 로그 (최대 100건)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>시간</th>
+                        <th>기기 ID</th>
+                        <th>앱 버전</th>
+                        <th>레벨</th>
+                        <th>메시지</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.timestamp }}</td>
+                        <td>{{ log.device_id }}</td>
+                        <td>{{ log.app_version }}</td>
+                        <td class="{% if log.level == 'ERROR' %}log-error{% elif log.level == 'WARN' %}log-warn{% endif %}">
+                            {{ log.level }}
+                        </td>
+                        <td>
+                            {{ log.message }}
+                            {% if log.stacktrace %}
+                            <div class="stacktrace">{{ log.stacktrace }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not logs %}
+                    <tr><td colspan="5" style="text-align: center;">로그가 없습니다.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function toggleLogging(deviceId) {
+            fetch(`/api/devices/${deviceId}/toggle`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert('상태 변경 실패: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('네트워크 오류가 발생했습니다.');
+            });
+        }
+    </script>
+</body>
+</html>
