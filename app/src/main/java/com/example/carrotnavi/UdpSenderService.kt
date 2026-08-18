@@ -204,6 +204,12 @@ class UdpSenderService : Service() {
                                     json.put("nSdiSpeedLimit", sdiSpeedLimit)
                                 }
                             }
+                            
+                            // 오픈파일럿은 구간단속 시 nSdiBlockSpeed를 우선적으로 참조하므로,
+                            // 값이 없다면 nSdiSpeedLimit 값으로 채워준다.
+                            if (!json.has("nSdiBlockSpeed") && sdiSpeedLimit > 0) {
+                                json.put("nSdiBlockSpeed", sdiSpeedLimit)
+                            }
                         }
 
                         // 구간단속 제한속도 상향 로직 (평균속도는 원본 유지, 제한속도만 뻥튀기)
