@@ -268,6 +268,26 @@
 
         .stat-info h3 { margin: 0; font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
         .stat-info p { margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
+        
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.8rem; margin-bottom: 20px; }
+            .card { padding: 15px; }
+            th, td { padding: 12px 8px; font-size: 0.8rem; }
+            
+            .stats-grid { grid-template-columns: 1fr; gap: 15px; }
+            
+            .action-toolbar { padding: 12px; gap: 8px; }
+            .action-toolbar-title { width: 100%; margin-bottom: 4px; }
+            .action-toolbar .btn { flex: 1 1 calc(50% - 8px); padding: 8px; font-size: 0.8rem; }
+            .action-toolbar .btn:last-child { margin-left: 0 !important; }
+        }
     </style>
 </head>
 <body>
@@ -311,10 +331,11 @@
                 <button class="btn btn-danger" id="btnBulkDelete" onclick="bulkDelete()" disabled style="margin-left: auto;">🗑️ 삭제</button>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 40px; text-align: center;">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;">
                             <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
                         </th>
                         <th>기기 ID</th>
@@ -369,6 +390,7 @@
                     {% endif %}
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 

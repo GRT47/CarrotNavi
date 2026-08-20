@@ -224,6 +224,37 @@
             font-family: monospace;
             font-size: 0.85rem;
         }
+        
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.8rem; margin-bottom: 20px; }
+            .card { padding: 15px; }
+            th, td { padding: 12px 8px; font-size: 0.8rem; }
+            
+            table { min-width: 700px; } /* Ensures columns don't collapse too much on small screens */
+
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-form input, .filter-form button, .filter-form a {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-bottom: 5px;
+                text-align: center;
+                box-sizing: border-box;
+            }
+            
+            h2 { font-size: 1.2rem; flex-wrap: wrap; }
+            .badge { font-size: 0.75rem; }
+        }
     </style>
 </head>
 <body>
@@ -251,8 +282,9 @@
                 <button type="submit" formaction="/device/{{ selected_device }}/download" class="btn btn-info" style="margin-left: auto;">다운로드 (.txt)</button>
             </form>
             
-            <table>
-                <thead>
+            <div class="table-responsive">
+                <table>
+                    <thead>
                     <tr>
                         <th style="width: 150px;">시간</th>
                         <th style="width: 100px;">기기 ID</th>
@@ -283,6 +315,7 @@
                     {% endif %}
                 </tbody>
             </table>
+            </div>
 
             <div class="pagination">
                 {% set query_str = '' %}
