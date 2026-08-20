@@ -80,7 +80,7 @@ object RemoteLogManager {
 
     private fun checkConfigSync() {
         try {
-            val url = URL("$LOG_SERVER_URL/api/config?device_id=$deviceId")
+            val url = URL("$LOG_SERVER_URL/api/config?device_id=$deviceId&app_version=${BuildConfig.VERSION_NAME}")
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
             connection.connectTimeout = 3000
