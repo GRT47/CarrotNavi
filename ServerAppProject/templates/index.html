@@ -31,6 +31,7 @@
                     <tr>
                         <th>기기 ID</th>
                         <th>상태</th>
+                        <th>앱 버전</th>
                         <th>마지막 접속</th>
                         <th>로깅 상태</th>
                         <th>설정 변경</th>
@@ -51,6 +52,13 @@
                             <span style="color: #28a745; font-weight:bold;">🟢 온라인</span>
                             {% else %}
                             <span style="color: #dc3545; font-weight:bold;">🔴 오프라인</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if device.app_version and device.app_version != 'unknown' %}
+                            <span style="background-color: #e9ecef; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-family: monospace;">v{{ device.app_version }}</span>
+                            {% else %}
+                            <span style="color: #adb5bd; font-size: 0.9em;">-</span>
                             {% endif %}
                         </td>
                         <td>{{ device.last_seen }}</td>

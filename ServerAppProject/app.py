@@ -40,9 +40,14 @@ def init_db():
         )
     ''')
     
-    # Add alias column if it doesn't exist (migration)
+    # Add alias and app_version columns if they don't exist (migration)
     try:
         conn.execute('ALTER TABLE devices ADD COLUMN alias TEXT')
+    except sqlite3.OperationalError:
+        pass # Column already exists
+        
+    try:
+        conn.execute('ALTER TABLE devices ADD COLUMN app_version TEXT')
     except sqlite3.OperationalError:
         pass # Column already exists
         
@@ -150,6 +155,8 @@ def download_logs(device_id):
 @app.route('/api/config', methods=['GET'])
 def get_config():
     device_id = request.args.get('device_id')
+    app_version = request.args.get('app_version', 'unknown')
+    
     if not device_id:
         return jsonify({'error': 'device_id required'}), 400
         
@@ -158,12 +165,12 @@ def get_config():
     
     if not device:
         # Register new device with logging disabled by default
-        conn.execute('INSERT INTO devices (device_id, logging_enabled) VALUES (?, 0)', (device_id,))
+        conn.execute('INSERT INTO devices (device_id, logging_enabled, app_version) VALUES (?, 0, ?)', (device_id, app_version))
         conn.commit()
         logging_enabled = 0
     else:
-        # Update last seen
-        conn.execute('UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ?', (device_id,))
+        # Update last seen and app version
+        conn.execute('UPDATE devices SET last_seen = CURRENT_TIMESTAMP, app_version = ? WHERE device_id = ?', (app_version, device_id))
         conn.commit()
         logging_enabled = device['logging_enabled']
         
