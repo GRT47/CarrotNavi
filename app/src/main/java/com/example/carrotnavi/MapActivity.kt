@@ -85,10 +85,30 @@ class MapActivity : AppCompatActivity() {
         
         val fakeEqView = binding.root.findViewById<com.example.carrotnavi.FakeEqView>(R.id.fakeEqView)
         
-        tvMediaTitle?.text = title
-        tvMediaArtist?.text = artist
-        ivAlbumArt?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
-        ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+        val currentTitle = tvMediaTitle?.text?.toString() ?: ""
+        val infoSection = binding.root.findViewById<android.view.View>(R.id.llMediaInfoSection)
+        val cvAlbum = binding.root.findViewById<android.view.View>(R.id.cvAlbumArtContainer)
+
+        if (currentTitle != title && currentTitle.isNotEmpty() && currentTitle != "음악을 재생해 주세요" && title.isNotEmpty()) {
+            infoSection?.animate()?.alpha(0f)?.translationX(-50f)?.setDuration(150)?.withEndAction {
+                tvMediaTitle?.text = title
+                tvMediaArtist?.text = artist
+                ivAlbumArt?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+                ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+                
+                infoSection.translationX = 50f
+                infoSection.animate().alpha(1f).translationX(0f).setDuration(150).start()
+            }?.start()
+            
+            cvAlbum?.animate()?.alpha(0f)?.scaleX(0.8f)?.scaleY(0.8f)?.setDuration(150)?.withEndAction {
+                cvAlbum.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(150).start()
+            }?.start()
+        } else {
+            tvMediaTitle?.text = title
+            tvMediaArtist?.text = artist
+            ivAlbumArt?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+            ivAlbumArtThumbnail?.setImageBitmap(MediaNotificationListenerService.currentAlbumArt)
+        }
         
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         val showAlbumWithEq = sharedPref.getBoolean("SHOW_ALBUM_ART_WITH_EQ", false)
