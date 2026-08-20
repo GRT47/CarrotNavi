@@ -536,6 +536,8 @@ class KakaoMapActivity : AppCompatActivity(),
                 mediaParams.height = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
                 mediaParams.weight = mediaWeight
                 mediaContainer.layoutParams = mediaParams
+                
+                binding.root.findViewById<android.view.View>(R.id.clMediaControls)?.visibility = android.view.View.VISIBLE
             } else {
                 mainContainer.orientation = android.widget.LinearLayout.VERTICAL
                 val tmapParams = tmapLayout.layoutParams as android.widget.LinearLayout.LayoutParams
@@ -549,6 +551,13 @@ class KakaoMapActivity : AppCompatActivity(),
                 mediaParams.height = 0
                 mediaParams.weight = mediaWeight
                 mediaContainer.layoutParams = mediaParams
+                
+                val clMediaControls = binding.root.findViewById<android.view.View>(R.id.clMediaControls)
+                if (ratio >= 4.0f) {
+                    clMediaControls?.visibility = android.view.View.GONE
+                } else {
+                    clMediaControls?.visibility = android.view.View.VISIBLE
+                }
             }
         }
     }
