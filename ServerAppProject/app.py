@@ -51,6 +51,11 @@ def init_db():
     except sqlite3.OperationalError:
         pass # Column already exists
         
+    try:
+        conn.execute('ALTER TABLE devices ADD COLUMN is_pinned INTEGER DEFAULT 0')
+    except sqlite3.OperationalError:
+        pass # Column already exists
+        
     conn.commit()
     conn.close()
 
@@ -60,10 +65,10 @@ init_db()
 def index():
     conn = get_db_connection()
     devices = conn.execute('''
-        SELECT device_id, logging_enabled, alias, app_version,
+        SELECT device_id, logging_enabled, alias, app_version, is_pinned,
         datetime(last_seen, '+9 hours') AS last_seen,
         (julianday('now') - julianday(last_seen)) * 86400 AS seconds_since_last_seen 
-        FROM devices ORDER BY last_seen DESC
+        FROM devices ORDER BY is_pinned DESC, last_seen DESC
     ''').fetchall()
     conn.close()
     return render_template('index.html', devices=devices)
@@ -192,6 +197,19 @@ def set_device_alias(device_id):
     conn.commit()
     conn.close()
     return jsonify({'status': 'success', 'alias': alias})
+
+@app.route('/api/devices/<device_id>/pin', methods=['POST'])
+def toggle_device_pin(device_id):
+    conn = get_db_connection()
+    device = conn.execute('SELECT is_pinned FROM devices WHERE device_id = ?', (device_id,)).fetchone()
+    if device:
+        new_status = 1 if not device['is_pinned'] else 0
+        conn.execute('UPDATE devices SET is_pinned = ? WHERE device_id = ?', (new_status, device_id))
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success', 'is_pinned': new_status})
+    conn.close()
+    return jsonify({'error': 'Device not found'}), 404
 
 @app.route('/api/devices/<device_id>/delete', methods=['POST'])
 def delete_device(device_id):

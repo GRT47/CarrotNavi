@@ -233,6 +233,9 @@
                     <tr>
                         <td>
                             <a href="/device/{{ device.device_id }}" class="device-link">
+                                {% if device.is_pinned %}
+                                <span style="color: #f8961e; margin-right: 4px;">★</span>
+                                {% endif %}
                                 {% if device.alias %}{{ device.alias }}{% else %}{{ device.device_id }}{% endif %}
                             </a>
                             <br>
@@ -262,6 +265,10 @@
                         </td>
                         <td>
                             <div class="action-buttons">
+                                <button class="btn btn-secondary" 
+                                        onclick="togglePin('{{ device.device_id }}')" style="padding: 6px 10px;">
+                                    {% if device.is_pinned %}★ 고정 해제{% else %}☆ 고정{% endif %}
+                                </button>
                                 <button class="btn {% if device.logging_enabled %}btn-off{% else %}btn-on{% endif %}" 
                                         onclick="toggleLogging('{{ device.device_id }}')">
                                     {% if device.logging_enabled %}로깅 끄기{% else %}로깅 켜기{% endif %}
@@ -289,6 +296,24 @@
     <script>
         function toggleLogging(deviceId) {
             fetch(`/api/devices/${deviceId}/toggle`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert('상태 변경 실패: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('네트워크 오류가 발생했습니다.');
+            });
+        }
+        
+        function togglePin(deviceId) {
+            fetch(`/api/devices/${deviceId}/pin`, {
                 method: 'POST'
             })
             .then(response => response.json())
