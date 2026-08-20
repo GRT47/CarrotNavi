@@ -71,7 +71,12 @@ def index():
         FROM devices ORDER BY is_pinned DESC, last_seen DESC
     ''').fetchall()
     conn.close()
-    return render_template('index.html', devices=devices)
+    
+    total_devices = len(devices)
+    online_devices = sum(1 for d in devices if d['seconds_since_last_seen'] is not None and d['seconds_since_last_seen'] < 30)
+    offline_devices = total_devices - online_devices
+    
+    return render_template('index.html', devices=devices, total=total_devices, online=online_devices, offline=offline_devices)
 
 @app.route('/device/<device_id>')
 def device_logs(device_id):
