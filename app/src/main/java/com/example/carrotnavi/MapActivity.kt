@@ -173,7 +173,7 @@ class MapActivity : AppCompatActivity() {
                     }
                 }
             }
-            "MEDIA_SPLIT_RATIO", "MEDIA_SPLIT_RATIO_F" -> {
+            "MEDIA_SPLIT_RATIO", "MEDIA_SPLIT_RATIO_F", "MEDIA_SPLIT_RATIO_PORTRAIT_F", "MEDIA_SPLIT_RATIO_LANDSCAPE_F" -> {
                 runOnUiThread {
                     updateMediaLayout(resources.configuration.orientation)
                 }
@@ -212,7 +212,10 @@ class MapActivity : AppCompatActivity() {
 
     private fun updateMediaLayout(orientation: Int) {
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
-        val ratio = if (sharedPref.contains("MEDIA_SPLIT_RATIO_F")) {
+        val ratioKey = if (orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) "MEDIA_SPLIT_RATIO_PORTRAIT_F" else "MEDIA_SPLIT_RATIO_LANDSCAPE_F"
+        val ratio = if (sharedPref.contains(ratioKey)) {
+            sharedPref.getFloat(ratioKey, 3.5f)
+        } else if (sharedPref.contains("MEDIA_SPLIT_RATIO_F")) {
             sharedPref.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
         } else {
             val oldRatio = sharedPref.getInt("MEDIA_SPLIT_RATIO", 4).toFloat()

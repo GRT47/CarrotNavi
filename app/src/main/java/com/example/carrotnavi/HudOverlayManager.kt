@@ -219,7 +219,14 @@ class HudOverlayManager(
             }
             cbShowAlbumArtWithEq.isChecked = sp.getBoolean("SHOW_ALBUM_ART_WITH_EQ", false)
             
-            val currentRatio = sp.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
+            val isPortrait = activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
+            val ratioKey = if (isPortrait) "MEDIA_SPLIT_RATIO_PORTRAIT_F" else "MEDIA_SPLIT_RATIO_LANDSCAPE_F"
+            
+            val currentRatio = if (sp.contains(ratioKey)) {
+                sp.getFloat(ratioKey, 3.5f)
+            } else {
+                sp.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
+            }
             sliderMediaRatio.value = currentRatio
             fun fmt(v: Float) = if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()
             tvMediaRatioValue.text = "${fmt(currentRatio)} : ${fmt(5f - currentRatio)}"
@@ -388,7 +395,14 @@ class HudOverlayManager(
             sliderMediaRatio.addOnChangeListener { _, value, _ ->
                 fun fmt(v: Float) = if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()
                 tvMediaRatioValue.text = "${fmt(value)} : ${fmt(5f - value)}"
-                sp.edit().putFloat("MEDIA_SPLIT_RATIO_F", value).apply()
+                
+                val isPortrait = activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
+                val ratioKey = if (isPortrait) "MEDIA_SPLIT_RATIO_PORTRAIT_F" else "MEDIA_SPLIT_RATIO_LANDSCAPE_F"
+                
+                sp.edit()
+                    .putFloat(ratioKey, value)
+                    .putFloat("MEDIA_SPLIT_RATIO_F", value) // fallback for compatibility
+                    .apply()
             }
 
             btnEditApiKey.setOnClickListener {
