@@ -203,6 +203,28 @@
             display: flex; 
             gap: 8px;
         }
+        .action-toolbar {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .action-toolbar-title {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-right: 10px;
+        }
+
+        .action-toolbar .btn {
+            padding: 8px 16px;
+        }
         
         .empty-state {
             text-align: center;
@@ -217,20 +239,36 @@
         
         <div class="card">
             <h2>Connected Devices</h2>
+
+            <div class="action-toolbar">
+                <span class="action-toolbar-title">선택된 기기 작업:</span>
+                <button class="btn btn-primary" id="btnBulkPin" onclick="bulkAction('pin', 1)" disabled>📌 고정</button>
+                <button class="btn btn-secondary" id="btnBulkUnpin" onclick="bulkAction('pin', 0)" disabled>고정 해제</button>
+                <button class="btn btn-on" id="btnBulkLogOn" onclick="bulkAction('log', 1)" disabled>로깅 켜기</button>
+                <button class="btn btn-off" id="btnBulkLogOff" onclick="bulkAction('log', 0)" disabled>로깅 끄기</button>
+                <button class="btn btn-secondary" id="btnBulkRename" onclick="bulkRename()" disabled>이름 변경</button>
+                <button class="btn btn-danger" id="btnBulkDelete" onclick="bulkDelete()" disabled style="margin-left: auto;">🗑️ 삭제</button>
+            </div>
+
             <table>
                 <thead>
                     <tr>
+                        <th style="width: 40px; text-align: center;">
+                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+                        </th>
                         <th>기기 ID</th>
                         <th>상태</th>
                         <th>앱 버전</th>
                         <th>마지막 접속</th>
                         <th>로깅 상태</th>
-                        <th>설정 변경</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for device in devices %}
                     <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="device-checkbox" value="{{ device.device_id }}" data-alias="{{ device.alias if device.alias else '' }}" onchange="updateToolbar()">
+                        </td>
                         <td>
                             <a href="/device/{{ device.device_id }}" class="device-link">
                                 {% if device.is_pinned %}
@@ -263,26 +301,6 @@
                             <span style="color: var(--text-muted); font-weight:700; font-size: 0.95em;">OFF</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-secondary" 
-                                        onclick="togglePin('{{ device.device_id }}')" style="padding: 6px 10px;">
-                                    {% if device.is_pinned %}★ 고정 해제{% else %}☆ 고정{% endif %}
-                                </button>
-                                <button class="btn {% if device.logging_enabled %}btn-off{% else %}btn-on{% endif %}" 
-                                        onclick="toggleLogging('{{ device.device_id }}')">
-                                    {% if device.logging_enabled %}로깅 끄기{% else %}로깅 켜기{% endif %}
-                                </button>
-                                <button class="btn btn-secondary" 
-                                        onclick="editAlias('{{ device.device_id }}', '{{ device.alias if device.alias else '' }}')">
-                                    이름 변경
-                                </button>
-                                <button class="btn btn-danger" 
-                                        onclick="deleteDevice('{{ device.device_id }}')">
-                                    삭제
-                                </button>
-                            </div>
-                        </td>
                     </tr>
                     {% endfor %}
                     {% if not devices %}
@@ -294,66 +312,103 @@
     </div>
 
     <script>
-        function toggleLogging(deviceId) {
-            fetch(`/api/devices/${deviceId}/toggle`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === 'success') {
-                    location.reload();
-                } else {
-                    alert('상태 변경 실패: ' + data.error);
-                }
-            })
-            .catch(error => {
+        function getSelectedDevices() {
+            const checkboxes = document.querySelectorAll('.device-checkbox:checked');
+            return Array.from(checkboxes).map(cb => ({
+                id: cb.value,
+                alias: cb.dataset.alias
+            }));
+        }
+
+        function toggleSelectAll(selectAllCheckbox) {
+            const checkboxes = document.querySelectorAll('.device-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+            updateToolbar();
+        }
+
+        function updateToolbar() {
+            const selected = getSelectedDevices();
+            const count = selected.length;
+            
+            const btnBulkPin = document.getElementById('btnBulkPin');
+            const btnBulkUnpin = document.getElementById('btnBulkUnpin');
+            const btnBulkLogOn = document.getElementById('btnBulkLogOn');
+            const btnBulkLogOff = document.getElementById('btnBulkLogOff');
+            const btnBulkRename = document.getElementById('btnBulkRename');
+            const btnBulkDelete = document.getElementById('btnBulkDelete');
+
+            const hasSelection = count > 0;
+            const isSingleSelection = count === 1;
+
+            btnBulkPin.disabled = !hasSelection;
+            btnBulkUnpin.disabled = !hasSelection;
+            btnBulkLogOn.disabled = !hasSelection;
+            btnBulkLogOff.disabled = !hasSelection;
+            btnBulkDelete.disabled = !hasSelection;
+            
+            // Rename is only allowed for a single device
+            btnBulkRename.disabled = !isSingleSelection;
+        }
+
+        async function bulkAction(actionType, state) {
+            const selected = getSelectedDevices();
+            if (selected.length === 0) return;
+
+            const endpointMap = {
+                'pin': '/pin',
+                'log': '/toggle'
+            };
+
+            const endpointSuffix = endpointMap[actionType];
+            if (!endpointSuffix) return;
+
+            try {
+                const requests = selected.map(device => 
+                    fetch(`/api/devices/${device.id}${endpointSuffix}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ state: state })
+                    })
+                );
+                
+                await Promise.all(requests);
+                location.reload();
+            } catch (error) {
                 console.error('Error:', error);
-                alert('네트워크 오류가 발생했습니다.');
-            });
+                alert('일괄 처리 중 오류가 발생했습니다.');
+            }
         }
         
-        function togglePin(deviceId) {
-            fetch(`/api/devices/${deviceId}/pin`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === 'success') {
+        async function bulkDelete() {
+            const selected = getSelectedDevices();
+            if (selected.length === 0) return;
+
+            if(confirm(`선택한 ${selected.length}개의 기기 및 관련된 모든 로그를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+                try {
+                    const requests = selected.map(device => 
+                        fetch(`/api/devices/${device.id}/delete`, {
+                            method: 'POST'
+                        })
+                    );
+                    
+                    await Promise.all(requests);
                     location.reload();
-                } else {
-                    alert('상태 변경 실패: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('네트워크 오류가 발생했습니다.');
-            });
-        }
-        
-        function deleteDevice(deviceId) {
-            if(confirm('기기 [' + deviceId + '] 및 관련된 모든 로그를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-                fetch('/api/devices/' + deviceId + '/delete', {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if(data.status === 'success') {
-                        location.reload();
-                    } else {
-                        alert('기기 삭제 실패: ' + data.error);
-                    }
-                })
-                .catch(error => {
+                } catch (error) {
                     console.error('Error:', error);
-                    alert('네트워크 오류가 발생했습니다.');
-                });
+                    alert('일괄 삭제 중 오류가 발생했습니다.');
+                }
             }
         }
 
-        function editAlias(deviceId, currentAlias) {
-            let newAlias = prompt('기기 [' + deviceId + ']의 표시할 이름을 입력하세요 (비워두면 원래 ID 표시):', currentAlias);
+        function bulkRename() {
+            const selected = getSelectedDevices();
+            if (selected.length !== 1) return; // Only 1 allowed
+
+            const device = selected[0];
+            let newAlias = prompt(`기기 [${device.id}]의 표시할 이름을 입력하세요 (비워두면 원래 ID 표시):`, device.alias);
+            
             if (newAlias !== null) {
-                fetch('/api/devices/' + deviceId + '/alias', {
+                fetch(`/api/devices/${device.id}/alias`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ alias: newAlias })

@@ -200,10 +200,13 @@ def set_device_alias(device_id):
 
 @app.route('/api/devices/<device_id>/pin', methods=['POST'])
 def toggle_device_pin(device_id):
+    data = request.json or {}
+    state = data.get('state')
+    
     conn = get_db_connection()
     device = conn.execute('SELECT is_pinned FROM devices WHERE device_id = ?', (device_id,)).fetchone()
     if device:
-        new_status = 1 if not device['is_pinned'] else 0
+        new_status = int(state) if state is not None else (1 if not device['is_pinned'] else 0)
         conn.execute('UPDATE devices SET is_pinned = ? WHERE device_id = ?', (new_status, device_id))
         conn.commit()
         conn.close()
@@ -302,13 +305,16 @@ def receive_logs_batch():
 
 @app.route('/api/devices/<device_id>/toggle', methods=['POST'])
 def toggle_device(device_id):
+    data = request.json or {}
+    state = data.get('state')
+    
     conn = get_db_connection()
     device = conn.execute('SELECT logging_enabled FROM devices WHERE device_id = ?', (device_id,)).fetchone()
     if not device:
         conn.close()
         return jsonify({'error': 'Device not found'}), 404
         
-    new_status = 0 if device['logging_enabled'] else 1
+    new_status = int(state) if state is not None else (0 if device['logging_enabled'] else 1)
     conn.execute('UPDATE devices SET logging_enabled = ? WHERE device_id = ?', (new_status, device_id))
     conn.commit()
     conn.close()
