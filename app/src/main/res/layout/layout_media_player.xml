@@ -124,19 +124,23 @@
         </LinearLayout>
         </LinearLayout>
 
-        <!-- 재생 컨트롤 버튼 (Controls) -->
+        <!-- 재생 컨트롤 버튼 (Pill style) -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clMediaControls"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_media_pill"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="8dp"
             android:clipToPadding="false">
             
             <ImageButton
                 android:id="@+id/btnPrev"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:padding="16dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:padding="12dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_round_skip_previous_24"
                 android:scaleType="fitCenter"
@@ -145,15 +149,16 @@
                 app:layout_constraintEnd_toStartOf="@+id/btnPlayPause"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginEnd="24dp" />
+                android:layout_marginEnd="16dp" />
                 
             <ImageButton
                 android:id="@+id/btnPlayPause"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:padding="24dp"
-                android:background="@drawable/bg_media_control_btn"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:padding="16dp"
+                android:background="@drawable/bg_media_play_btn"
                 android:src="@drawable/ic_round_play_arrow_24"
+                android:tint="#FFFFFF"
                 android:scaleType="fitCenter"
                 app:layout_constraintStart_toEndOf="@+id/btnPrev"
                 app:layout_constraintEnd_toStartOf="@+id/btnNext"
@@ -162,9 +167,9 @@
                 
             <ImageButton
                 android:id="@+id/btnNext"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:padding="16dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:padding="12dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_round_skip_next_24"
                 android:scaleType="fitCenter"
@@ -172,7 +177,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginStart="24dp" />
+                android:layout_marginStart="16dp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>

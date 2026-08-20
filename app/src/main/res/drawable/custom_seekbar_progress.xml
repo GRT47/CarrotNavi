@@ -19,7 +19,10 @@
         <clip>
             <shape android:shape="rectangle">
                 <corners android:radius="2dp" />
-                <solid android:color="#FFBB00" />
+                <gradient
+                    android:startColor="#FFBB00"
+                    android:endColor="#FF6600"
+                    android:angle="0" />
             </shape>
         </clip>
     </item>
