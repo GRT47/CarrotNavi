@@ -228,6 +228,30 @@ class MapActivity : AppCompatActivity() {
                 mediaContainer.layoutParams = mediaParams
                 
                 binding.root.findViewById<android.view.View>(R.id.clMediaControls)?.visibility = android.view.View.VISIBLE
+                
+                // Landscape UI configuration
+                binding.root.findViewById<android.widget.LinearLayout>(R.id.llMediaTopSection)?.orientation = android.widget.LinearLayout.VERTICAL
+                binding.root.findViewById<androidx.cardview.widget.CardView>(R.id.cvAlbumArtContainer)?.let { cv ->
+                    val cvParams = cv.layoutParams as android.widget.LinearLayout.LayoutParams
+                    cvParams.width = (120 * resources.displayMetrics.density).toInt()
+                    cvParams.height = (120 * resources.displayMetrics.density).toInt()
+                    cvParams.marginEnd = 0
+                    cv.layoutParams = cvParams
+                }
+                binding.root.findViewById<android.widget.LinearLayout>(R.id.llMediaInfoSection)?.let { info ->
+                    val infoParams = info.layoutParams as android.widget.LinearLayout.LayoutParams
+                    infoParams.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                    infoParams.weight = 0f
+                    info.layoutParams = infoParams
+                    info.gravity = android.view.Gravity.CENTER
+                }
+                binding.root.findViewById<android.widget.TextView>(R.id.tvMediaTitle)?.let { title ->
+                    title.gravity = android.view.Gravity.CENTER
+                    val titleParams = title.layoutParams as android.widget.LinearLayout.LayoutParams
+                    titleParams.topMargin = (24 * resources.displayMetrics.density).toInt()
+                    title.layoutParams = titleParams
+                }
+                binding.root.findViewById<android.widget.TextView>(R.id.tvMediaArtist)?.gravity = android.view.Gravity.CENTER
             } else {
                 mainContainer.orientation = android.widget.LinearLayout.VERTICAL
                 val tmapParams = tmapLayout.layoutParams as android.widget.LinearLayout.LayoutParams
@@ -248,6 +272,30 @@ class MapActivity : AppCompatActivity() {
                 } else {
                     clMediaControls?.visibility = android.view.View.VISIBLE
                 }
+                
+                // Portrait UI configuration
+                binding.root.findViewById<android.widget.LinearLayout>(R.id.llMediaTopSection)?.orientation = android.widget.LinearLayout.HORIZONTAL
+                binding.root.findViewById<androidx.cardview.widget.CardView>(R.id.cvAlbumArtContainer)?.let { cv ->
+                    val cvParams = cv.layoutParams as android.widget.LinearLayout.LayoutParams
+                    cvParams.width = (80 * resources.displayMetrics.density).toInt()
+                    cvParams.height = (80 * resources.displayMetrics.density).toInt()
+                    cvParams.marginEnd = (16 * resources.displayMetrics.density).toInt()
+                    cv.layoutParams = cvParams
+                }
+                binding.root.findViewById<android.widget.LinearLayout>(R.id.llMediaInfoSection)?.let { info ->
+                    val infoParams = info.layoutParams as android.widget.LinearLayout.LayoutParams
+                    infoParams.width = 0
+                    infoParams.weight = 1f
+                    info.layoutParams = infoParams
+                    info.gravity = android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.START
+                }
+                binding.root.findViewById<android.widget.TextView>(R.id.tvMediaTitle)?.let { title ->
+                    title.gravity = android.view.Gravity.START
+                    val titleParams = title.layoutParams as android.widget.LinearLayout.LayoutParams
+                    titleParams.topMargin = 0
+                    title.layoutParams = titleParams
+                }
+                binding.root.findViewById<android.widget.TextView>(R.id.tvMediaArtist)?.gravity = android.view.Gravity.START
             }
         }
     }

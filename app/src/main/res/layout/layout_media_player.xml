@@ -25,6 +25,7 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
     <LinearLayout
+        android:id="@+id/llMediaMainOuter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -33,7 +34,15 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <LinearLayout
+            android:id="@+id/llMediaTopSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
         <androidx.cardview.widget.CardView
+            android:id="@+id/cvAlbumArtContainer"
             android:layout_width="120dp"
             android:layout_height="120dp"
             app:cardCornerRadius="16dp"
@@ -45,6 +54,13 @@
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop" />
         </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:id="@+id/llMediaInfoSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
 
         <TextView
             android:id="@+id/tvMediaTitle"
@@ -97,13 +113,15 @@
                 android:splitTrack="false"
                 android:paddingHorizontal="16dp" />
                 
-            <TextView
-                android:id="@+id/tvDuration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0:00"
-                android:textColor="#AAAAAA"
-                android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tvDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0:00"
+                    android:textColor="#AAAAAA"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
         </LinearLayout>
 
         <!-- 재생 컨트롤 버튼 (Controls) -->
