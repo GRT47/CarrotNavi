@@ -76,6 +76,7 @@
             border-collapse: separate; 
             border-spacing: 0;
             margin-top: 10px; 
+            table-layout: fixed;
         }
 
         th, td { 
@@ -253,10 +254,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th>시간</th>
-                        <th>기기 ID</th>
-                        <th>앱 버전</th>
-                        <th>레벨</th>
+                        <th style="width: 150px;">시간</th>
+                        <th style="width: 100px;">기기 ID</th>
+                        <th style="width: 80px;">앱 버전</th>
+                        <th style="width: 80px;">레벨</th>
                         <th>메시지</th>
                     </tr>
                 </thead>
@@ -269,7 +270,7 @@
                         <td class="{% if log.level == 'ERROR' %}log-error{% elif log.level == 'WARN' %}log-warn{% endif %}">
                             {{ log.level }}
                         </td>
-                        <td>
+                        <td style="word-break: break-all; word-wrap: break-word; line-height: 1.5;">
                             {{ log.message }}
                             {% if log.stacktrace %}
                             <div class="stacktrace">{{ log.stacktrace }}</div>
