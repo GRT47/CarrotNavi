@@ -115,6 +115,16 @@ class KakaoMapActivity : AppCompatActivity(),
             if (intent?.action == "com.example.carrotnavi.ACTION_CANCEL_ROUTE") {
                 Log.d("KakaoMapActivity", "Cancel Route received, stopping guidance")
                 sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
+                // 사용자가 명시적으로 취소했으므로 최근 목적지 복구 정보 삭제
+                sharedPref.edit().apply {
+                    remove("RECENT_DEST_NAME")
+                    remove("RECENT_DEST_ROAD_ADDRESS")
+                    remove("RECENT_DEST_ADDRESS")
+                    remove("RECENT_DEST_X")
+                    remove("RECENT_DEST_Y")
+                    remove("RECENT_DEST_TIMESTAMP")
+                    apply()
+                }
                 RouteInfoRepository.updateRouteInfo("", 0, 0, "tmap")
                 KNSDK.sharedGuidance()?.stop()
                 if (!isFinishing) finish()
@@ -800,6 +810,16 @@ class KakaoMapActivity : AppCompatActivity(),
 
     override fun guidanceGuideEnded(guidance: KNGuidance) {
         if(::naviView.isInitialized) naviView.guidanceGuideEnded(guidance)
+        // 안내 정상 종료 시 복구 정보 삭제
+        sharedPref.edit().apply {
+            remove("RECENT_DEST_NAME")
+            remove("RECENT_DEST_ROAD_ADDRESS")
+            remove("RECENT_DEST_ADDRESS")
+            remove("RECENT_DEST_X")
+            remove("RECENT_DEST_Y")
+            remove("RECENT_DEST_TIMESTAMP")
+            apply()
+        }
         if (hasStartedRouteGuidance && !isFinishing) finish()
     }
 
@@ -1070,6 +1090,17 @@ class KakaoMapActivity : AppCompatActivity(),
                 
                 hasStartedRouteGuidance = true
                 intent.removeExtra("dest_place_name")
+                
+                // 최근 목적지 정보 저장 (안내 중 비정상 종료 시 복구 목적)
+                sharedPref.edit().apply {
+                    putString("RECENT_DEST_NAME", doc.place_name)
+                    putString("RECENT_DEST_ROAD_ADDRESS", doc.road_address_name)
+                    putString("RECENT_DEST_ADDRESS", doc.address_name)
+                    putString("RECENT_DEST_X", doc.x)
+                    putString("RECENT_DEST_Y", doc.y)
+                    putLong("RECENT_DEST_TIMESTAMP", System.currentTimeMillis())
+                    apply()
+                }
             }
         }
     }
