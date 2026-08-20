@@ -263,7 +263,7 @@
                 <tbody>
                     {% for log in logs %}
                     <tr>
-                        <td class="timestamp">{{ log.timestamp }}</td>
+                        <td class="timestamp">{{ log.timestamp[:19] | replace('T', ' ') }}</td>
                         <td style="color: var(--text-muted); font-size: 0.85rem;">{{ log.device_id }}</td>
                         <td style="font-family: monospace; color: #a2d2ff;">{{ log.app_version }}</td>
                         <td class="{% if log.level == 'ERROR' %}log-error{% elif log.level == 'WARN' %}log-warn{% endif %}">

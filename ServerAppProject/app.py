@@ -141,7 +141,8 @@ def download_logs(device_id):
     
     def generate():
         for log in logs:
-            line = f"[{log['timestamp']}] {log['level']} : {log['message']}"
+            ts = log['timestamp'][:19].replace('T', ' ')
+            line = f"[{ts}] {log['level']} : {log['message']}"
             if log['stacktrace']:
                 line += f"\n{log['stacktrace']}"
             yield line + '\n'
