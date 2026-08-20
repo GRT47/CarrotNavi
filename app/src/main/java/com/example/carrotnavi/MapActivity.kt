@@ -562,11 +562,11 @@ class MapActivity : AppCompatActivity() {
                     if (recentDestName != null && recentTimestamp > 0L) {
                         val currentTime = System.currentTimeMillis()
                         if (currentTime - recentTimestamp < 3600_000L) { // 1 hour
-                            android.app.AlertDialog.Builder(this@MapActivity)
+                            val dialog = android.app.AlertDialog.Builder(this@MapActivity)
                                 .setTitle("경로 안내 복구")
                                 .setMessage("최근 안내 중이던 목적지('$recentDestName')로 안내를 다시 시작하시겠습니까?")
                                 .setCancelable(false)
-                                .setPositiveButton("확인") { _, _ ->
+                                .setPositiveButton("확인(5)") { _, _ ->
                                     val destRoadAddress = sharedPref.getString("RECENT_DEST_ROAD_ADDRESS", "")
                                     val destAddress = sharedPref.getString("RECENT_DEST_ADDRESS", "")
                                     val destX = sharedPref.getString("RECENT_DEST_X", "")
@@ -592,7 +592,26 @@ class MapActivity : AppCompatActivity() {
                                         apply()
                                     }
                                 }
-                                .show()
+                                .create()
+
+                            dialog.setOnShowListener {
+                                val positiveButton = dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)
+                                val timer = object : android.os.CountDownTimer(5000, 1000) {
+                                    override fun onTick(millisUntilFinished: Long) {
+                                        val seconds = (millisUntilFinished / 1000) + 1
+                                        positiveButton.text = "확인($seconds)"
+                                    }
+
+                                    override fun onFinish() {
+                                        if (dialog.isShowing) {
+                                            positiveButton.performClick()
+                                        }
+                                    }
+                                }
+                                dialog.setOnDismissListener { timer.cancel() }
+                                timer.start()
+                            }
+                            dialog.show()
                         } else {
                             sharedPref.edit().apply {
                                 remove("RECENT_DEST_NAME")
