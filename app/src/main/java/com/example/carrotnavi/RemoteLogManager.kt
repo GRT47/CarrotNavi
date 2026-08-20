@@ -143,7 +143,7 @@ object RemoteLogManager {
                         val logObj = JSONObject().apply {
                             put("level", level)
                             put("message", line)
-                            put("app_version", "2.0.10")
+                            put("app_version", BuildConfig.VERSION_NAME)
                             put("timestamp", sdf.format(Date()))
                         }
                         
