@@ -60,7 +60,8 @@ init_db()
 def index():
     conn = get_db_connection()
     devices = conn.execute('''
-        SELECT *, 
+        SELECT device_id, logging_enabled, alias, app_version,
+        datetime(last_seen, 'localtime') AS last_seen,
         (julianday('now') - julianday(last_seen)) * 86400 AS seconds_since_last_seen 
         FROM devices ORDER BY last_seen DESC
     ''').fetchall()
