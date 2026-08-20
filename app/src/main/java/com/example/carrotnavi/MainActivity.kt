@@ -161,9 +161,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             val shouldAutoStart = intent.getBooleanExtra("auto_start", true)
             if (!savedAppKey.isNullOrEmpty() && shouldAutoStart) {
-                if (!checkRecentDestinationAndPrompt()) {
-                    checkPermissionsAndStart()
-                }
+                checkPermissionsAndStart()
             }
         }
 
@@ -187,9 +185,7 @@ class MainActivity : AppCompatActivity() {
                 apply()
             }
 
-            if (!checkRecentDestinationAndPrompt()) {
-                checkPermissionsAndStart()
-            }
+            checkPermissionsAndStart()
         }
 
         checkNotificationPermissionAndPrompt()
@@ -330,71 +326,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private var pendingDestIntent: Intent? = null
-
     private fun startMapActivity() {
-        val intent = pendingDestIntent ?: Intent(this, MapActivity::class.java).apply {
+        val intent = Intent(this, MapActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
-        pendingDestIntent = null
         startActivity(intent)
-    }
-
-    private fun checkRecentDestinationAndPrompt(): Boolean {
-        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val recentDestName = sharedPref.getString("RECENT_DEST_NAME", null)
-        val recentTimestamp = sharedPref.getLong("RECENT_DEST_TIMESTAMP", 0L)
-        
-        if (recentDestName != null && recentTimestamp > 0L) {
-            val currentTime = System.currentTimeMillis()
-            if (currentTime - recentTimestamp < 3600_000L) { // 1 hour
-                AlertDialog.Builder(this)
-                    .setTitle("경로 안내 복구")
-                    .setMessage("최근 안내 중이던 목적지('$recentDestName')로 안내를 다시 시작하시겠습니까?")
-                    .setCancelable(false)
-                    .setPositiveButton("확인") { _, _ ->
-                        val destRoadAddress = sharedPref.getString("RECENT_DEST_ROAD_ADDRESS", "")
-                        val destAddress = sharedPref.getString("RECENT_DEST_ADDRESS", "")
-                        val destX = sharedPref.getString("RECENT_DEST_X", "")
-                        val destY = sharedPref.getString("RECENT_DEST_Y", "")
-                        
-                        pendingDestIntent = Intent(this, MapActivity::class.java).apply {
-                            putExtra("dest_place_name", recentDestName)
-                            putExtra("dest_road_address_name", destRoadAddress)
-                            putExtra("dest_address_name", destAddress)
-                            putExtra("dest_x", destX)
-                            putExtra("dest_y", destY)
-                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                        }
-                        checkPermissionsAndStart()
-                    }
-                    .setNegativeButton("취소") { _, _ ->
-                        sharedPref.edit().apply {
-                            remove("RECENT_DEST_NAME")
-                            remove("RECENT_DEST_ROAD_ADDRESS")
-                            remove("RECENT_DEST_ADDRESS")
-                            remove("RECENT_DEST_X")
-                            remove("RECENT_DEST_Y")
-                            remove("RECENT_DEST_TIMESTAMP")
-                            apply()
-                        }
-                        checkPermissionsAndStart()
-                    }
-                    .show()
-                return true
-            } else {
-                sharedPref.edit().apply {
-                    remove("RECENT_DEST_NAME")
-                    remove("RECENT_DEST_ROAD_ADDRESS")
-                    remove("RECENT_DEST_ADDRESS")
-                    remove("RECENT_DEST_X")
-                    remove("RECENT_DEST_Y")
-                    remove("RECENT_DEST_TIMESTAMP")
-                    apply()
-                }
-            }
-        }
-        return false
     }
 
 
