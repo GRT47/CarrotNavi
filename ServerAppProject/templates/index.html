@@ -4,28 +4,219 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CommaNav Logging Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; }
-        h1, h2 { color: #343a40; }
+        :root {
+            --primary-color: #4361ee;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --dark-bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            margin: 0; 
+            padding: 40px 20px; 
+            min-height: 100vh;
+        }
+
+        h1 { 
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            background: linear-gradient(to right, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        h2 { 
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #e2e8f0;
+        }
+
         .container { max-width: 1200px; margin: 0 auto; }
-        .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
-        th { background-color: #f1f3f5; }
-        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
-        .btn-on { background-color: #28a745; color: white; }
-        .btn-off { background-color: #dc3545; color: white; }
-        .log-error { color: #dc3545; font-weight: bold; }
-        .log-warn { color: #ffc107; font-weight: bold; }
-        .stacktrace { font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-break: break-all; }
+
+        .card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+            padding: 30px; 
+            margin-bottom: 30px;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin-top: 10px; 
+        }
+
+        th, td { 
+            padding: 16px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+
+        th { 
+            background-color: rgba(255, 255, 255, 0.03); 
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        th:first-child { border-top-left-radius: 8px; }
+        th:last-child { border-top-right-radius: 8px; }
+
+        tbody tr { transition: background-color 0.2s ease; }
+        tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+
+        .device-link {
+            color: #4cc9f0; 
+            text-decoration: none; 
+            font-weight: 600; 
+            font-size: 1.1em;
+            transition: all 0.2s ease;
+        }
+        .device-link:hover {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.6);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .status-online {
+            background-color: rgba(76, 201, 240, 0.15);
+            color: #4cc9f0;
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+        .status-online::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #4cc9f0;
+            border-radius: 50%;
+            margin-right: 6px;
+            box-shadow: 0 0 8px #4cc9f0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(76, 201, 240, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0); }
+        }
+
+        .status-offline {
+            background-color: rgba(247, 37, 133, 0.15);
+            color: #f72585;
+            border: 1px solid rgba(247, 37, 133, 0.3);
+        }
+        .status-offline::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #f72585;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .app-version {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.2), rgba(63, 55, 201, 0.2));
+            border: 1px solid rgba(67, 97, 238, 0.3);
+            color: #a2d2ff;
+            padding: 4px 10px; 
+            border-radius: 6px; 
+            font-size: 0.85rem; 
+            font-family: monospace;
+            font-weight: 500;
+        }
+
+        .btn { 
+            padding: 8px 16px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn:active { transform: scale(0.96); }
+
+        .btn-on { 
+            background: linear-gradient(135deg, #4cc9f0, #4361ee); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+        .btn-on:hover { box-shadow: 0 6px 16px rgba(67, 97, 238, 0.5); transform: translateY(-1px); }
+
+        .btn-off { 
+            background: linear-gradient(135deg, #f72585, #b5179e); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(247, 37, 133, 0.3);
+        }
+        .btn-off:hover { box-shadow: 0 6px 16px rgba(247, 37, 133, 0.5); transform: translateY(-1px); }
+
+        .btn-danger {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: #f72585;
+            border: 1px solid rgba(247, 37, 133, 0.3);
+        }
+        .btn-danger:hover { background-color: rgba(247, 37, 133, 0.2); }
+
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-secondary:hover { background-color: rgba(255, 255, 255, 0.1); }
+
+        .action-buttons {
+            display: flex; 
+            gap: 8px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>CommaNav 관제 서버 대시보드</h1>
+        <h1>CommaNav Control Center</h1>
         
         <div class="card">
-            <h2>기기 관리</h2>
+            <h2>Connected Devices</h2>
             <table>
                 <thead>
                     <tr>
@@ -41,54 +232,54 @@
                     {% for device in devices %}
                     <tr>
                         <td>
-                            <a href="/device/{{ device.device_id }}" style="color: #007bff; text-decoration: none; font-weight: bold; font-size: 1.1em;">
+                            <a href="/device/{{ device.device_id }}" class="device-link">
                                 {% if device.alias %}{{ device.alias }}{% else %}{{ device.device_id }}{% endif %}
                             </a>
                             <br>
-                            <span style="font-size: 0.85em; color: #6c757d;">ID: {{ device.device_id }}</span>
+                            <span style="font-size: 0.8em; color: var(--text-muted); margin-top: 4px; display: inline-block;">ID: {{ device.device_id }}</span>
                         </td>
                         <td>
                             {% if device.seconds_since_last_seen != None and device.seconds_since_last_seen < 30 %}
-                            <span style="color: #28a745; font-weight:bold;">🟢 온라인</span>
+                            <span class="status-badge status-online">온라인</span>
                             {% else %}
-                            <span style="color: #dc3545; font-weight:bold;">🔴 오프라인</span>
+                            <span class="status-badge status-offline">오프라인</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if device.app_version and device.app_version != 'unknown' %}
-                            <span style="background-color: #e9ecef; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-family: monospace;">v{{ device.app_version }}</span>
+                            <span class="app-version">v{{ device.app_version }}</span>
                             {% else %}
-                            <span style="color: #adb5bd; font-size: 0.9em;">-</span>
+                            <span style="color: var(--text-muted); font-size: 0.9em;">-</span>
                             {% endif %}
                         </td>
-                        <td>{{ device.last_seen }}</td>
+                        <td style="color: #cbd5e1; font-size: 0.9em;">{{ device.last_seen }}</td>
                         <td>
                             {% if device.logging_enabled %}
-                            <span style="color: #28a745; font-weight:bold;">ON</span>
+                            <span style="color: #4cc9f0; font-weight:700; font-size: 0.95em;">ON</span>
                             {% else %}
-                            <span style="color: #dc3545; font-weight:bold;">OFF</span>
+                            <span style="color: var(--text-muted); font-weight:700; font-size: 0.95em;">OFF</span>
                             {% endif %}
                         </td>
                         <td>
-                            <div style="display: flex; gap: 5px;">
+                            <div class="action-buttons">
                                 <button class="btn {% if device.logging_enabled %}btn-off{% else %}btn-on{% endif %}" 
                                         onclick="toggleLogging('{{ device.device_id }}')">
                                     {% if device.logging_enabled %}로깅 끄기{% else %}로깅 켜기{% endif %}
                                 </button>
-                                <button class="btn" style="background-color: #343a40; color: white;" 
-                                        onclick="deleteDevice('{{ device.device_id }}')">
-                                    삭제
-                                </button>
-                                <button class="btn" style="background-color: #17a2b8; color: white;" 
+                                <button class="btn btn-secondary" 
                                         onclick="editAlias('{{ device.device_id }}', '{{ device.alias if device.alias else '' }}')">
                                     이름 변경
+                                </button>
+                                <button class="btn btn-danger" 
+                                        onclick="deleteDevice('{{ device.device_id }}')">
+                                    삭제
                                 </button>
                             </div>
                         </td>
                     </tr>
                     {% endfor %}
                     {% if not devices %}
-                    <tr><td colspan="4" style="text-align: center;">등록된 기기가 없습니다.</td></tr>
+                    <tr><td colspan="6" class="empty-state">등록된 기기가 없습니다.</td></tr>
                     {% endif %}
                 </tbody>
             </table>

@@ -3,44 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CommaNav Logging Dashboard</title>
+    <title>CommaNav Device Logs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; }
-        h1, h2 { color: #343a40; }
+        :root {
+            --primary-color: #4361ee;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --dark-bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            margin: 0; 
+            padding: 40px 20px; 
+            min-height: 100vh;
+        }
+
+        h1 { 
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            background: linear-gradient(to right, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        h2 { 
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: white;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+        }
+
         .container { max-width: 1200px; margin: 0 auto; }
-        .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
-        th { background-color: #f1f3f5; }
-        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
-        .btn-on { background-color: #28a745; color: white; }
-        .btn-off { background-color: #dc3545; color: white; }
-        .log-error { color: #dc3545; font-weight: bold; }
-        .log-warn { color: #ffc107; font-weight: bold; }
-        .stacktrace { font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-break: break-all; }
+
+        .card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+            padding: 30px; 
+            margin-bottom: 30px;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin-top: 10px; 
+        }
+
+        th, td { 
+            padding: 16px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+
+        th { 
+            background-color: rgba(255, 255, 255, 0.03); 
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        th:first-child { border-top-left-radius: 8px; }
+        th:last-child { border-top-right-radius: 8px; }
+
+        tbody tr { transition: background-color 0.2s ease; }
+        tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+
+        .log-error { color: var(--danger-color); font-weight: 700; }
+        .log-warn { color: var(--warning-color); font-weight: 700; }
+        
+        .stacktrace { 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 0.8rem; 
+            background: rgba(0, 0, 0, 0.3); 
+            color: #e2e8f0;
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-top: 10px;
+            white-space: pre-wrap; 
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .filter-form {
+            margin-bottom: 25px; 
+            padding: 15px 20px; 
+            background-color: rgba(255, 255, 255, 0.03); 
+            border: 1px solid var(--border-color);
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-form label {
+            font-weight: 500; 
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .filter-form input[type="datetime-local"] {
+            padding: 8px 12px; 
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 8px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            color-scheme: dark;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filter-form input[type="datetime-local"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn { 
+            padding: 8px 16px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-primary { 
+            background: linear-gradient(135deg, #4cc9f0, #4361ee); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+        .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 16px rgba(67, 97, 238, 0.5); transform: translateY(-1px); }
+
+        .btn-danger { 
+            background: linear-gradient(135deg, #f72585, #b5179e); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(247, 37, 133, 0.3);
+        }
+        .btn-danger:hover:not(:disabled) { box-shadow: 0 6px 16px rgba(247, 37, 133, 0.5); transform: translateY(-1px); }
+
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-secondary:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.1); }
+
+        .btn-info {
+            background: linear-gradient(135deg, #48cae4, #00b4d8);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 180, 216, 0.3);
+        }
+        .btn-info:hover:not(:disabled) { box-shadow: 0 6px 16px rgba(0, 180, 216, 0.5); transform: translateY(-1px); }
+
+        .pagination {
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin-top: 30px; 
+            gap: 15px;
+        }
+
+        .pagination-info {
+            font-weight: 600; 
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 16px;
+            border-radius: 20px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+        
+        td { font-size: 0.9rem; }
+        
+        .timestamp {
+            color: var(--text-muted);
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>CommaNav 관제 서버 대시보드</h1>
+        <h1>CommaNav Control Center</h1>
         
-
         <div class="card">
-            <h2>최근 로그 ({% if device_alias %}{{ device_alias }}{% else %}{{ selected_device }}{% endif %}) - <span class="badge text-bg-primary">페이지당 100건</span></h2>
-            <div style="margin-bottom: 20px;">
-                <a href="/" class="btn" style="background-color: #6c757d; color: white; text-decoration: none;">← 대시보드로 돌아가기</a>
+            <h2>
+                Device Logs ({{ device_alias if device_alias else selected_device }})
+                <span class="badge">페이지당 100건</span>
+            </h2>
+            <div style="margin-bottom: 25px;">
+                <a href="/" class="btn btn-secondary">← 대시보드로 돌아가기</a>
             </div>
             
-            <form method="GET" action="/device/{{ selected_device }}" style="margin-bottom: 15px; padding: 10px; background-color: #f1f3f5; border-radius: 4px; display: flex; align-items: center; gap: 10px;">
-                <label for="start_date" style="font-weight: bold; font-size: 14px;">시작:</label>
-                <input type="datetime-local" id="start_date" name="start_date" value="{{ start_date or '' }}" style="padding: 5px; border: 1px solid #ced4da; border-radius: 4px;">
+            <form method="GET" action="/device/{{ selected_device }}" class="filter-form">
+                <label for="start_date">시작:</label>
+                <input type="datetime-local" id="start_date" name="start_date" value="{{ start_date or '' }}">
                 
-                <label for="end_date" style="font-weight: bold; font-size: 14px;">종료:</label>
-                <input type="datetime-local" id="end_date" name="end_date" value="{{ end_date or '' }}" style="padding: 5px; border: 1px solid #ced4da; border-radius: 4px;">
+                <label for="end_date">종료:</label>
+                <input type="datetime-local" id="end_date" name="end_date" value="{{ end_date or '' }}">
                 
-                <button type="submit" class="btn" style="background-color: #28a745; color: white;">필터 적용</button>
-                <a href="/device/{{ selected_device }}" class="btn" style="background-color: #dc3545; color: white; text-decoration: none;">초기화</a>
-                <button type="submit" formaction="/device/{{ selected_device }}/download" class="btn" style="background-color: #17a2b8; color: white; margin-left: auto;">다운로드 (.txt)</button>
+                <button type="submit" class="btn btn-primary">필터 적용</button>
+                <a href="/device/{{ selected_device }}" class="btn btn-danger">초기화</a>
+                <button type="submit" formaction="/device/{{ selected_device }}/download" class="btn btn-info" style="margin-left: auto;">다운로드 (.txt)</button>
             </form>
             
             <table>
@@ -56,9 +263,9 @@
                 <tbody>
                     {% for log in logs %}
                     <tr>
-                        <td>{{ log.timestamp }}</td>
-                        <td>{{ log.device_id }}</td>
-                        <td>{{ log.app_version }}</td>
+                        <td class="timestamp">{{ log.timestamp }}</td>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">{{ log.device_id }}</td>
+                        <td style="font-family: monospace; color: #a2d2ff;">{{ log.app_version }}</td>
                         <td class="{% if log.level == 'ERROR' %}log-error{% elif log.level == 'WARN' %}log-warn{% endif %}">
                             {{ log.level }}
                         </td>
@@ -71,12 +278,12 @@
                     </tr>
                     {% endfor %}
                     {% if not logs %}
-                    <tr><td colspan="5" style="text-align: center;">로그가 없습니다.</td></tr>
+                    <tr><td colspan="5" class="empty-state">로그가 없습니다.</td></tr>
                     {% endif %}
                 </tbody>
             </table>
 
-            <div style="display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 15px;">
+            <div class="pagination">
                 {% set query_str = '' %}
                 {% if start_date %}
                     {% set query_str = query_str ~ '&start_date=' ~ start_date %}
@@ -86,22 +293,21 @@
                 {% endif %}
                 
                 {% if page > 1 %}
-                <a href="/device/{{ selected_device }}?page={{ page - 1 }}{{ query_str }}" class="btn" style="background-color: #007bff; color: white; text-decoration: none;">이전 페이지</a>
+                <a href="/device/{{ selected_device }}?page={{ page - 1 }}{{ query_str }}" class="btn btn-primary">이전 페이지</a>
                 {% else %}
-                <button class="btn" style="background-color: #e9ecef; color: #6c757d; cursor: not-allowed;" disabled>이전 페이지</button>
+                <button class="btn btn-secondary" disabled>이전 페이지</button>
                 {% endif %}
                 
-                <span style="font-weight: bold; color: #495057;">페이지 {{ page }} / {{ total_pages }}</span>
+                <span class="pagination-info">페이지 {{ page }} / {{ total_pages }}</span>
                 
                 {% if page < total_pages %}
-                <a href="/device/{{ selected_device }}?page={{ page + 1 }}{{ query_str }}" class="btn" style="background-color: #007bff; color: white; text-decoration: none;">다음 페이지</a>
+                <a href="/device/{{ selected_device }}?page={{ page + 1 }}{{ query_str }}" class="btn btn-primary">다음 페이지</a>
                 {% else %}
-                <button class="btn" style="background-color: #e9ecef; color: #6c757d; cursor: not-allowed;" disabled>다음 페이지</button>
+                <button class="btn btn-secondary" disabled>다음 페이지</button>
                 {% endif %}
             </div>
         </div>
     </div>
-
     <script>
         function toggleLogging(deviceId) {
             fetch(`/api/devices/${deviceId}/toggle`, {
