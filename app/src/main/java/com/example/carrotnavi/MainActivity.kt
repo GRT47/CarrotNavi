@@ -77,7 +77,10 @@ class MainActivity : AppCompatActivity() {
         binding.tvAppVersion.text = "버전 ${BuildConfig.VERSION_NAME} / 기기ID: $deviceId"
         
         binding.btnCheckUpdate?.setOnClickListener {
-            AutoUpdater.checkForUpdates(this, isManual = true)
+            AutoUpdater.checkForUpdates(this, isManual = true, useServer = false)
+        }
+        binding.btnCheckUpdateServer?.setOnClickListener {
+            AutoUpdater.checkForUpdates(this, isManual = true, useServer = true)
         }
         
         binding.btnExitApp?.setOnClickListener {

@@ -207,6 +207,7 @@ class HudOverlayManager(
 
             val btnCloseSettings = dialogView.findViewById<android.widget.ImageView>(R.id.btnCloseSettings)
             val btnCheckUpdate = dialogView.findViewById<android.widget.Button>(R.id.btnCheckUpdate)
+            val btnCheckUpdateServer = dialogView.findViewById<android.widget.Button>(R.id.btnCheckUpdateServer)
             
             cbDistanceFormatKm.isChecked = sp.getBoolean("USE_KM_DISTANCE_FORMAT", true)
             
@@ -357,7 +358,10 @@ class HudOverlayManager(
             } catch (e: Exception) {}
             
             btnCheckUpdate?.setOnClickListener {
-                AutoUpdater.checkForUpdates(activity, isManual = true)
+                AutoUpdater.checkForUpdates(activity, isManual = true, useServer = false)
+            }
+            btnCheckUpdateServer?.setOnClickListener {
+                AutoUpdater.checkForUpdates(activity, isManual = true, useServer = true)
             }
             
             btnDebugPage.visibility = android.view.View.GONE

@@ -26,7 +26,7 @@ object AutoUpdater {
     private const val TAG = "AutoUpdater"
     private const val GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/GRT47/CarrotNavi/releases/latest"
 
-    fun checkForUpdates(context: Context, isManual: Boolean = false) {
+    fun checkForUpdates(context: Context, isManual: Boolean = false, useServer: Boolean = false) {
         if (isManual) {
             Toast.makeText(context, "업데이트를 확인하는 중...", Toast.LENGTH_SHORT).show()
         }
@@ -46,21 +46,25 @@ object AutoUpdater {
                     val currentVersion = BuildConfig.VERSION_NAME
 
                     if (isNewerVersion(currentVersion, tagName)) {
-                        val assets = json.getJSONArray("assets")
-                        if (assets.length() > 0) {
-                            var downloadUrl = ""
-                            for (i in 0 until assets.length()) {
-                                val asset = assets.getJSONObject(i)
-                                if (asset.getString("name").endsWith(".apk")) {
-                                    downloadUrl = asset.getString("browser_download_url")
-                                    break
+                        var downloadUrl = ""
+                        if (useServer) {
+                            downloadUrl = "https://comma_nav_guide.leegrt.org/apk/CommaNav.apk"
+                        } else {
+                            val assets = json.getJSONArray("assets")
+                            if (assets.length() > 0) {
+                                for (i in 0 until assets.length()) {
+                                    val asset = assets.getJSONObject(i)
+                                    if (asset.getString("name").endsWith(".apk")) {
+                                        downloadUrl = asset.getString("browser_download_url")
+                                        break
+                                    }
                                 }
                             }
-                            
-                            if (downloadUrl.isNotEmpty()) {
-                                withContext(Dispatchers.Main) {
-                                    showUpdateDialog(context, tagName, downloadUrl)
-                                }
+                        }
+                        
+                        if (downloadUrl.isNotEmpty()) {
+                            withContext(Dispatchers.Main) {
+                                showUpdateDialog(context, tagName, downloadUrl)
                             }
                         }
                     } else {
