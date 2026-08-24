@@ -178,19 +178,50 @@ class UdpSenderService : Service() {
                             val k = keys.next()
                             json.put(k, sdiJson.get(k))
                         }
-                        
-                        // Fallback logic for point camera (사용자 피드백 반영)
-                        val sdiType = json.optInt("nSdiType", 0)
-                        var sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
-                        var sdiDist = json.optInt("nSdiDist", 0)
-                        val bSdiBlockSection = json.optBoolean("bSdiBlockSection", false)
-                        
-                        var nSdiBlockType = 0
-                        if (bSdiBlockSection) {
-                            nSdiBlockType = if (sdiType == 3) 3 else 2
-                        } else if (sdiType == 2) {
-                            nSdiBlockType = 1
+                    }
+                    
+                    // 카카오 구간단속 무조건 덮어쓰기 로직
+                    if (activeNavi == "kakao" && naviType == "kakao") {
+                        val kakaoSdiStr = bundle.getString("firstSDIInfo")
+                        if (kakaoSdiStr != null) {
+                            try {
+                                val kJson = JSONObject(kakaoSdiStr)
+                                val kType = kJson.optInt("nSdiType", 0)
+                                // 사용자의 요청: 구간단속 정보는 무조건 카카오에서 가져온다. (평균속도는 TMAP에 맡김)
+                                if (kType == 2 || kType == 3 || kType == 4) {
+                                    val tmapType = json.optInt("nSdiType", 0)
+                                    val isTmapInBlock = json.optBoolean("bSdiBlockSection", false)
+                                    
+                                    if (tmapType == 3) {
+                                        json.put("nSdiType", 1)
+                                        json.put("bSdiBlockSection", false)
+                                    } else if (isTmapInBlock) {
+                                        json.put("nSdiType", 4)
+                                        json.put("bSdiBlockSection", true)
+                                    } else {
+                                        json.put("nSdiType", 1)
+                                        json.put("bSdiBlockSection", false)
+                                    }
+                                    
+                                    if (kJson.has("nSdiSpeedLimit")) json.put("nSdiSpeedLimit", kJson.get("nSdiSpeedLimit"))
+                                    if (kJson.has("nSdiDist")) json.put("nSdiDist", kJson.get("nSdiDist"))
+                                }
+                            } catch (e: Exception) {}
                         }
+                    }
+
+                    // Fallback logic for point camera (사용자 피드백 반영)
+                    var sdiType = json.optInt("nSdiType", 0)
+                    var sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
+                    var sdiDist = json.optInt("nSdiDist", 0)
+                    var bSdiBlockSection = json.optBoolean("bSdiBlockSection", false)
+                    
+                    var nSdiBlockType = 0
+                    if (bSdiBlockSection) {
+                        nSdiBlockType = if (sdiType == 3) 3 else 2
+                    } else if (sdiType == 2) {
+                        nSdiBlockType = 1
+                    }
                         if (nSdiBlockType > 0) {
                             json.put("nSdiBlockType", nSdiBlockType)
                             json.put("nSdiSection", 1) // 사용자 요청에 따라 강제로 1 고정
@@ -268,16 +299,15 @@ class UdpSenderService : Service() {
                         val finalSdiType = json.optInt("nSdiType", 0)
                         val finalSdiDist = json.optInt("nSdiDist", 0)
                         val isBlockSection = json.optInt("nSdiSection", 0) == 1 || json.optInt("nSdiBlockType", 0) == 2
-                        val blockDist = json.optInt("nSdiBlockDist", 0)
+                        val finalBlockDist = json.optInt("nSdiBlockDist", 0)
 
-                        if (isBlockSection && blockDist > 0) {
-                            json.put("nTBTDist", blockDist)
+                        if (isBlockSection && finalBlockDist > 0) {
+                            json.put("nTBTDist", finalBlockDist)
                             json.put("nTBTTurnType", 1)
                         } else if (finalSdiType > 0 && finalSdiDist > 0) {
                             json.put("nTBTDist", finalSdiDist)
                             json.put("nTBTTurnType", 1) // 1: 직진 (Straight)
                         }
-                    }
                     
                     // Kakao 모드일 경우 tmap의 엔진 속도가 유효하면 덮어쓰기
                     if (activeNavi == "kakao") {
