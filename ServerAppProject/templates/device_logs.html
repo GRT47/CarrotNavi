@@ -256,6 +256,9 @@
             .badge { font-size: 0.75rem; }
         }
     </style>
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 </head>
 <body>
     <div class="container">
@@ -360,6 +363,17 @@
                 alert('네트워크 오류가 발생했습니다.');
             });
         }
+    </script>
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
+    <script>
+        flatpickr('input[type="datetime-local"]', {
+            enableTime: true,
+            dateFormat: "Y-m-d\\TH:i",
+            time_24hr: true,
+            locale: "ko"
+        });
     </script>
 </body>
 </html>
