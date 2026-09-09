@@ -376,6 +376,11 @@ class KakaoMapActivity : AppCompatActivity(),
             val searchIntent = Intent(this@KakaoMapActivity, SearchActivity::class.java)
             startActivity(searchIntent)
         }
+
+        hudOverlayManager.onQuickDestinationSelected = { doc ->
+            val destName = doc.place_name.ifEmpty { doc.road_address_name.ifEmpty { doc.address_name } }
+            showPreviewOverlay(doc, destName)
+        }
         
         // 안드로이드 기본 GPS 상태 리스너 등록
         try {
@@ -1065,7 +1070,7 @@ class KakaoMapActivity : AppCompatActivity(),
         val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(goalX, goalY)
         val goalPoi = KNPOI(doc.place_name.ifEmpty { doc.road_address_name }, katec.x.toInt(), katec.y.toInt(), doc.address_name)
 
-        Toast.makeText(this@KakaoMapActivity, "寃쎈줈 ?먯깋 以?..", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@KakaoMapActivity, "경로 탐색 중...", Toast.LENGTH_SHORT).show()
 
         com.kakaomobility.knsdk.KNSDK.makeTripWithStart(startPoi, goalPoi, null) { error, trip ->
             runOnUiThread {
@@ -1073,6 +1078,7 @@ class KakaoMapActivity : AppCompatActivity(),
                 Toast.makeText(this@KakaoMapActivity, "경로 탐색 실패: ${error?.msg ?: "알 수 없는 오류"}", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this@KakaoMapActivity, "경로 안내를 시작합니다.", Toast.LENGTH_SHORT).show()
+                SearchHistoryManager.addHistory(this@KakaoMapActivity, SearchHistoryItem.fromKakaoDocument(doc))
                 val guidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance()!!
                 
                 binding.naviView.guideNewDestinations(
@@ -1172,6 +1178,7 @@ class KakaoMapActivity : AppCompatActivity(),
         
         hudOverlayManager.binding.llSpeedGroup.visibility = android.view.View.GONE
         hudOverlayManager.binding.llStatusGroup.visibility = android.view.View.GONE
+        hudOverlayManager.binding.llQuickDestGroup.visibility = android.view.View.GONE
         hudOverlayManager.binding.btnToggleVisibility.visibility = android.view.View.GONE
         hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.GONE
         hudOverlayManager.binding.btnEditMode.visibility = android.view.View.GONE

@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.CarrotNavi" parent="Theme.MaterialComponents.DayNight.NoActionBar" />
+    <style name="Theme.CarrotNavi" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary Brand Colors (보라색 제거 -> 모던 딥 차콜) -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <!-- Accent Colors (세련된 블루) -->
+        <item name="colorSecondary">@color/accent_blue</item>
+        <item name="colorSecondaryVariant">@color/accent_blue</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+
+        <!-- Window & Status Bar -->
+        <item name="android:statusBarColor">@color/primary_dark</item>
+    </style>
+
+    <style name="Theme.CarrotNavi.FullScreenDialog" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">#F8FAFC</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+    </style>
 </resources>

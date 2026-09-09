@@ -12,14 +12,15 @@ android {
         applicationId = "com.example.carrotnavi"
         minSdk = 26
         targetSdk = 36
-        versionCode = 57
-        versionName = "2.1.5"
+        versionCode = 58
+        versionName = "2.1.6"
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

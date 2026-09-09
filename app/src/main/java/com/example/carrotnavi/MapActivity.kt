@@ -348,6 +348,16 @@ class MapActivity : AppCompatActivity() {
         hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this, hudBinding, this)
         hudOverlayManager.binding.btnSearchAddress.setOnClickListener { showSearchDialog() }
+        hudOverlayManager.onQuickDestinationSelected = { doc ->
+            val naviIntent = Intent(this@MapActivity, KakaoMapActivity::class.java).apply {
+                putExtra("dest_place_name", doc.place_name)
+                putExtra("dest_road_address_name", doc.road_address_name)
+                putExtra("dest_address_name", doc.address_name)
+                putExtra("dest_x", doc.x)
+                putExtra("dest_y", doc.y)
+            }
+            startActivity(naviIntent)
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

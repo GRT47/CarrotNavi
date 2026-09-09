@@ -10,100 +10,391 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:background="@color/primary"
+        app:elevation="2dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:layout_height="wrap_content"
+            android:minHeight="52dp"
+            android:background="@color/primary"
             app:title="목적지 검색"
             app:titleTextColor="#FFFFFF"
-            app:navigationIcon="?attr/homeAsUpIndicator" />
+            app:subtitleTextColor="#E0E7FF"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:navigationIconTint="#FFFFFF" />
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Split Screen Container (Horizontal) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:baselineAligned="false">
 
+        <!-- [Left Panel] Search & Results List (~42% in landscape, 100% in portrait) -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:id="@+id/llLeftPanel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="4.2"
+            android:orientation="vertical"
+            android:padding="12dp">
 
-            <EditText
-                android:id="@+id/etSearchKeyword"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1">
+
+                    <EditText
+                        android:id="@+id/etSearchKeyword"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:hint="주소 또는 장소 검색"
+                        android:textColorHint="@color/text_muted"
+                        android:inputType="text"
+                        android:imeOptions="actionSearch"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="36dp"
+                        android:textSize="14sp"
+                        android:background="@drawable/bg_search_input"
+                        android:textColor="@color/text_primary" />
+
+                    <ImageView
+                        android:id="@+id/btnClearKeyword"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:layout_marginEnd="6dp"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_close"
+                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:visibility="gone"
+                        android:contentDescription="검색어 지우기" />
+                </FrameLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSearch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="8dp"
+                    android:text="검색"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="8dp" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:hint="주소 또는 장소 검색"
-                android:inputType="text"
-                android:imeOptions="actionSearch"
-                android:padding="12dp"
-                android:background="@android:drawable/edit_text"
-                android:textColor="#000000"/>
+                android:layout_marginTop="6dp">
 
-            <Button
-                android:id="@+id/btnSearch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="검색" />
+                <!-- 1. 최근 검색 기록 섹션 (기본 표시) -->
+                <LinearLayout
+                    android:id="@+id/llHistorySection"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="6dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="최근 검색 기록"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="#333333" />
+
+                        <TextView
+                            android:id="@+id/tvClearAllHistory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="8dp"
+                            android:paddingTop="4dp"
+                            android:paddingBottom="4dp"
+                            android:text="전체 삭제"
+                            android:textSize="12sp"
+                            android:textColor="#888888"
+                            android:background="?android:attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvSearchHistory"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scrollbars="vertical" />
+
+                        <TextView
+                            android:id="@+id/tvEmptyHistory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="최근 검색 기록이 없습니다."
+                            android:textColor="#888888"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- 2. 카카오 실시간 검색 결과 섹션 (검색 시 표시) -->
+                <LinearLayout
+                    android:id="@+id/llSearchResultSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <RadioGroup
+                        android:id="@+id/rgSort"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="4dp">
+
+                        <RadioButton
+                            android:id="@+id/rbSortAccuracy"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="정확도순"
+                            android:checked="true"
+                            android:textSize="13sp"
+                            android:buttonTint="@color/accent_blue"
+                            android:textColor="@color/text_primary" />
+
+                        <RadioButton
+                            android:id="@+id/rbSortDistance"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="거리순"
+                            android:textSize="13sp"
+                            android:buttonTint="@color/accent_blue"
+                            android:textColor="@color/text_primary" />
+                    </RadioGroup>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ProgressBar
+                            android:id="@+id/pbLoading"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/tvEmptyResult"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="검색 결과가 없습니다."
+                            android:textColor="#888888"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvSearchResults"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scrollbars="vertical" />
+                    </FrameLayout>
+                </LinearLayout>
+
+            </FrameLayout>
         </LinearLayout>
 
-        <RadioGroup
-            android:id="@+id/rgSort"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp">
-            
-            <RadioButton
-                android:id="@+id/rbSortAccuracy"
+        <!-- Vertical Divider -->
+        <View
+            android:id="@+id/vPanelDivider"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#DCDCDC" />
+
+        <!-- [Right Panel] Destination Map Preview & Navigation Button (~58% in landscape, hidden in portrait) -->
+        <FrameLayout
+            android:id="@+id/flRightPanel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="5.8"
+            android:background="#E9ECEF">
+
+            <!-- Empty State View -->
+            <LinearLayout
+                android:id="@+id/llEmptyPreview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="정확도순"
-                android:checked="true"
-                android:textColor="#000000"
-                android:layout_weight="1"/>
-                
-            <RadioButton
-                android:id="@+id/rbSortDistance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="거리순"
-                android:textColor="#000000"
-                android:layout_weight="1"/>
-        </RadioGroup>
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="24dp"
+                android:visibility="visible">
 
-        <ProgressBar
-            android:id="@+id/pbLoading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="16dp"
-            android:visibility="gone"/>
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:src="@android:drawable/ic_dialog_map"
+                    android:alpha="0.4" />
 
-        <TextView
-            android:id="@+id/tvEmptyResult"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="32dp"
-            android:text="검색 결과가 없습니다."
-            android:textColor="#888888"
-            android:visibility="gone"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="검색 목록에서 장소를 선택하면\n지도가 여기에 표시됩니다."
+                    android:textAlignment="center"
+                    android:textColor="#888888"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvSearchResults"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="16dp"
-            android:scrollbars="vertical"/>
+            <!-- Destination Preview Details (Overlay Container) -->
+            <FrameLayout
+                android:id="@+id/llPreviewContent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+                <!-- 1. Full-size Map Background -->
+                <ImageView
+                    android:id="@+id/ivMapPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+
+                <!-- Native Destination Pin Marker -->
+                <ImageView
+                    android:id="@+id/ivDestinationMarker"
+                    android:layout_width="36dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="22dp"
+                    android:src="@drawable/ic_dest_pin"
+                    android:elevation="4dp"
+                    android:contentDescription="목적지 핀" />
+
+                <ProgressBar
+                    android:id="@+id/pbMapLoading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvMapError"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_overlay_card"
+                    android:padding="16dp"
+                    android:text="지도를 불러올 수 없습니다."
+                    android:textColor="#D32F2F"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <!-- 2. Top Floating Card: Place Name & Address & Register Button -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_overlay_card"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:elevation="6dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvPreviewPlaceName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="#111111"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
+
+                        <TextView
+                            android:id="@+id/tvPreviewAddress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:textColor="#444444"
+                            android:textSize="12sp"
+                            android:maxLines="2"
+                            android:ellipsize="end" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRegisterBookmark"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:layout_marginStart="10dp"
+                        android:text="⭐ 등록"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/accent_blue"
+                        app:cornerRadius="8dp"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp" />
+                </LinearLayout>
+
+                <!-- 3. Bottom Floating Action: Start Route Guidance Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStartGuidance"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    android:layout_marginBottom="14dp"
+                    app:backgroundTint="@color/accent_green"
+                    android:text="🚀 경로 안내 시작"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp"
+                    android:elevation="8dp" />
+            </FrameLayout>
+
+        </FrameLayout>
     </LinearLayout>
 
 </LinearLayout>

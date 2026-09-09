@@ -58,8 +58,96 @@
     </LinearLayout>
 
 
-    
-    <LinearLayout android:id="@+id/llSpeedGroup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_margin="16dp" android:layout_gravity="top|start" android:paddingHorizontal="12dp" android:paddingVertical="8dp" android:elevation="6dp">
+    <!-- 좌측 상단 원터치 목적지 버튼 그룹 (집, 사무실, 즐겨찾기) 1행 -->
+    <LinearLayout
+        android:id="@+id/llQuickDestGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:elevation="7dp">
+
+        <LinearLayout
+            android:id="@+id/btnQuickHome"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_hud_quick_btn"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="12dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🏠 집"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnQuickOffice"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_hud_quick_btn"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="12dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🏢 사무실"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnQuickFavorites"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_hud_quick_btn"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="12dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⭐ 즐겨찾기"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="2" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/llSpeedGroup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginStart="16dp" android:layout_marginTop="58dp" android:layout_marginEnd="16dp" android:layout_marginBottom="16dp" android:layout_gravity="top|start" android:paddingHorizontal="12dp" android:paddingVertical="8dp" android:elevation="6dp">
 
         
         <LinearLayout android:id="@+id/llRoadSpeedLimit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center">

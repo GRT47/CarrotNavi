@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/llItemContainer"
+    android:id="@+id/llHistoryItemContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -13,10 +13,17 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingStart="14dp"
-        android:paddingEnd="10dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="8dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/ic_history"
+            android:contentDescription="최근 기록" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -25,45 +32,53 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvPlaceName"
+                android:id="@+id/tvHistoryPlaceName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="#111111"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
             <TextView
-                android:id="@+id/tvRoadAddress"
+                android:id="@+id/tvHistoryAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:textColor="#444444"
+                android:layout_marginTop="2dp"
+                android:textColor="#555555"
                 android:textSize="12sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
             <TextView
-                android:id="@+id/tvAddress"
+                android:id="@+id/tvHistoryDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="#888888"
+                android:textColor="#999999"
                 android:textSize="11sp"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:maxLines="1" />
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/btnBookmark"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:layout_marginStart="8dp"
+            android:id="@+id/btnBookmarkHistory"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="4dp"
             android:padding="8dp"
-            android:src="@drawable/ic_star_outline"
             android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_star_outline"
             android:contentDescription="즐겨찾기/집/사무실 등록" />
+
+        <ImageView
+            android:id="@+id/btnDeleteHistory"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="8dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            android:contentDescription="삭제" />
     </LinearLayout>
 
     <View

@@ -18,9 +18,15 @@ import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import android.content.Intent
+import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import android.app.Dialog
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.carrotnavi.databinding.LayoutHudOverlaysBinding
 import kotlin.math.max
 
@@ -32,6 +38,8 @@ class HudOverlayManager(
     private val sharedPref: SharedPreferences = activity.getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
     private var isEditMode = false
     var isOverlayVisible = true
+
+    var onQuickDestinationSelected: ((KakaoDocument) -> Unit)? = null
 
     private var initialX = 0f
     private var initialY = 0f
@@ -497,6 +505,256 @@ class HudOverlayManager(
                 .setNegativeButton("취소", null)
                 .show()
         }
+
+        // 퀵 목적지 버튼 (집, 사무실, 즐겨찾기)
+        binding.btnQuickHome.setOnClickListener {
+            val home = DestinationBookmarkManager.getHome(activity)
+            if (home != null) {
+                onQuickDestinationSelected?.invoke(home.toKakaoDocument())
+            } else {
+                AlertDialog.Builder(activity)
+                    .setTitle("🏠 집 주소 등록")
+                    .setMessage("등록된 집 주소가 없습니다.\n검색 화면으로 이동하여 집 주소를 등록하시겠습니까?")
+                    .setPositiveButton("검색하기") { _, _ ->
+                        val intent = Intent(activity, SearchActivity::class.java).apply {
+                            putExtra("register_target", BookmarkItem.TYPE_HOME)
+                        }
+                        activity.startActivity(intent)
+                    }
+                    .setNegativeButton("취소", null)
+                    .show()
+            }
+        }
+        binding.btnQuickHome.setOnLongClickListener {
+            val home = DestinationBookmarkManager.getHome(activity)
+            if (home != null) {
+                showQuickDestManageDialog(BookmarkItem.TYPE_HOME, home) {}
+                true
+            } else {
+                false
+            }
+        }
+
+        binding.btnQuickOffice.setOnClickListener {
+            val office = DestinationBookmarkManager.getOffice(activity)
+            if (office != null) {
+                onQuickDestinationSelected?.invoke(office.toKakaoDocument())
+            } else {
+                AlertDialog.Builder(activity)
+                    .setTitle("🏢 사무실 주소 등록")
+                    .setMessage("등록된 사무실 주소가 없습니다.\n검색 화면으로 이동하여 사무실 주소를 등록하시겠습니까?")
+                    .setPositiveButton("검색하기") { _, _ ->
+                        val intent = Intent(activity, SearchActivity::class.java).apply {
+                            putExtra("register_target", BookmarkItem.TYPE_OFFICE)
+                        }
+                        activity.startActivity(intent)
+                    }
+                    .setNegativeButton("취소", null)
+                    .show()
+            }
+        }
+        binding.btnQuickOffice.setOnLongClickListener {
+            val office = DestinationBookmarkManager.getOffice(activity)
+            if (office != null) {
+                showQuickDestManageDialog(BookmarkItem.TYPE_OFFICE, office) {}
+                true
+            } else {
+                false
+            }
+        }
+
+        binding.btnQuickFavorites.setOnClickListener {
+            showFavoritesDialog()
+        }
+    }
+
+    private fun showQuickDestManageDialog(targetType: String, item: BookmarkItem, onUpdated: () -> Unit) {
+        val title = if (targetType == BookmarkItem.TYPE_HOME) "🏠 집 설정" else "🏢 사무실 설정"
+        val address = if (item.road_address_name.isNotEmpty()) item.road_address_name else item.address_name
+        AlertDialog.Builder(activity)
+            .setTitle(title)
+            .setMessage("현재 등록: ${item.place_name}\n($address)")
+            .setPositiveButton("안내 시작") { _, _ ->
+                onQuickDestinationSelected?.invoke(item.toKakaoDocument())
+            }
+            .setNeutralButton("변경(검색)") { _, _ ->
+                val intent = Intent(activity, SearchActivity::class.java).apply {
+                    putExtra("register_target", targetType)
+                }
+                activity.startActivity(intent)
+            }
+            .setNegativeButton("삭제") { _, _ ->
+                if (targetType == BookmarkItem.TYPE_HOME) {
+                    DestinationBookmarkManager.clearHome(activity)
+                    Toast.makeText(activity, "집 주소가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    DestinationBookmarkManager.clearOffice(activity)
+                    Toast.makeText(activity, "사무실 주소가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                }
+                onUpdated()
+            }
+            .show()
+    }
+
+    private fun showFavoritesDialog() {
+        val dialog = Dialog(activity, R.style.Theme_CarrotNavi_FullScreenDialog)
+        val dialogView = LayoutInflater.from(activity).inflate(R.layout.dialog_favorites_list, null)
+        dialog.setContentView(dialogView)
+
+        dialog.window?.let { window ->
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.TRANSPARENT))
+        }
+
+        val toolbar = dialogView.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.tbFavorites)
+        val btnHeaderAdd = dialogView.findViewById<View>(R.id.btnHeaderAddFavorite)
+
+        val cvQuickHome = dialogView.findViewById<View>(R.id.cvQuickHome)
+        val tvHomeTitle = dialogView.findViewById<TextView>(R.id.tvQuickHomeTitle)
+        val tvHomeBadge = dialogView.findViewById<TextView>(R.id.tvQuickHomeBadge)
+        val tvHomeSub = dialogView.findViewById<TextView>(R.id.tvQuickHomeSub)
+
+        val cvQuickOffice = dialogView.findViewById<View>(R.id.cvQuickOffice)
+        val tvOfficeTitle = dialogView.findViewById<TextView>(R.id.tvQuickOfficeTitle)
+        val tvOfficeBadge = dialogView.findViewById<TextView>(R.id.tvQuickOfficeBadge)
+        val tvOfficeSub = dialogView.findViewById<TextView>(R.id.tvQuickOfficeSub)
+
+        val tvFavoritesCount = dialogView.findViewById<TextView>(R.id.tvFavoritesCount)
+        val llEmpty = dialogView.findViewById<View>(R.id.llEmptyFavorites)
+        val btnAddEmpty = dialogView.findViewById<View>(R.id.btnAddFavoriteEmpty)
+        val rvFavorites = dialogView.findViewById<RecyclerView>(R.id.rvFavorites)
+
+        toolbar.setNavigationOnClickListener {
+            dialog.dismiss()
+        }
+
+        val openSearchForFavorite = {
+            dialog.dismiss()
+            val intent = Intent(activity, SearchActivity::class.java).apply {
+                putExtra("register_target", BookmarkItem.TYPE_FAVORITE)
+            }
+            activity.startActivity(intent)
+        }
+        btnHeaderAdd.setOnClickListener { openSearchForFavorite() }
+        btnAddEmpty.setOnClickListener { openSearchForFavorite() }
+
+        fun updateHomeCard() {
+            val home = DestinationBookmarkManager.getHome(activity)
+            if (home != null) {
+                tvHomeSub.text = home.place_name
+                tvHomeSub.setTextColor(activity.getColor(R.color.text_primary))
+                tvHomeBadge.text = "안내"
+                tvHomeBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(activity.getColor(R.color.accent_green))
+                val startHome = {
+                    dialog.dismiss()
+                    onQuickDestinationSelected?.invoke(home.toKakaoDocument())
+                }
+                cvQuickHome.setOnClickListener { startHome() }
+                cvQuickHome.setOnLongClickListener {
+                    showQuickDestManageDialog(BookmarkItem.TYPE_HOME, home) {
+                        updateHomeCard()
+                    }
+                    true
+                }
+            } else {
+                tvHomeSub.text = "미등록 (터치하여 등록)"
+                tvHomeSub.setTextColor(activity.getColor(R.color.text_muted))
+                tvHomeBadge.text = "등록"
+                tvHomeBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(activity.getColor(R.color.accent_blue))
+                val registerHome = {
+                    dialog.dismiss()
+                    val intent = Intent(activity, SearchActivity::class.java).apply {
+                        putExtra("register_target", BookmarkItem.TYPE_HOME)
+                    }
+                    activity.startActivity(intent)
+                }
+                cvQuickHome.setOnClickListener { registerHome() }
+                cvQuickHome.setOnLongClickListener(null)
+            }
+        }
+
+        fun updateOfficeCard() {
+            val office = DestinationBookmarkManager.getOffice(activity)
+            if (office != null) {
+                tvOfficeSub.text = office.place_name
+                tvOfficeSub.setTextColor(activity.getColor(R.color.text_primary))
+                tvOfficeBadge.text = "안내"
+                tvOfficeBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(activity.getColor(R.color.accent_green))
+                val startOffice = {
+                    dialog.dismiss()
+                    onQuickDestinationSelected?.invoke(office.toKakaoDocument())
+                }
+                cvQuickOffice.setOnClickListener { startOffice() }
+                cvQuickOffice.setOnLongClickListener {
+                    showQuickDestManageDialog(BookmarkItem.TYPE_OFFICE, office) {
+                        updateOfficeCard()
+                    }
+                    true
+                }
+            } else {
+                tvOfficeSub.text = "미등록 (터치하여 등록)"
+                tvOfficeSub.setTextColor(activity.getColor(R.color.text_muted))
+                tvOfficeBadge.text = "등록"
+                tvOfficeBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(activity.getColor(R.color.accent_blue))
+                val registerOffice = {
+                    dialog.dismiss()
+                    val intent = Intent(activity, SearchActivity::class.java).apply {
+                        putExtra("register_target", BookmarkItem.TYPE_OFFICE)
+                    }
+                    activity.startActivity(intent)
+                }
+                cvQuickOffice.setOnClickListener { registerOffice() }
+                cvQuickOffice.setOnLongClickListener(null)
+            }
+        }
+
+        updateHomeCard()
+        updateOfficeCard()
+
+        var adapter: FavoritesAdapter? = null
+
+        fun refreshFavoritesList() {
+            val favorites = DestinationBookmarkManager.getFavorites(activity)
+            tvFavoritesCount.text = "${favorites.size}개"
+            if (favorites.isEmpty()) {
+                llEmpty.visibility = View.VISIBLE
+                rvFavorites.visibility = View.GONE
+            } else {
+                llEmpty.visibility = View.GONE
+                rvFavorites.visibility = View.VISIBLE
+                adapter?.submitList(favorites)
+            }
+        }
+
+        adapter = FavoritesAdapter(
+            onItemClick = { item ->
+                dialog.dismiss()
+                onQuickDestinationSelected?.invoke(item.toKakaoDocument())
+            },
+            onDeleteClick = { item ->
+                AlertDialog.Builder(activity)
+                    .setTitle("즐겨찾기 삭제")
+                    .setMessage("'${item.place_name}'을(를) 즐겨찾기에서 삭제하시겠습니까?")
+                    .setPositiveButton("삭제") { _, _ ->
+                        DestinationBookmarkManager.removeFavorite(activity, item)
+                        refreshFavoritesList()
+                    }
+                    .setNegativeButton("취소", null)
+                    .show()
+            }
+        )
+
+        val isLandscape = activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        rvFavorites.layoutManager = if (isLandscape) {
+            GridLayoutManager(activity, 2)
+        } else {
+            LinearLayoutManager(activity)
+        }
+        rvFavorites.adapter = adapter
+        refreshFavoritesList()
+
+        dialog.show()
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
 
     private fun setAutoRepeatButton(button: Button, action: () -> Unit) {
@@ -531,8 +789,8 @@ class HudOverlayManager(
         binding.llSpeedGroup.visibility = visibility
         binding.llBottomLeftOverlays.visibility = visibility
         binding.llTopUiGroup?.visibility = visibility
+        binding.llQuickDestGroup.visibility = visibility
 
-        
         binding.btnSearchAddress.visibility = visibility
         binding.btnSettings?.visibility = visibility
         binding.btnEditMode.visibility = visibility
