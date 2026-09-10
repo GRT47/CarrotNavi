@@ -10,21 +10,28 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class AddressSearchAdapter(
-    private val onItemSelected: (KakaoDocument) -> Unit,
+    private val onItemClick: (KakaoDocument) -> Unit,
     private val onBookmarkClick: (KakaoDocument) -> Unit
 ) : RecyclerView.Adapter<AddressSearchAdapter.ViewHolder>() {
 
     private val items = mutableListOf<KakaoDocument>()
     private var selectedPosition = RecyclerView.NO_POSITION
 
-    fun submitList(newItems: List<KakaoDocument>) {
+    fun submitList(newItems: List<KakaoDocument>, selectFirst: Boolean = false) {
         items.clear()
         items.addAll(newItems)
-        selectedPosition = if (newItems.isNotEmpty()) 0 else RecyclerView.NO_POSITION
+        selectedPosition = if (selectFirst && newItems.isNotEmpty()) 0 else RecyclerView.NO_POSITION
         notifyDataSetChanged()
+    }
 
-        if (newItems.isNotEmpty()) {
-            onItemSelected(newItems[0])
+    fun setSelectedPosition(position: Int) {
+        val prevPos = selectedPosition
+        selectedPosition = position
+        if (prevPos != RecyclerView.NO_POSITION) {
+            notifyItemChanged(prevPos)
+        }
+        if (selectedPosition != RecyclerView.NO_POSITION) {
+            notifyItemChanged(selectedPosition)
         }
     }
 
@@ -81,7 +88,7 @@ class AddressSearchAdapter(
                         notifyItemChanged(prevPos)
                     }
                     notifyItemChanged(selectedPosition)
-                    onItemSelected(item)
+                    onItemClick(item)
                 }
             }
 

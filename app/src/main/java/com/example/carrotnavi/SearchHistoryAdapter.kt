@@ -21,14 +21,18 @@ class SearchHistoryAdapter(
     private val items = mutableListOf<SearchHistoryItem>()
     private var selectedPosition = -1
 
-    fun submitList(newItems: List<SearchHistoryItem>, autoSelectFirst: Boolean = false) {
+    fun submitList(newItems: List<SearchHistoryItem>, selectFirst: Boolean = false) {
         items.clear()
         items.addAll(newItems)
-        selectedPosition = if (autoSelectFirst && items.isNotEmpty()) 0 else -1
+        selectedPosition = if (selectFirst && items.isNotEmpty()) 0 else -1
         notifyDataSetChanged()
-        if (selectedPosition == 0 && items.isNotEmpty()) {
-            onItemClick(items[0])
-        }
+    }
+
+    fun setSelectedPosition(position: Int) {
+        val prev = selectedPosition
+        selectedPosition = position
+        if (prev != -1) notifyItemChanged(prev)
+        if (selectedPosition != -1) notifyItemChanged(selectedPosition)
     }
 
     fun clearSelection() {

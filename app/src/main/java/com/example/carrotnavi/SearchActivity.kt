@@ -180,7 +180,7 @@ class SearchActivity : AppCompatActivity() {
         tvEmpty = findViewById(R.id.tvEmptyResult)
 
         adapter = AddressSearchAdapter(
-            onItemSelected = { doc ->
+            onItemClick = { doc ->
                 if (isLandscape()) {
                     historyAdapter.clearSelection()
                     selectDestination(doc)
@@ -216,6 +216,22 @@ class SearchActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         applyOrientationLayout()
+        if (isLandscape()) {
+            if (currentSelectedDoc != null) {
+                selectDestination(currentSelectedDoc!!)
+            } else {
+                if (llSearchResultSection.visibility == View.VISIBLE) {
+                    val firstDoc = adapter.getSelectedItem()
+                    if (firstDoc != null) {
+                        selectDestination(firstDoc)
+                    }
+                } else {
+                    loadSearchHistory(autoSelectFirst = true)
+                }
+            }
+        } else {
+            clearPreview()
+        }
     }
 
     private fun isLandscape(): Boolean {
@@ -316,7 +332,7 @@ class SearchActivity : AppCompatActivity() {
     private fun showHistorySection() {
         llSearchResultSection.visibility = View.GONE
         llHistorySection.visibility = View.VISIBLE
-        loadSearchHistory(autoSelectFirst = false)
+        loadSearchHistory(autoSelectFirst = isLandscape())
     }
 
     private fun showSearchResultSection() {
@@ -330,14 +346,18 @@ class SearchActivity : AppCompatActivity() {
             tvEmptyHistory.visibility = View.VISIBLE
             rvSearchHistory.visibility = View.GONE
             tvClearAllHistory.visibility = View.GONE
-            if (autoSelectFirst) {
-                clearPreview()
-            }
+            clearPreview()
         } else {
             tvEmptyHistory.visibility = View.GONE
             rvSearchHistory.visibility = View.VISIBLE
             tvClearAllHistory.visibility = View.VISIBLE
-            historyAdapter.submitList(history, autoSelectFirst)
+            val shouldSelectFirst = autoSelectFirst && isLandscape()
+            historyAdapter.submitList(history, selectFirst = shouldSelectFirst)
+            if (shouldSelectFirst) {
+                selectDestination(history[0].toKakaoDocument())
+            } else if (!isLandscape()) {
+                clearPreview()
+            }
         }
     }
 
@@ -623,7 +643,13 @@ class SearchActivity : AppCompatActivity() {
                             clearPreview()
                         } else {
                             rvResults.visibility = View.VISIBLE
-                            adapter.submitList(docs)
+                            val shouldSelectFirst = isLandscape()
+                            adapter.submitList(docs, selectFirst = shouldSelectFirst)
+                            if (shouldSelectFirst) {
+                                selectDestination(docs[0])
+                            } else {
+                                clearPreview()
+                            }
                         }
                     } else {
                         if (response.code() == 401) {
