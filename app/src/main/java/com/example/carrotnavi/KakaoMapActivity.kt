@@ -89,6 +89,26 @@ class KakaoMapActivity : AppCompatActivity(),
     private var lastRoadType: com.kakaomobility.knsdk.KNRoadType? = null
     private var currentSafetyGuide: com.kakaomobility.knsdk.guidance.knguidance.safetyguide.KNGuide_Safety? = null
 
+    private var currentRoadLimitSpeed = 0
+    private var isCameraEventActive = false
+    private var lastCameraSignX: Float = -1f
+    private var lastCameraSignY: Float = -1f
+
+    private val bottomBarId by lazy {
+        val id = resources.getIdentifier("component_bottom", "id", packageName)
+        if (id != 0) id else resources.getIdentifier("bottom_drive_constraint_layout", "id", packageName)
+    }
+    private val goalTextId by lazy {
+        resources.getIdentifier("bottom_drive_goal_text", "id", packageName)
+    }
+    private var isGoalTextWatcherAttached = false
+    private var lastKnownAddress: String = ""
+    private var lastKnownRoadName: String = ""
+    private var lastAddressFetchTime: Long = 0L
+    private var isShowingRemainingTime = false
+    private var currentRemainDist: Long = 0L
+    private var currentRemainTime: Long = 0L
+
     private var v2Client: com.example.carrotnavi.v2.OpenpilotV2Client? = null
     private var streamingManager: com.example.carrotnavi.v2.VideoStreamingManager? = null
     private var presentation: com.example.carrotnavi.v2.MapPresentation? = null
@@ -377,10 +397,32 @@ class KakaoMapActivity : AppCompatActivity(),
             startActivity(searchIntent)
         }
 
+        hudOverlayManager.binding.btnGpsCancelRoute.setOnClickListener {
+            cancelRouteAndReturnToTmap()
+        }
+
+        hudOverlayManager.binding.btnToggleEtaTime.setOnClickListener {
+            isShowingRemainingTime = !isShowingRemainingTime
+            updateEtaUi()
+        }
+
         hudOverlayManager.onQuickDestinationSelected = { doc ->
             val destName = doc.place_name.ifEmpty { doc.road_address_name.ifEmpty { doc.address_name } }
             showPreviewOverlay(doc, destName)
         }
+        hudOverlayManager.onOverlayVisibilityChanged = {
+            updateRoadSpeedLimitVisibility()
+            alignGpsOverlayWithBottomBar()
+        }
+        binding.mapOverlayContainer.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            alignSpeedGroupWithCameraSign()
+            alignGpsOverlayWithBottomBar()
+            alignQuickDestGroupWithTbt()
+        }
+        binding.root.postDelayed({
+            alignGpsOverlayWithBottomBar()
+            alignQuickDestGroupWithTbt()
+        }, 1000)
         
         // 안드로이드 기본 GPS 상태 리스너 등록
         try {
@@ -464,6 +506,7 @@ class KakaoMapActivity : AppCompatActivity(),
         } catch (e: SecurityException) {
             e.printStackTrace()
         }
+        updateRoadSpeedLimitVisibility()
     }
 
     private fun setupUI() {
@@ -530,8 +573,18 @@ class KakaoMapActivity : AppCompatActivity(),
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        lastCameraSignX = -1f
+        lastCameraSignY = -1f
         if (::binding.isInitialized) {
             updateMediaLayout(newConfig.orientation)
+            updateRoadSpeedLimitVisibility()
+            binding.root.postDelayed({
+                alignSpeedGroupWithCameraSign()
+                alignGpsOverlayWithBottomBar()
+            }, 300)
+            binding.root.postDelayed({
+                alignGpsOverlayWithBottomBar()
+            }, 800)
         }
     }
 
@@ -665,14 +718,8 @@ class KakaoMapActivity : AppCompatActivity(),
 
         // 백그라운드 서비스(UdpSenderService)에서 갱신하는 최신 티맵 도로 제한속도 옵저빙
         SdiDataRepository.observableRoadLimitSpeed.observe(this, Observer { limitSpeed ->
-            runOnUiThread {
-                if (limitSpeed >= 30) {
-                    hudOverlayManager.binding.llRoadSpeedLimit?.visibility = android.view.View.VISIBLE
-                    hudOverlayManager.binding.tvRoadSpeedLimit?.text = limitSpeed.toString()
-                } else {
-                    hudOverlayManager.binding.llRoadSpeedLimit?.visibility = android.view.View.GONE
-                }
-            }
+            currentRoadLimitSpeed = limitSpeed
+            updateRoadSpeedLimitVisibility()
         })
     }
 
@@ -793,15 +840,470 @@ class KakaoMapActivity : AppCompatActivity(),
                     dist2 = s2Dist
                 )
                 
-                runOnUiThread {
-                                    }
+                isCameraEventActive = (s1Limit > 0 && s1Dist > 0) || (s1Type > 0 && s1Dist > 0)
+                if (isCameraEventActive) {
+                    findKakaoViewById("component_sign_first")?.let { sign ->
+                        if (sign.visibility == android.view.View.VISIBLE && sign.width > 0) {
+                            val signLoc = IntArray(2)
+                            val containerLoc = IntArray(2)
+                            sign.getLocationOnScreen(signLoc)
+                            findViewById<android.view.View>(R.id.mapOverlayContainer)?.getLocationOnScreen(containerLoc)
+                            val relX = signLoc[0] - containerLoc[0]
+                            val relY = signLoc[1] - containerLoc[1]
+                            if (relX >= 0 && relY >= 0) {
+                                lastCameraSignX = relX.toFloat()
+                                lastCameraSignY = relY.toFloat()
+                            }
+                        }
+                    }
+                }
+                updateRoadSpeedLimitVisibility()
             } else {
                 lastCameraSpeedLimit = 0
                 KakaoSdiRepository.updateSafeties(0, 0, 0, 0, false, 0, 0, 0, 0)
-                runOnUiThread {
-                                    }
+                isCameraEventActive = false
+                updateRoadSpeedLimitVisibility()
+            }
+        } ?: run {
+            isCameraEventActive = false
+            updateRoadSpeedLimitVisibility()
+        }
+    }
+
+    private fun findKakaoViewById(name: String): android.view.View? {
+        val id = resources.getIdentifier(name, "id", packageName)
+        return if (id != 0) findViewById(id) else null
+    }
+
+    private fun updateRoadSpeedLimitVisibility() {
+        if (!::hudOverlayManager.isInitialized) return
+        runOnUiThread {
+            if (!::hudOverlayManager.isInitialized) return@runOnUiThread
+            // 단속 카메라 이벤트가 없을 때만 도로 기본 제한속도(30 이상) 파란색 원을 표시
+            // 단속 이벤트 발생 시 파란색 원을 숨겨서 KNSDK 단속 카메라 위젯만 보이도록 함
+            val shouldShow = !isCameraEventActive && currentRoadLimitSpeed >= 30 && hudOverlayManager.isOverlayVisible
+            if (shouldShow) {
+                hudOverlayManager.binding.llSpeedGroup.visibility = View.VISIBLE
+                hudOverlayManager.binding.llRoadSpeedLimit.visibility = View.VISIBLE
+                hudOverlayManager.binding.tvRoadSpeedLimit.text = currentRoadLimitSpeed.toString()
+                alignSpeedGroupWithCameraSign()
+            } else {
+                hudOverlayManager.binding.llSpeedGroup.visibility = View.GONE
+                hudOverlayManager.binding.llRoadSpeedLimit.visibility = View.GONE
             }
         }
+    }
+
+    private fun alignSpeedGroupWithCameraSign() {
+        if (!::hudOverlayManager.isInitialized || !::binding.isInitialized) return
+        val speedGroup = hudOverlayManager.binding.llSpeedGroup ?: return
+        val mapContainer = findViewById<android.view.View>(R.id.mapOverlayContainer) ?: return
+
+        // 1. KNSDK 단속 카메라 표지판(component_sign_first)이 표시 중이고 유효한 크기이면 그 위치 우선 사용
+        val signFirst = findKakaoViewById("component_sign_first")
+        if (signFirst != null && signFirst.visibility == android.view.View.VISIBLE && signFirst.width > 0 && signFirst.height > 0) {
+            val signLoc = IntArray(2)
+            val containerLoc = IntArray(2)
+            signFirst.getLocationOnScreen(signLoc)
+            mapContainer.getLocationOnScreen(containerLoc)
+            val relX = signLoc[0] - containerLoc[0]
+            val relY = signLoc[1] - containerLoc[1]
+            if (relX >= 0 && relY >= 0) {
+                lastCameraSignX = relX.toFloat()
+                lastCameraSignY = relY.toFloat()
+                applySpeedGroupMargin(speedGroup, relX, relY)
+                return
+            }
+        }
+
+        // 2. KNSDK 현재속도계(component_speed / speed_meter)가 화면에 유효하게 존재하면 실시간 측정하여 바로 아래에 배치
+        // (경로안내 모드 시 좌측 경로 탭의 오른쪽에 위치한 속도계 아래로 실시간 동적 정렬)
+        val speedView = findKakaoViewById("component_speed") ?: findKakaoViewById("speed_meter")
+        if (speedView != null && speedView.visibility == android.view.View.VISIBLE && speedView.width > 0 && speedView.height > 0) {
+            val speedLoc = IntArray(2)
+            val containerLoc = IntArray(2)
+            speedView.getLocationOnScreen(speedLoc)
+            mapContainer.getLocationOnScreen(containerLoc)
+            val density = resources.displayMetrics.density
+            val groupWidth = if (speedGroup.width > 0) speedGroup.width else (72 * density).toInt()
+
+            val speedCenterX = (speedLoc[0] - containerLoc[0]) + (speedView.width / 2)
+            val speedBottomY = (speedLoc[1] - containerLoc[1]) + speedView.height
+
+            val targetX = (speedCenterX - (groupWidth / 2)).coerceAtLeast(0)
+            val targetY = (speedBottomY + (8 * density).toInt()).coerceAtLeast(0)
+
+            lastCameraSignX = targetX.toFloat()
+            lastCameraSignY = targetY.toFloat()
+            applySpeedGroupMargin(speedGroup, targetX, targetY)
+            return
+        }
+
+        // 3. 이전에 캡처된 단속 카메라 좌표가 유효하면 해당 위치 사용
+        if (lastCameraSignX >= 0 && lastCameraSignY >= 0) {
+            applySpeedGroupMargin(speedGroup, lastCameraSignX.toInt(), lastCameraSignY.toInt())
+            return
+        }
+
+        // 4. 아직 뷰 크기가 측정되지 않았으면 post로 재시도
+        speedView?.post { alignSpeedGroupWithCameraSign() }
+    }
+
+    private fun applySpeedGroupMargin(speedGroup: android.view.View, left: Int, top: Int) {
+        speedGroup.translationX = 0f
+        speedGroup.translationY = 0f
+        val params = speedGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+            ?: android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+        params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
+        params.leftMargin = left
+        params.topMargin = top
+        speedGroup.layoutParams = params
+    }
+
+    private fun alignQuickDestGroupWithTbt() {
+        if (!::hudOverlayManager.isInitialized || !::binding.isInitialized) return
+        val quickDestGroup = hudOverlayManager.binding.llQuickDestGroup ?: return
+        val topUiGroup = hudOverlayManager.binding.llTopUiGroup
+        val mapContainer = binding.mapOverlayContainer ?: return
+
+        val density = resources.displayMetrics.density
+        val defaultLeftMargin = (16 * density).toInt()
+        val defaultTopMargin = 0
+
+        val isPortrait = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
+
+        // 경로안내 중이 아니거나 미리보기 화면이면 기본 위치(최상단 좌측)로 복원
+        if (!hasStartedRouteGuidance || !isGuidanceActive || isShowingPreview) {
+            val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+                ?: android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                )
+            if (params.leftMargin != defaultLeftMargin || params.topMargin != defaultTopMargin || params.gravity != (android.view.Gravity.TOP or android.view.Gravity.START)) {
+                params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
+                params.leftMargin = defaultLeftMargin
+                params.rightMargin = 0
+                params.topMargin = defaultTopMargin
+                quickDestGroup.layoutParams = params
+            }
+            quickDestGroup.translationX = 0f
+            quickDestGroup.translationY = 0f
+
+            // OP 연결 상태 뷰 기본 위치 복원
+            topUiGroup?.let { topUi ->
+                val topParams = topUi.layoutParams as? android.widget.FrameLayout.LayoutParams
+                val defaultTop = (4 * density).toInt()
+                if (topParams != null && topParams.topMargin != defaultTop) {
+                    topParams.topMargin = defaultTop
+                    topUi.layoutParams = topParams
+                }
+            }
+            return
+        }
+
+        // OP 연결 뷰 기본 위치(최상단 우측) 유지
+        topUiGroup?.let { topUi ->
+            val topParams = topUi.layoutParams as? android.widget.FrameLayout.LayoutParams
+            val defaultTop = (4 * density).toInt()
+            if (topParams != null && topParams.topMargin != defaultTop) {
+                topParams.topMargin = defaultTop
+                topUi.layoutParams = topParams
+            }
+        }
+
+        // TBT 회전 안내 뷰 탐색 (KNSDK 주행 가이드 뷰)
+        val tbtView = findKakaoViewById("component_cur_direction")
+            ?: findKakaoViewById("cur_direction_layout")
+
+        if (tbtView != null && (tbtView.width > 0 || tbtView.height > 0 || tbtView.isShown)) {
+            val tbtLoc = IntArray(2)
+            val containerLoc = IntArray(2)
+            tbtView.getLocationOnScreen(tbtLoc)
+            mapContainer.getLocationOnScreen(containerLoc)
+
+            val relX = (tbtLoc[0] - containerLoc[0]).coerceAtLeast(0)
+            val relY = (tbtLoc[1] - containerLoc[1]).coerceAtLeast(0)
+            val tbtWidth = tbtView.width
+            val tbtHeight = tbtView.height
+
+            val targetLeft: Int
+            val targetTop: Int
+
+            if (isPortrait) {
+                // 세로 화면: TBT 패널 바로 밑(아래)으로 배치
+                val gap = (8 * density).toInt()
+                targetTop = relY + tbtHeight + gap
+                targetLeft = if (relX > 0) relX else defaultLeftMargin
+            } else {
+                // 가로 화면: TBT 패널 우측 옆으로 배치
+                val gap = (12 * density).toInt()
+                targetLeft = relX + tbtWidth + gap
+                targetTop = relY.coerceAtLeast(0)
+            }
+
+            val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+                ?: android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                )
+            if (params.gravity != (android.view.Gravity.TOP or android.view.Gravity.START) ||
+                params.leftMargin != targetLeft ||
+                params.topMargin != targetTop ||
+                params.rightMargin != 0
+            ) {
+                params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
+                params.leftMargin = targetLeft
+                params.rightMargin = 0
+                params.topMargin = targetTop
+                quickDestGroup.layoutParams = params
+            }
+            quickDestGroup.translationX = 0f
+            quickDestGroup.translationY = 0f
+        } else {
+            tbtView?.post { alignQuickDestGroupWithTbt() }
+        }
+    }
+
+    private fun alignGpsOverlayWithBottomBar() {
+        if (!::hudOverlayManager.isInitialized || !::binding.isInitialized) return
+        val statusGroup = hudOverlayManager.binding.llStatusGroup ?: return
+        if (isShowingPreview) {
+            statusGroup.visibility = android.view.View.GONE
+            return
+        }
+        val mapContainer = binding.mapOverlayContainer ?: return
+        val bottomBar = (if (bottomBarId != 0) findViewById<android.view.View?>(bottomBarId) else null)
+            ?: findKakaoViewById("component_bottom")
+            ?: findKakaoViewById("bottom_drive_constraint_layout")
+
+        if (bottomBar != null && (bottomBar.isShown || bottomBar.visibility == android.view.View.VISIBLE) && bottomBar.width > 0 && bottomBar.height > 0) {
+            val barLoc = IntArray(2)
+            val containerLoc = IntArray(2)
+            bottomBar.getLocationOnScreen(barLoc)
+            mapContainer.getLocationOnScreen(containerLoc)
+
+            val relX = (barLoc[0] - containerLoc[0]).coerceAtLeast(0)
+            val relY = (barLoc[1] - containerLoc[1]).coerceAtLeast(0)
+            val barWidth = bottomBar.width
+            val barHeight = bottomBar.height
+
+            if (barWidth > 0 && barHeight > 0) {
+                statusGroup.translationX = 0f
+                statusGroup.translationY = 0f
+                statusGroup.scaleX = 1f
+                statusGroup.scaleY = 1f
+
+                val params = statusGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+                    ?: android.widget.FrameLayout.LayoutParams(barWidth, barHeight)
+                params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
+                params.leftMargin = relX
+                params.topMargin = relY
+                params.width = barWidth
+                params.height = barHeight
+                statusGroup.layoutParams = params
+
+                hudOverlayManager.binding.llGpsInfo?.let { gpsInfo ->
+                    val infoParams = gpsInfo.layoutParams as? android.widget.LinearLayout.LayoutParams
+                        ?: android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                        )
+                    infoParams.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                    infoParams.height = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                    gpsInfo.layoutParams = infoParams
+                    gpsInfo.setBackgroundResource(R.drawable.bg_gps_end_btn)
+
+                    gpsInfo.gravity = android.view.Gravity.CENTER_VERTICAL
+                    val padH = (16 * resources.displayMetrics.density).toInt()
+                    gpsInfo.setPadding(padH, 0, padH, 0)
+                    val hasAddr = lastKnownAddress.isNotEmpty()
+                    hudOverlayManager.binding.tvGpsAddress?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
+                    hudOverlayManager.binding.vGpsDivider?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
+                    val shouldShowCancel = hasStartedRouteGuidance && isGuidanceActive && !isShowingPreview
+                    hudOverlayManager.binding.btnGpsCancelRoute?.visibility = if (shouldShowCancel) android.view.View.VISIBLE else android.view.View.GONE
+                    updateEtaUi()
+                }
+
+                statusGroup.elevation = 12f * resources.displayMetrics.density
+                statusGroup.visibility = if (hudOverlayManager.isOverlayVisible && !isShowingPreview) android.view.View.VISIBLE else android.view.View.GONE
+                statusGroup.isClickable = true
+                statusGroup.isFocusable = true
+                statusGroup.setOnClickListener { /* Consume touch */ }
+                hudOverlayManager.binding.llGpsInfo?.setOnClickListener { /* Consume touch */ }
+
+                // 우측 버튼(llRightBottomGrid)이 GPS 오버레이(하단 바)와 겹치지 않도록 오버레이 바로 위에 배치
+                hudOverlayManager.binding.llRightBottomGrid?.let { grid ->
+                    val gridParams = grid.layoutParams as? android.widget.FrameLayout.LayoutParams
+                        ?: android.widget.FrameLayout.LayoutParams(
+                            android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                            android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                        )
+                    val gap = (16 * resources.displayMetrics.density).toInt()
+                    val containerHeight = mapContainer.height
+                    val bottomMargin = if (containerHeight > relY && relY > 0) {
+                        (containerHeight - relY) + gap
+                    } else {
+                        barHeight + gap
+                    }
+                    if (gridParams.bottomMargin != bottomMargin) {
+                        gridParams.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
+                        gridParams.bottomMargin = bottomMargin
+                        grid.layoutParams = gridParams
+                    }
+                }
+
+                syncGoalTextAddress()
+            }
+        } else {
+            bottomBar?.post { alignGpsOverlayWithBottomBar() }
+        }
+    }
+
+    private fun cancelRouteAndReturnToTmap() {
+        Log.d("KakaoMapActivity", "Cancel Route button clicked, stopping guidance")
+        currentRemainDist = 0L
+        currentRemainTime = 0L
+        updateEtaUi()
+        alignQuickDestGroupWithTbt()
+        sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
+        sharedPref.edit().apply {
+            remove("RECENT_DEST_NAME")
+            remove("RECENT_DEST_ROAD_ADDRESS")
+            remove("RECENT_DEST_ADDRESS")
+            remove("RECENT_DEST_X")
+            remove("RECENT_DEST_Y")
+            remove("RECENT_DEST_TIMESTAMP")
+            apply()
+        }
+        RouteInfoRepository.updateRouteInfo("", 0, 0, "tmap")
+        KNSDK.sharedGuidance()?.stop()
+        if (!isFinishing) finish()
+    }
+
+    private fun updateEtaUi() {
+        if (!::hudOverlayManager.isInitialized) return
+        val etaGroup = hudOverlayManager.binding.llRouteEtaGroup ?: return
+        val shouldShow = hasStartedRouteGuidance && isGuidanceActive && !isShowingPreview && (currentRemainDist > 0 || currentRemainTime > 0)
+        if (!shouldShow) {
+            etaGroup.visibility = android.view.View.GONE
+            return
+        }
+
+        etaGroup.visibility = android.view.View.VISIBLE
+
+        // 남은 거리 포맷
+        val distStr = if (currentRemainDist >= 1000) {
+            String.format(java.util.Locale.US, "%.1f km", currentRemainDist / 1000.0)
+        } else {
+            "${currentRemainDist} m"
+        }
+        hudOverlayManager.binding.tvRemainDist?.text = distStr
+
+        // 도착시간 / 남은시간 포맷 (터치 토글)
+        if (isShowingRemainingTime) {
+            hudOverlayManager.binding.tvEtaLabel?.text = "남음"
+            val totalMins = (currentRemainTime / 60).toInt()
+            val hours = totalMins / 60
+            val mins = totalMins % 60
+            val timeStr = if (hours > 0) {
+                "${hours}시간 ${mins}분"
+            } else {
+                "${mins}분"
+            }
+            hudOverlayManager.binding.tvEtaTime?.text = timeStr
+        } else {
+            hudOverlayManager.binding.tvEtaLabel?.text = "도착"
+            val arrivalCalendar = java.util.Calendar.getInstance().apply {
+                add(java.util.Calendar.SECOND, currentRemainTime.toInt())
+            }
+            val sdf = java.text.SimpleDateFormat("a h:mm", java.util.Locale.KOREAN)
+            hudOverlayManager.binding.tvEtaTime?.text = sdf.format(arrivalCalendar.time)
+        }
+    }
+
+    private fun syncGoalTextAddress() {
+        if (!::hudOverlayManager.isInitialized) return
+        val tvGoal = (if (goalTextId != 0) findViewById<android.widget.TextView?>(goalTextId) else null)
+            ?: findKakaoViewById("bottom_drive_goal_text") as? android.widget.TextView
+        if (tvGoal != null) {
+            if (!isGoalTextWatcherAttached) {
+                isGoalTextWatcherAttached = true
+                tvGoal.addTextChangedListener(object : android.text.TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                        val txt = s?.toString()?.trim() ?: ""
+                        if (txt.isNotEmpty() && txt != lastKnownAddress) {
+                            lastKnownAddress = txt
+                            runOnUiThread { updateGpsAddressUi(txt) }
+                        }
+                    }
+                    override fun afterTextChanged(s: android.text.Editable?) {}
+                })
+            }
+            val curText = tvGoal.text?.toString()?.trim() ?: ""
+            if (curText.isNotEmpty() && curText != lastKnownAddress) {
+                lastKnownAddress = curText
+                updateGpsAddressUi(curText)
+            }
+        }
+    }
+
+    private fun updateGpsAddressUi(address: String) {
+        if (!::hudOverlayManager.isInitialized) return
+        val bottomBar = (if (bottomBarId != 0) findViewById<android.view.View?>(bottomBarId) else null)
+            ?: findKakaoViewById("component_bottom")
+            ?: findKakaoViewById("bottom_drive_constraint_layout")
+        val hasValidBar = bottomBar != null && (bottomBar.width > 0 || bottomBar.isShown)
+        hudOverlayManager.binding.tvGpsAddress?.let { tv ->
+            tv.text = address
+            tv.isSelected = true
+            tv.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+        }
+        hudOverlayManager.binding.vGpsDivider?.let { divider ->
+            divider.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+        }
+    }
+
+    private fun updateAddressFromCoordinates(lat: Double, lon: Double, fallbackRoad: String? = null) {
+        val now = System.currentTimeMillis()
+        if (now - lastAddressFetchTime < 5000 && lastKnownAddress.isNotEmpty()) {
+            return
+        }
+        lastAddressFetchTime = now
+
+        Thread {
+            try {
+                val geocoder = android.location.Geocoder(this, java.util.Locale.KOREAN)
+                val list = geocoder.getFromLocation(lat, lon, 1)
+                if (!list.isNullOrEmpty()) {
+                    val addr = list[0]
+                    val fullAddr = addr.getAddressLine(0)?.replace("대한민국", "")?.trim() ?: ""
+                    val result = when {
+                        !addr.thoroughfare.isNullOrEmpty() -> {
+                            val sub = addr.subThoroughfare ?: addr.featureName ?: ""
+                            "${addr.locality ?: addr.adminArea ?: ""} ${addr.thoroughfare} $sub".trim()
+                        }
+                        fullAddr.isNotEmpty() -> fullAddr
+                        else -> fallbackRoad ?: ""
+                    }
+                    if (result.isNotEmpty() && lastKnownAddress.isEmpty()) {
+                        lastKnownAddress = result
+                        runOnUiThread { updateGpsAddressUi(result) }
+                    }
+                } else if (!fallbackRoad.isNullOrEmpty() && lastKnownAddress.isEmpty()) {
+                    lastKnownAddress = fallbackRoad
+                    runOnUiThread { updateGpsAddressUi(fallbackRoad) }
+                }
+            } catch (e: Exception) {
+                if (!fallbackRoad.isNullOrEmpty() && lastKnownAddress.isEmpty()) {
+                    lastKnownAddress = fallbackRoad
+                    runOnUiThread { updateGpsAddressUi(fallbackRoad) }
+                }
+            }
+        }.start()
     }
 
     override fun guidanceDidUpdateAroundSafeties(guidance: KNGuidance, safeties: List<KNSafety>?) {
@@ -811,10 +1313,46 @@ class KakaoMapActivity : AppCompatActivity(),
     override fun guidanceGuideStarted(guidance: KNGuidance) {
         if(::naviView.isInitialized) naviView.guidanceGuideStarted(guidance)
         isGuidanceActive = true
+        val currentRoute = guidance.routesOnGuide?.firstOrNull()
+        val curLoc = guidance.locationGuide?.location
+        if (currentRoute != null && curLoc != null) {
+            currentRemainDist = currentRoute.remainDistFromLocation(curLoc).toLong()
+            currentRemainTime = currentRoute.remainTimeFromLocation(curLoc).toLong()
+        }
+        updateEtaUi()
+        hudOverlayManager.binding.btnGpsCancelRoute?.visibility = if (!isShowingPreview) android.view.View.VISIBLE else android.view.View.GONE
+        if (!isShowingPreview) {
+            hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.VISIBLE
+            hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.VISIBLE
+        }
+        lastCameraSignX = -1f
+        lastCameraSignY = -1f
+        if (::binding.isInitialized) {
+            binding.root.post {
+                alignSpeedGroupWithCameraSign()
+                alignGpsOverlayWithBottomBar()
+                alignQuickDestGroupWithTbt()
+            }
+            binding.root.postDelayed({
+                alignSpeedGroupWithCameraSign()
+                alignGpsOverlayWithBottomBar()
+                alignQuickDestGroupWithTbt()
+            }, 500)
+            binding.root.postDelayed({
+                alignGpsOverlayWithBottomBar()
+                alignQuickDestGroupWithTbt()
+            }, 1500)
+        }
     }
 
     override fun guidanceGuideEnded(guidance: KNGuidance) {
         if(::naviView.isInitialized) naviView.guidanceGuideEnded(guidance)
+        isGuidanceActive = false
+        hudOverlayManager.binding.btnGpsCancelRoute?.visibility = android.view.View.GONE
+        currentRemainDist = 0L
+        currentRemainTime = 0L
+        updateEtaUi()
+        alignQuickDestGroupWithTbt()
         // 안내 정상 종료 시 복구 정보 삭제
         sharedPref.edit().apply {
             remove("RECENT_DEST_NAME")
@@ -940,6 +1478,9 @@ class KakaoMapActivity : AppCompatActivity(),
             if (currentRoute != null && locationGuide.location != null) {
                 val remainDist = currentRoute.remainDistFromLocation(locationGuide.location!!)
                 val remainTime = currentRoute.remainTimeFromLocation(locationGuide.location!!)
+                currentRemainDist = remainDist.toLong()
+                currentRemainTime = remainTime.toLong()
+                runOnUiThread { updateEtaUi() }
                 
                 var goalPosX = 0.0
                 var goalPosY = 0.0
@@ -974,6 +1515,15 @@ class KakaoMapActivity : AppCompatActivity(),
         } catch(e: Exception) {}
         
         KakaoSdiRepository.updateLocation(speed, roadName, roadLimitSpeed, tbtDist = tbtDist, tbtTurnType = tbtTurnType, tbtText = tbtText, lat = lat, lon = lon)
+
+        if (lat != 0.0 && lon != 0.0) {
+            if (lastKnownAddress.isEmpty() || (roadName.isNotEmpty() && roadName != lastKnownRoadName)) {
+                lastKnownRoadName = roadName
+                updateAddressFromCoordinates(lat, lon, roadName)
+            }
+        }
+        alignGpsOverlayWithBottomBar()
+        alignQuickDestGroupWithTbt()
     }
 
     override fun guidanceDidUpdateRouteGuide(guidance: KNGuidance, routeGuide: KNGuide_Route) {
@@ -1095,6 +1645,32 @@ class KakaoMapActivity : AppCompatActivity(),
                 guidance.locationGuideDelegate = this@KakaoMapActivity
                 
                 hasStartedRouteGuidance = true
+                hudOverlayManager.binding.btnGpsCancelRoute?.visibility = android.view.View.VISIBLE
+                hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.VISIBLE
+                hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.VISIBLE
+                val destTitle = doc.road_address_name.ifEmpty { doc.address_name.ifEmpty { doc.place_name } }
+                if (destTitle.isNotEmpty()) {
+                    lastKnownAddress = destTitle
+                    updateGpsAddressUi(destTitle)
+                }
+                lastCameraSignX = -1f
+                lastCameraSignY = -1f
+                if (::binding.isInitialized) {
+                    binding.root.postDelayed({
+                        alignSpeedGroupWithCameraSign()
+                        alignGpsOverlayWithBottomBar()
+                        alignQuickDestGroupWithTbt()
+                    }, 300)
+                    binding.root.postDelayed({
+                        alignSpeedGroupWithCameraSign()
+                        alignGpsOverlayWithBottomBar()
+                        alignQuickDestGroupWithTbt()
+                    }, 1000)
+                    binding.root.postDelayed({
+                        alignGpsOverlayWithBottomBar()
+                        alignQuickDestGroupWithTbt()
+                    }, 2500)
+                }
                 intent.removeExtra("dest_place_name")
                 
                 // 최근 목적지 정보 저장 (안내 중 비정상 종료 시 복구 목적)
@@ -1114,7 +1690,18 @@ class KakaoMapActivity : AppCompatActivity(),
 
     override fun onResume() {
         super.onResume()
+        updateRoadSpeedLimitVisibility()
         updateMediaUIFromService()
+        if (::binding.isInitialized) {
+            binding.root.postDelayed({
+                alignGpsOverlayWithBottomBar()
+                alignQuickDestGroupWithTbt()
+            }, 500)
+            binding.root.postDelayed({
+                alignGpsOverlayWithBottomBar()
+                alignQuickDestGroupWithTbt()
+            }, 1500)
+        }
         val intent = android.content.Intent(MediaNotificationListenerService.ACTION_MEDIA_CONTROL).apply {
             setPackage(packageName)
             putExtra("command", "refresh")
@@ -1178,11 +1765,10 @@ class KakaoMapActivity : AppCompatActivity(),
         
         hudOverlayManager.binding.llSpeedGroup.visibility = android.view.View.GONE
         hudOverlayManager.binding.llStatusGroup.visibility = android.view.View.GONE
+        hudOverlayManager.binding.btnGpsCancelRoute?.visibility = android.view.View.GONE
+        hudOverlayManager.binding.llRouteEtaGroup?.visibility = android.view.View.GONE
         hudOverlayManager.binding.llQuickDestGroup.visibility = android.view.View.GONE
-        hudOverlayManager.binding.btnToggleVisibility.visibility = android.view.View.GONE
-        hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.GONE
-        hudOverlayManager.binding.btnEditMode.visibility = android.view.View.GONE
-        hudOverlayManager.binding.btnRestoreDefaults.visibility = android.view.View.GONE
+        hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.GONE
 
         binding.btnPreviewStart.setOnClickListener {
             hidePreviewOverlay()
@@ -1220,9 +1806,17 @@ class KakaoMapActivity : AppCompatActivity(),
         binding.llPreviewOverlay.visibility = android.view.View.GONE
         binding.naviView.mapComponent?.mapView?.removeMarkersAll()
         
-        
-        hudOverlayManager.binding.btnToggleVisibility.visibility = android.view.View.VISIBLE
+        val shouldShowCancel = hasStartedRouteGuidance && isGuidanceActive
+        hudOverlayManager.binding.btnGpsCancelRoute?.visibility = if (shouldShowCancel) android.view.View.VISIBLE else android.view.View.GONE
+        hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.VISIBLE
+        hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.VISIBLE
         hudOverlayManager.updateOverlayVisibility()
+        updateRoadSpeedLimitVisibility()
+        updateEtaUi()
+        binding.root.postDelayed({
+            alignGpsOverlayWithBottomBar()
+            alignQuickDestGroupWithTbt()
+        }, 300)
     }
 
     private fun createMarkerBitmap(): android.graphics.Bitmap {

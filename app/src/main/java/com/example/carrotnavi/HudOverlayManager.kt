@@ -40,6 +40,7 @@ class HudOverlayManager(
     var isOverlayVisible = true
 
     var onQuickDestinationSelected: ((KakaoDocument) -> Unit)? = null
+    var onOverlayVisibilityChanged: (() -> Unit)? = null
 
     private var initialX = 0f
     private var initialY = 0f
@@ -52,6 +53,8 @@ class HudOverlayManager(
     private var isScaling = false
 
     private var activeDialogView: android.view.View? = null
+
+
 
     private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
         if (activity.isDestroyed || activity.isFinishing) return@OnSharedPreferenceChangeListener
@@ -136,12 +139,32 @@ class HudOverlayManager(
         val isLandscape = activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
         val draggables = listOfNotNull(
-            binding.llSpeedGroup,
-            binding.llBottomLeftOverlays,
-            binding.llTopUiGroup,
-
-            binding.llStatusGroup
+            binding.llBottomLeftOverlays
         )
+
+        // llSpeedGroup(파란색 도로제한속도 원)은 사용자가 임의로 이동/확대축소할 수 없도록 고정
+        binding.llSpeedGroup.translationX = 0f
+        binding.llSpeedGroup.translationY = 0f
+        binding.llSpeedGroup.scaleX = 1f
+        binding.llSpeedGroup.scaleY = 1f
+
+        // llTopUiGroup(OP 연결 대기 오버레이)은 우측 상단 제일 구석에 항상 고정
+        binding.llTopUiGroup?.translationX = 0f
+        binding.llTopUiGroup?.translationY = 0f
+        binding.llTopUiGroup?.scaleX = 1f
+        binding.llTopUiGroup?.scaleY = 1f
+
+        // 티맵 및 카카오 주행 화면에서는 llStatusGroup(GPS 상태)이 하단 바를 가리는 고정 위치이므로 임의 이동/확대축소 방지
+        binding.llStatusGroup?.translationX = 0f
+        binding.llStatusGroup?.translationY = 0f
+        binding.llStatusGroup?.scaleX = 1f
+        binding.llStatusGroup?.scaleY = 1f
+
+        // 원터치 목적지 버튼 그룹 (집, 회사, 즐겨찾기) 최상단 고정
+        binding.llQuickDestGroup?.translationX = 0f
+        binding.llQuickDestGroup?.translationY = 0f
+        binding.llQuickDestGroup?.scaleX = 1f
+        binding.llQuickDestGroup?.scaleY = 1f
 
         draggables.forEach { view ->
             view.post {
@@ -161,8 +184,6 @@ class HudOverlayManager(
         val isDebugOverlayVisible = sharedPref.getBoolean("DEBUG_OVERLAY_VISIBLE", false)
         updateOverlayVisibility()
 
-        
-        
         binding.btnToggleVisibility.setOnClickListener {
             isOverlayVisible = !isOverlayVisible
             sharedPref.edit().putBoolean("OVERLAY_VISIBLE", isOverlayVisible).apply()
@@ -443,67 +464,6 @@ class HudOverlayManager(
                 val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
                 behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
             }
-        }
-
-        binding.btnEditMode.setOnClickListener {
-            isEditMode = !isEditMode
-            updateEditModeForegrounds()
-            if (isEditMode) {
-                binding.btnEditMode.setBackgroundResource(R.drawable.shape_circle_green)
-                binding.btnRestoreDefaults.visibility = View.VISIBLE
-                Toast.makeText(activity, "오버레이 편집 모드 켜짐", Toast.LENGTH_SHORT).show()
-            } else {
-                binding.btnEditMode.setBackgroundResource(R.drawable.shape_circle_gray)
-                binding.btnRestoreDefaults.visibility = View.GONE
-                Toast.makeText(activity, "오버레이 편집 모드 꺼짐", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        binding.btnRestoreDefaults.setOnClickListener {
-            AlertDialog.Builder(activity)
-                .setTitle("오버레이 배치 초기화")
-                .setMessage("모든 위젯의 배치를 기본값으로 복원하시겠습니까?")
-                .setPositiveButton("복원") { _, _ ->
-                    sharedPref.edit()
-                        .remove("llSpeedGroup_x_port")
-                        .remove("llSpeedGroup_y_port")
-                        .remove("llSpeedGroup_x_land")
-                        .remove("llSpeedGroup_y_land")
-                        .remove("llBottomLeftOverlays_x_port")
-                        .remove("llBottomLeftOverlays_y_port")
-                        .remove("llBottomLeftOverlays_x_land")
-                        .remove("llBottomLeftOverlays_y_land")
-                        .remove("llSpeedGroup_scale_port")
-                        .remove("llSpeedGroup_scale_land")
-                        .remove("llBottomLeftOverlays_scale_port")
-                        .remove("llBottomLeftOverlays_scale_land")
-                        .remove("llStatusGroup_x_port")
-                        .remove("llStatusGroup_y_port")
-                        .remove("llStatusGroup_x_land")
-                        .remove("llStatusGroup_y_land")
-                        .remove("llStatusGroup_scale_port")
-                        .remove("llStatusGroup_scale_land")
-                        .apply()
-
-                    // Reset views to layout defaults immediately
-                    binding.llSpeedGroup.translationX = 0f
-                    binding.llSpeedGroup.translationY = 0f
-                    binding.llBottomLeftOverlays.translationX = 0f
-                    binding.llBottomLeftOverlays.translationY = 0f
-                    binding.llStatusGroup?.translationX = 0f
-                    binding.llStatusGroup?.translationY = 0f
-
-                    binding.llSpeedGroup.scaleX = 1f
-                    binding.llSpeedGroup.scaleY = 1f
-                    binding.llBottomLeftOverlays.scaleX = 1f
-                    binding.llBottomLeftOverlays.scaleY = 1f
-                    binding.llStatusGroup?.scaleX = 1f
-                    binding.llStatusGroup?.scaleY = 1f
-
-                    Toast.makeText(activity, "기본값으로 복원되었습니다.", Toast.LENGTH_SHORT).show()
-                }
-                .setNegativeButton("취소", null)
-                .show()
         }
 
         // 퀵 목적지 버튼 (집, 사무실, 즐겨찾기)
@@ -790,29 +750,26 @@ class HudOverlayManager(
         binding.llBottomLeftOverlays.visibility = visibility
         binding.llTopUiGroup?.visibility = visibility
         binding.llQuickDestGroup.visibility = visibility
-
-        binding.btnSearchAddress.visibility = visibility
-        binding.btnSettings?.visibility = visibility
-        binding.btnEditMode.visibility = visibility
         
-        val isDebugOverlayVisible = sharedPref.getBoolean("DEBUG_OVERLAY_VISIBLE", false)
-        binding.llStatusGroup?.visibility = if (isOverlayVisible && isDebugOverlayVisible) View.VISIBLE else View.GONE
+        // 티맵 및 카카오 주행 화면에서는 하단 바를 가리기 위해 오버레이가 켜져 있으면 항상 표시
+        binding.llStatusGroup?.visibility = if (isOverlayVisible) View.VISIBLE else View.GONE
         
         binding.btnToggleVisibility.alpha = if (isOverlayVisible) 1.0f else 0.5f
+        binding.btnSettings?.alpha = if (isOverlayVisible) 1.0f else 0.5f
+        binding.btnSearchAddress.alpha = if (isOverlayVisible) 1.0f else 0.5f
+        onOverlayVisibilityChanged?.invoke()
     }
 
     private fun updateEditModeForegrounds() {
         if (isEditMode) {
-            binding.llSpeedGroup.foreground = HatchedDrawable(binding.llSpeedGroup)
             binding.llBottomLeftOverlays.foreground = HatchedDrawable(binding.llBottomLeftOverlays)
             binding.llTopUiGroup?.let { it.foreground = HatchedDrawable(it) }
-
-            binding.llStatusGroup?.let { it.foreground = HatchedDrawable(it) }
+            if (activity !is MapActivity) {
+                binding.llStatusGroup?.let { it.foreground = HatchedDrawable(it) }
+            }
         } else {
-            binding.llSpeedGroup.foreground = null
             binding.llBottomLeftOverlays.foreground = null
             binding.llTopUiGroup?.foreground = null
-
             binding.llStatusGroup?.foreground = null
         }
     }
@@ -1000,7 +957,6 @@ class HudOverlayManager(
             binding.llTopUiGroup,
 
             binding.llStatusGroup,
-            binding.btnRestoreDefaults,
             binding.llRightBottomGrid
         )
 

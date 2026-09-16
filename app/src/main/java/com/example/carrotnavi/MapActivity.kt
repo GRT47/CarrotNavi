@@ -38,6 +38,12 @@ class MapActivity : AppCompatActivity() {
     private var isOverlayVisible = true
     private var isTmapInitialized = false
     private var tmapInitRetryCount = 0
+
+    // 단속 이벤트 및 도로 기본 제한속도 제어용 상태
+    private var currentRoadLimitSpeed = 0
+    private var isCameraEventActive = false
+    private var lastCameraSignX = -1f
+    private var lastCameraSignY = -1f
     
     private val mediaProgressHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val mediaProgressRunnable = object : Runnable {
@@ -201,8 +207,15 @@ class MapActivity : AppCompatActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        lastCameraSignX = -1f
+        lastCameraSignY = -1f
         if (::binding.isInitialized) {
             updateMediaLayout(newConfig.orientation)
+            updateRoadSpeedLimitVisibility()
+            binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 300)
+            binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 800)
+            binding.root.postDelayed({ alignSpeedGroupWithCameraSign() }, 300)
+            binding.root.postDelayed({ alignSpeedGroupWithCameraSign() }, 800)
         }
         if (!isResumedState) {
             needFragmentRecreate = true
@@ -347,7 +360,9 @@ class MapActivity : AppCompatActivity() {
 
         hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this, hudBinding, this)
-        hudOverlayManager.binding.btnSearchAddress.setOnClickListener { showSearchDialog() }
+        hudOverlayManager.binding.btnSearchAddress.setOnClickListener {
+            showSearchDialog()
+        }
         hudOverlayManager.onQuickDestinationSelected = { doc ->
             val naviIntent = Intent(this@MapActivity, KakaoMapActivity::class.java).apply {
                 putExtra("dest_place_name", doc.place_name)
@@ -357,6 +372,15 @@ class MapActivity : AppCompatActivity() {
                 putExtra("dest_y", doc.y)
             }
             startActivity(naviIntent)
+        }
+        hudOverlayManager.onOverlayVisibilityChanged = {
+            updateRoadSpeedLimitVisibility()
+            alignGpsOverlayWithEndButton()
+        }
+
+        binding.root.findViewById<android.view.View>(R.id.mapOverlayContainer)?.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            alignGpsOverlayWithEndButton()
+            alignSpeedGroupWithCameraSign()
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -522,6 +546,27 @@ class MapActivity : AppCompatActivity() {
         if (::hudOverlayManager.isInitialized && hudOverlayManager.shouldBlockTouch(ev)) {
             return true
         }
+
+        // TMAP 안심주행 하단 바 영역(navigation_eta: 주행종료, 현위치 주소, 메뉴 버튼 등) 터치 제한
+        val etaView = if (etaViewId != 0) findViewById<View?>(etaViewId) else null
+        if (etaView != null && etaView.isShown) {
+            val rect = android.graphics.Rect()
+            etaView.getGlobalVisibleRect(rect)
+            if (rect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                // 하단 바 영역의 터치 이벤트는 가로채서 무시 (지도 및 다른 영역은 정상 터치됨)
+                return true
+            }
+        } else {
+            val endBtn = if (endBtnId != 0) findViewById<View?>(endBtnId) else null
+            if (endBtn != null && endBtn.isShown) {
+                val rect = android.graphics.Rect()
+                endBtn.getGlobalVisibleRect(rect)
+                if (rect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                    return true
+                }
+            }
+        }
+
         return super.dispatchTouchEvent(ev)
     }
 
@@ -537,6 +582,12 @@ class MapActivity : AppCompatActivity() {
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 frag.startSafeDrive()
                 Log.d("MapActivity", "startSafeDrive() called")
+                binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 500)
+                binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 1500)
+                binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 3000)
+                binding.root.postDelayed({ alignSpeedGroupWithCameraSign() }, 500)
+                binding.root.postDelayed({ alignSpeedGroupWithCameraSign() }, 1500)
+                binding.root.postDelayed({ alignSpeedGroupWithCameraSign() }, 3000)
                 try {
                     // Tmap SDK의 NavigationFragment에 교통 정보 표시 설정 시도
                     val methods = frag.javaClass.methods
@@ -641,6 +692,8 @@ class MapActivity : AppCompatActivity() {
                 override fun onChanged(state: com.tmapmobility.tmap.tmapsdk.ui.data.NavigationScreenState) {
                     val stateName = state.javaClass.simpleName
                     Log.d("MapActivity", "NavigationScreenState changed: $stateName")
+                    binding.root.post { alignGpsOverlayWithEndButton() }
+                    binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 800)
                     if (stateName.contains("DefaultScreen")) {
                         // TMap Safe Driving has ended (probably user clicked X).
                         if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
@@ -702,18 +755,13 @@ class MapActivity : AppCompatActivity() {
                         }
                         realRoadLimit = currentLimitSpeed
                     }
-                    runOnUiThread {
-                        if (realRoadLimit >= 30 && hudOverlayManager.isOverlayVisible) {
-                            hudBinding.llRoadSpeedLimit?.visibility = android.view.View.VISIBLE
-                            hudBinding.tvRoadSpeedLimit?.text = realRoadLimit.toString()
-                        } else {
-                            hudBinding.llRoadSpeedLimit?.visibility = android.view.View.GONE
-                        }
-                    }
+                    currentRoadLimitSpeed = realRoadLimit
+                    updateRoadSpeedLimitVisibility()
 
                     if (it is android.os.Bundle) {
                         extractAndDisplaySdiInfo(it)
                     }
+                    syncCurrentAddress()
                 }
             })
 
@@ -777,6 +825,11 @@ class MapActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         isResumedState = true
+        updateRoadSpeedLimitVisibility()
+        binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 500)
+        binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 1500)
+        binding.root.postDelayed({ alignSpeedGroupWithCameraSign() }, 500)
+        binding.root.postDelayed({ alignSpeedGroupWithCameraSign() }, 1500)
         
         if (needFragmentRecreate || pendingSafeDriveRestart) {
             needFragmentRecreate = false
@@ -851,6 +904,7 @@ class MapActivity : AppCompatActivity() {
     private fun extractAndDisplaySdiInfo(bundle: android.os.Bundle) {
         try {
             val sdiObj = bundle.get("firstSDIInfo")
+            var hasCamera = false
             if (sdiObj != null) {
                 val sdiJsonStr = if (sdiObj is String) sdiObj else com.google.gson.Gson().toJson(sdiObj)
                 val json = org.json.JSONObject(sdiJsonStr)
@@ -858,6 +912,12 @@ class MapActivity : AppCompatActivity() {
                 val sdiType = json.optInt("nSdiType", 0)
                 var sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
                 val sdiDist = json.optInt("nSdiDist", 0)
+                
+                // 단속 카메라 또는 주의구간 이벤트 발생 여부:
+                // sdiDist > 0이고 단속 유형이나 제한속도가 유효할 때
+                if ((sdiType > 0 || sdiSpeedLimit > 0) && sdiDist > 0) {
+                    hasCamera = true
+                }
                 
                 val blockDist = json.optInt("nSdiBlockDist", 0)
                 val blockTime = json.optInt("nSdiBlockTime", 0)
@@ -876,44 +936,297 @@ class MapActivity : AppCompatActivity() {
                 if (sdiType == 22 && sdiSpeedLimit <= 0) {
                     sdiSpeedLimit = 30
                 }
-                
-                val useKmFormat = sharedPref.getBoolean("USE_KM_DISTANCE_FORMAT", true)
-                fun formatDistance(dist: Int): String {
-                    return if (useKmFormat && dist >= 1000) {
-                        String.format("%.1fkm", dist / 1000.0)
-                    } else {
-                        "${dist}m"
+            }
+            
+            // TMAP 네이티브 뷰 상에서 단속 카메라 표지판이 떠 있는지 추가 확인 및 좌표 캡처
+            val limitSign = findTmapViewById("LimitSpeedSign")
+            if (limitSign != null && limitSign.visibility == android.view.View.VISIBLE && limitSign.width > 0) {
+                hasCamera = true
+                val signLoc = IntArray(2)
+                val containerLoc = IntArray(2)
+                val mapContainer = findViewById<android.view.View>(R.id.mapOverlayContainer)
+                if (mapContainer != null) {
+                    limitSign.getLocationOnScreen(signLoc)
+                    mapContainer.getLocationOnScreen(containerLoc)
+                    val relX = (signLoc[0] - containerLoc[0]).toFloat()
+                    val relY = (signLoc[1] - containerLoc[1]).toFloat()
+                    if (relX >= 0 && relY >= 0) {
+                        lastCameraSignX = relX
+                        lastCameraSignY = relY
                     }
-                }
-                
-                runOnUiThread {
-                                        if (isBoosting) {
-                                            } else {
-                                            }
-
-                    
-                    if (sdiType > 0 || (sdiSpeedLimit > 0 && sdiDist > 0)) {
-                        
-                        val typeName = when (sdiType) {
-                            1 -> "과속 단속"
-                            2 -> "구간단속 시작"
-                            3 -> "구간단속 종료"
-                            4 -> "구간단속 중"
-                            7 -> "이동식 단속"
-                            22 -> "과속방지턱"
-                            33 -> "어린이보호구역"
-                            else -> if (sdiSpeedLimit > 0) "단속 카메라" else "주의 구간"
-                        }
-                    } else {
-                    }
-                }
-            } else {
-                runOnUiThread {
-
                 }
             }
+
+            isCameraEventActive = hasCamera
+            updateRoadSpeedLimitVisibility()
         } catch (e: Exception) {
             Log.e("MapActivity", "Error extracting SDI Info: ${e.message}")
+        }
+    }
+
+    private fun findTmapViewById(name: String): android.view.View? {
+        val id = resources.getIdentifier(name, "id", packageName)
+        return if (id != 0) findViewById(id) else null
+    }
+
+    private fun updateRoadSpeedLimitVisibility() {
+        if (!::hudOverlayManager.isInitialized || !::hudBinding.isInitialized) return
+        runOnUiThread {
+            if (!::hudOverlayManager.isInitialized || !::hudBinding.isInitialized) return@runOnUiThread
+            // 단속 이벤트가 없을 때만 도로 기본 제한속도(30 이상) 파란색 원을 표시
+            // 단속 이벤트 발생 시 파란색 원을 숨겨서 해당 위치에 TMAP 단속 카메라가 대체 표시되도록 함
+            val shouldShow = !isCameraEventActive && currentRoadLimitSpeed >= 30 && hudOverlayManager.isOverlayVisible
+            if (shouldShow) {
+                hudBinding.llSpeedGroup.visibility = android.view.View.VISIBLE
+                hudBinding.llRoadSpeedLimit.visibility = android.view.View.VISIBLE
+                hudBinding.tvRoadSpeedLimit.text = currentRoadLimitSpeed.toString()
+                alignSpeedGroupWithCameraSign()
+            } else {
+                hudBinding.llSpeedGroup.visibility = android.view.View.GONE
+                hudBinding.llRoadSpeedLimit.visibility = android.view.View.GONE
+            }
+        }
+    }
+
+    private var isSpeedLayoutListenerAttached = false
+
+    private fun alignSpeedGroupWithCameraSign() {
+        if (!::hudOverlayManager.isInitialized || !::hudBinding.isInitialized) return
+        val speedGroup = hudBinding.llSpeedGroup ?: return
+        val mapContainer = findViewById<android.view.View>(R.id.mapOverlayContainer) ?: return
+
+        // 1. 실시간: TMAP 현재속도계(speedNumberArea / current_speed_text / sdi_speed_view)의 바로 위에 동적 배치
+        val speedView = findTmapViewById("speedNumberArea")
+            ?: findTmapViewById("current_speed_text")
+            ?: findTmapViewById("sdi_speed_view")
+
+        if (speedView != null && (speedView.isShown || speedView.visibility == android.view.View.VISIBLE) && speedView.width > 0 && speedView.height > 0) {
+            if (!isSpeedLayoutListenerAttached) {
+                isSpeedLayoutListenerAttached = true
+                speedView.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+                    alignSpeedGroupWithCameraSign()
+                }
+            }
+
+            val speedLoc = IntArray(2)
+            val containerLoc = IntArray(2)
+            speedView.getLocationOnScreen(speedLoc)
+            mapContainer.getLocationOnScreen(containerLoc)
+            val density = resources.displayMetrics.density
+            val groupWidth = if (speedGroup.width > 0) speedGroup.width else (72 * density).toInt()
+            val groupHeight = if (speedGroup.height > 0) speedGroup.height else (72 * density).toInt()
+
+            val relX = speedLoc[0] - containerLoc[0]
+            val relY = speedLoc[1] - containerLoc[1]
+
+            val speedCenterX = relX + (speedView.width / 2)
+            val speedTopY = relY
+
+            val targetX = (speedCenterX - (groupWidth / 2)).coerceAtLeast(0)
+            val targetY = (speedTopY - groupHeight - (4 * density).toInt()).coerceAtLeast(0)
+
+            lastCameraSignX = targetX.toFloat()
+            lastCameraSignY = targetY.toFloat()
+            applySpeedGroupMargin(speedGroup, targetX, targetY)
+            return
+        }
+
+        // 2. 실시간 단속 카메라 표지판(LimitSpeedSign)이 레이아웃 상에 실제로 표시 중이면 그 위치 사용
+        val limitSign = findTmapViewById("LimitSpeedSign")
+        if (limitSign != null && limitSign.isShown && limitSign.width > 0 && limitSign.height > 0) {
+            val signLoc = IntArray(2)
+            val containerLoc = IntArray(2)
+            limitSign.getLocationOnScreen(signLoc)
+            mapContainer.getLocationOnScreen(containerLoc)
+            val relX = signLoc[0] - containerLoc[0]
+            val relY = signLoc[1] - containerLoc[1]
+            if (relX >= 0 && relY >= 0) {
+                lastCameraSignX = relX.toFloat()
+                lastCameraSignY = relY.toFloat()
+                applySpeedGroupMargin(speedGroup, relX, relY)
+                return
+            }
+        }
+
+        // 3. Fallback: 이전에 캡처된 유효 좌표가 있으면 사용
+        if (lastCameraSignX >= 0 && lastCameraSignY >= 0) {
+            applySpeedGroupMargin(speedGroup, lastCameraSignX.toInt(), lastCameraSignY.toInt())
+            return
+        }
+
+        // 4. 아직 뷰 크기가 측정되지 않았으면 post로 재시도
+        speedView?.post { alignSpeedGroupWithCameraSign() }
+    }
+
+    private fun applySpeedGroupMargin(speedGroup: android.view.View, left: Int, top: Int) {
+        speedGroup.translationX = 0f
+        speedGroup.translationY = 0f
+        val params = speedGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+            ?: android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+        params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
+        params.leftMargin = left
+        params.topMargin = top
+        speedGroup.layoutParams = params
+    }
+
+    private fun alignGpsOverlayWithEndButton() {
+        if (!::hudOverlayManager.isInitialized || !::hudBinding.isInitialized) return
+        val statusGroup = hudBinding.llStatusGroup ?: return
+        val mapContainer = findViewById<android.view.View>(R.id.mapOverlayContainer) ?: return
+        val endBtn = if (endBtnId != 0) findViewById<android.view.View?>(endBtnId) else null
+        val etaView = if (etaViewId != 0) findViewById<android.view.View?>(etaViewId) else null
+
+        if (endBtn != null && (endBtn.isShown || endBtn.visibility == android.view.View.VISIBLE) && endBtn.width > 0 && endBtn.height > 0) {
+            val btnLoc = IntArray(2)
+            val containerLoc = IntArray(2)
+            endBtn.getLocationOnScreen(btnLoc)
+            mapContainer.getLocationOnScreen(containerLoc)
+
+            val relX = btnLoc[0] - containerLoc[0]
+            val relY = btnLoc[1] - containerLoc[1]
+            val btnWidth = endBtn.width
+            val btnHeight = endBtn.height
+
+            if (relX >= 0 && relY >= 0 && btnWidth > 0 && btnHeight > 0) {
+                // 하단 바(CardView 또는 navigation_eta) 찾기
+                val barView = (etaView as? android.view.ViewGroup)?.let { vg ->
+                    if (vg.childCount > 0 && vg.getChildAt(0).width > 0 && vg.getChildAt(0).height > 0) {
+                        vg.getChildAt(0)
+                    } else {
+                        vg
+                    }
+                } ?: etaView
+                val hasValidBar = barView != null && barView.height > 0 && barView.width > 0
+
+                val (targetLeft, targetWidth, targetTop, targetHeight) = if (hasValidBar) {
+                    // 가로/세로 공통: 하단 바(CardView)의 좌우 끝자락 및 상하 높이와 정확히 동일하게 맞춤
+                    val barLoc = IntArray(2)
+                    barView!!.getLocationOnScreen(barLoc)
+                    val barRelX = (barLoc[0] - containerLoc[0]).coerceAtLeast(0)
+                    val barRelY = (barLoc[1] - containerLoc[1]).coerceAtLeast(0)
+                    val barWidth = barView.width
+                    val barHeight = barView.height
+                    arrayOf(barRelX, barWidth, barRelY, barHeight)
+                } else {
+                    // 예외 fallback: 주행종료 버튼 위치 및 크기에 맞춤
+                    arrayOf(relX, btnWidth, relY, btnHeight)
+                }
+
+                statusGroup.translationX = 0f
+                statusGroup.translationY = 0f
+                statusGroup.scaleX = 1f
+                statusGroup.scaleY = 1f
+
+                val params = statusGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+                    ?: android.widget.FrameLayout.LayoutParams(targetWidth, targetHeight)
+                params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
+                params.leftMargin = targetLeft
+                params.topMargin = targetTop
+                params.width = targetWidth
+                params.height = targetHeight
+                statusGroup.layoutParams = params
+
+                hudBinding.llGpsInfo?.let { gpsInfo ->
+                    val infoParams = gpsInfo.layoutParams as? android.widget.LinearLayout.LayoutParams
+                        ?: android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                        )
+                    infoParams.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                    infoParams.height = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                    gpsInfo.layoutParams = infoParams
+                    gpsInfo.setBackgroundResource(R.drawable.bg_gps_end_btn)
+
+                    if (hasValidBar) {
+                        // 가로/세로 공통: 좌측에 GPS 상태, 중앙에 현재 주소 표시
+                        gpsInfo.gravity = android.view.Gravity.CENTER_VERTICAL
+                        val padH = (16 * resources.displayMetrics.density).toInt()
+                        gpsInfo.setPadding(padH, 0, padH, 0)
+                        val hasAddr = lastKnownAddress.isNotEmpty()
+                        hudBinding.tvGpsAddress?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
+                        hudBinding.vGpsDivider?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
+                    } else {
+                        // 예외 fallback: 주행종료 버튼 크기이므로 GPS 상태만 중앙 정렬
+                        gpsInfo.gravity = android.view.Gravity.CENTER
+                        gpsInfo.setPadding(0, 0, 0, 0)
+                        hudBinding.tvGpsAddress?.visibility = android.view.View.GONE
+                        hudBinding.vGpsDivider?.visibility = android.view.View.GONE
+                    }
+                }
+
+                statusGroup.elevation = 12f * resources.displayMetrics.density
+                statusGroup.visibility = if (hudOverlayManager.isOverlayVisible) android.view.View.VISIBLE else android.view.View.GONE
+                statusGroup.isClickable = true
+                statusGroup.isFocusable = true
+                statusGroup.setOnClickListener { /* Consume touch to prevent safe drive exit */ }
+                hudBinding.llGpsInfo?.setOnClickListener { /* Consume touch */ }
+
+                // 우측 4개 버튼(llRightBottomGrid)이 GPS 오버레이(하단 바)와 겹치지 않도록 오버레이 바로 위에 배치
+                hudBinding.llRightBottomGrid?.let { grid ->
+                    val gridParams = grid.layoutParams as? android.widget.FrameLayout.LayoutParams
+                        ?: android.widget.FrameLayout.LayoutParams(
+                            android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                            android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                        )
+                    val gap = (16 * resources.displayMetrics.density).toInt()
+                    val containerHeight = mapContainer.height
+                    val bottomMargin = if (containerHeight > targetTop && targetTop > 0) {
+                        (containerHeight - targetTop) + gap
+                    } else {
+                        targetHeight + gap
+                    }
+                    if (gridParams.bottomMargin != bottomMargin) {
+                        gridParams.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
+                        gridParams.bottomMargin = bottomMargin
+                        grid.layoutParams = gridParams
+                    }
+                }
+
+                syncCurrentAddress()
+            }
+        }
+    }
+
+    private fun syncCurrentAddress() {
+        if (!::hudBinding.isInitialized) return
+        val tvAddress = if (currentAddressId != 0) findViewById<android.widget.TextView?>(currentAddressId) else null
+        if (tvAddress != null) {
+            if (!isAddressWatcherAttached) {
+                isAddressWatcherAttached = true
+                tvAddress.addTextChangedListener(object : android.text.TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                        val txt = s?.toString()?.trim() ?: ""
+                        if (txt.isNotEmpty() && txt != lastKnownAddress) {
+                            lastKnownAddress = txt
+                            runOnUiThread { updateGpsAddressUi(txt) }
+                        }
+                    }
+                    override fun afterTextChanged(s: android.text.Editable?) {}
+                })
+            }
+            val curText = tvAddress.text?.toString()?.trim() ?: ""
+            if (curText.isNotEmpty() && curText != lastKnownAddress) {
+                lastKnownAddress = curText
+                updateGpsAddressUi(curText)
+            }
+        }
+    }
+
+    private fun updateGpsAddressUi(address: String) {
+        if (!::hudBinding.isInitialized) return
+        val etaView = if (etaViewId != 0) findViewById<android.view.View?>(etaViewId) else null
+        val hasValidBar = etaView != null && (etaView.width > 0 || etaView.isShown)
+        hudBinding.tvGpsAddress?.let { tv ->
+            tv.text = address
+            tv.isSelected = true
+            tv.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+        }
+        hudBinding.vGpsDivider?.let { divider ->
+            divider.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
         }
     }
 
@@ -1049,4 +1362,10 @@ class MapActivity : AppCompatActivity() {
                 .show()
         }
     }
+
+    private val etaViewId by lazy { resources.getIdentifier("navigation_eta", "id", packageName) }
+    private val endBtnId by lazy { resources.getIdentifier("btn_end_safe_drive", "id", packageName) }
+    private val currentAddressId by lazy { resources.getIdentifier("tv_current_address", "id", packageName) }
+    private var isAddressWatcherAttached = false
+    private var lastKnownAddress: String = ""
 }
