@@ -1033,36 +1033,76 @@ class KakaoMapActivity : AppCompatActivity(),
             val targetTop: Int
 
             if (isPortrait) {
-                // 세로 화면: TBT 패널 바로 밑(아래)으로 배치
+                // 세로 화면: TBT 패널 밑(아래) 높이이면서 화면 우측(오른쪽)에 배치
                 val gap = (8 * density).toInt()
-                targetTop = relY + tbtHeight + gap
-                targetLeft = if (relX > 0) relX else defaultLeftMargin
+                val targetTop = relY + tbtHeight + gap
+                val marginEnd = (8 * density).toInt()
+
+                val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+                    ?: android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                    )
+                if (params.gravity != (android.view.Gravity.TOP or android.view.Gravity.END) ||
+                    params.rightMargin != marginEnd ||
+                    params.topMargin != targetTop ||
+                    params.leftMargin != 0
+                ) {
+                    params.gravity = android.view.Gravity.TOP or android.view.Gravity.END
+                    params.leftMargin = 0
+                    params.rightMargin = marginEnd
+                    params.topMargin = targetTop
+                    quickDestGroup.layoutParams = params
+                }
+                quickDestGroup.translationX = 0f
+                quickDestGroup.translationY = 0f
             } else {
                 // 가로 화면: TBT 패널 우측 옆으로 배치
                 val gap = (12 * density).toInt()
-                targetLeft = relX + tbtWidth + gap
-                targetTop = relY.coerceAtLeast(0)
-            }
+                val targetLeft = relX + tbtWidth + gap
+                val targetTop = relY.coerceAtLeast(0)
 
-            val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
-                ?: android.widget.FrameLayout.LayoutParams(
-                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
-                )
-            if (params.gravity != (android.view.Gravity.TOP or android.view.Gravity.START) ||
-                params.leftMargin != targetLeft ||
-                params.topMargin != targetTop ||
-                params.rightMargin != 0
-            ) {
-                params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
-                params.leftMargin = targetLeft
-                params.rightMargin = 0
-                params.topMargin = targetTop
-                quickDestGroup.layoutParams = params
+                val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+                    ?: android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                    )
+                if (params.gravity != (android.view.Gravity.TOP or android.view.Gravity.START) ||
+                    params.leftMargin != targetLeft ||
+                    params.topMargin != targetTop ||
+                    params.rightMargin != 0
+                ) {
+                    params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
+                    params.leftMargin = targetLeft
+                    params.rightMargin = 0
+                    params.topMargin = targetTop
+                    quickDestGroup.layoutParams = params
+                }
+                quickDestGroup.translationX = 0f
+                quickDestGroup.translationY = 0f
             }
-            quickDestGroup.translationX = 0f
-            quickDestGroup.translationY = 0f
         } else {
+            if (isPortrait) {
+                // TBT 측정 전 세로 화면 임시 우측 정렬
+                val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+                    ?: android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                    )
+                val marginEnd = (8 * density).toInt()
+                val targetTop = (80 * density).toInt()
+                if (params.gravity != (android.view.Gravity.TOP or android.view.Gravity.END) ||
+                    params.rightMargin != marginEnd ||
+                    params.topMargin != targetTop ||
+                    params.leftMargin != 0
+                ) {
+                    params.gravity = android.view.Gravity.TOP or android.view.Gravity.END
+                    params.leftMargin = 0
+                    params.rightMargin = marginEnd
+                    params.topMargin = targetTop
+                    quickDestGroup.layoutParams = params
+                }
+            }
             tbtView?.post { alignQuickDestGroupWithTbt() }
         }
     }
