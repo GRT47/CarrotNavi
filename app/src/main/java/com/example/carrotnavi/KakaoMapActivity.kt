@@ -424,6 +424,10 @@ class KakaoMapActivity : AppCompatActivity(),
             splitHandleManager?.setHandleVisible(!isVisible)
             updateMediaLayout(resources.configuration.orientation)
         }
+        if (hudOverlayManager.isMediaOverlayActive) {
+            splitHandleManager?.setHandleVisible(false)
+            updateMediaLayout(resources.configuration.orientation)
+        }
         
         hudOverlayManager.binding.btnSearchAddress.setOnClickListener {
             val searchIntent = Intent(this@KakaoMapActivity, SearchActivity::class.java)
@@ -647,6 +651,7 @@ class KakaoMapActivity : AppCompatActivity(),
         // 미디어 오버레이 활성화 시 분할모드 비활성화 및 주행화면 전체 표출 (5.0f)
         val isMediaOverlayActive = ::hudOverlayManager.isInitialized && hudOverlayManager.isMediaOverlayActive
         val ratio = if (isMediaOverlayActive) 5.0f else configuredRatio
+        splitHandleManager?.setHandleVisible(!isMediaOverlayActive)
         
         val mainContainer = binding.root.findViewById<android.widget.LinearLayout>(R.id.llSplitContainer)
         val tmapLayout = binding.root.findViewById<android.widget.FrameLayout>(R.id.mapOverlayContainer)
@@ -1869,7 +1874,7 @@ class KakaoMapActivity : AppCompatActivity(),
         hudOverlayManager.binding.llRouteEtaGroup?.visibility = android.view.View.GONE
         hudOverlayManager.binding.llQuickDestGroup.visibility = android.view.View.GONE
         hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.GONE
-        hudOverlayManager.hideMediaOverlay()
+        hudOverlayManager.hideMediaOverlay(updatePref = false)
 
         binding.btnPreviewStart.setOnClickListener {
             hidePreviewOverlay()

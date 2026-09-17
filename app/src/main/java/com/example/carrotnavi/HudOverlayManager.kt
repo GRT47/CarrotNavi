@@ -212,21 +212,8 @@ class HudOverlayManager(
         }
 
         binding.btnMediaOverlay?.setOnClickListener {
-            val card = binding.cvMediaOverlayCard
-            val willShow = card.visibility != View.VISIBLE
-            card.visibility = if (willShow) View.VISIBLE else View.GONE
-            notifyMediaOverlayVisibility(willShow)
-            if (willShow) {
-                restoreMediaOverlayPosition(activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
-                updateMediaOverlayUi(
-                    MediaNotificationListenerService.currentTitle,
-                    MediaNotificationListenerService.currentArtist,
-                    MediaNotificationListenerService.currentAlbumArt ?: MediaNotificationListenerService.fetchedAlbumArt,
-                    MediaNotificationListenerService.isPlaying
-                )
-            } else {
-                stopMediaProgressTicker()
-            }
+            val isCurrentlyVisible = binding.cvMediaOverlayCard.visibility == View.VISIBLE
+            setMediaOverlayVisible(!isCurrentlyVisible, savePref = true)
         }
 
         binding.cvMediaOverlayCard.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
@@ -255,6 +242,11 @@ class HudOverlayManager(
 
         val initialShape = sharedPref.getString("MEDIA_OVERLAY_SHAPE", "horizontal") ?: "horizontal"
         applyMediaOverlayShape(initialShape)
+
+        val isMediaOverlaySaved = sharedPref.getBoolean("MEDIA_OVERLAY_VISIBLE", false)
+        if (isOverlayVisible && isMediaOverlaySaved) {
+            setMediaOverlayVisible(true, savePref = false)
+        }
 
         binding.btnSettings?.setOnClickListener {
             val dialogView = android.view.LayoutInflater.from(activity).inflate(R.layout.dialog_drive_settings, null)
@@ -824,9 +816,13 @@ class HudOverlayManager(
         binding.btnSettings?.alpha = if (isOverlayVisible) 1.0f else 0.5f
         binding.btnMediaOverlay?.alpha = if (isOverlayVisible) 1.0f else 0.5f
         binding.btnSearchAddress.alpha = if (isOverlayVisible) 1.0f else 0.5f
-        if (!isOverlayVisible) {
+        val isMediaOverlaySaved = sharedPref.getBoolean("MEDIA_OVERLAY_VISIBLE", false)
+        if (isOverlayVisible && isMediaOverlaySaved) {
+            setMediaOverlayVisible(true, savePref = false)
+        } else {
             if (binding.cvMediaOverlayCard.visibility == View.VISIBLE) {
                 binding.cvMediaOverlayCard.visibility = View.GONE
+                stopMediaProgressTicker()
                 notifyMediaOverlayVisibility(false)
             }
         }
@@ -1396,7 +1392,31 @@ class HudOverlayManager(
         onMediaOverlayVisibilityChanged?.invoke(isVisible)
     }
 
-    fun hideMediaOverlay() {
+    fun setMediaOverlayVisible(visible: Boolean, savePref: Boolean = true) {
+        if (savePref) {
+            sharedPref.edit().putBoolean("MEDIA_OVERLAY_VISIBLE", visible).apply()
+        }
+        val card = binding.cvMediaOverlayCard ?: return
+        val effectiveVisible = visible && isOverlayVisible
+        card.visibility = if (effectiveVisible) View.VISIBLE else View.GONE
+        notifyMediaOverlayVisibility(effectiveVisible)
+        if (effectiveVisible) {
+            restoreMediaOverlayPosition(activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+            updateMediaOverlayUi(
+                MediaNotificationListenerService.currentTitle,
+                MediaNotificationListenerService.currentArtist,
+                MediaNotificationListenerService.currentAlbumArt ?: MediaNotificationListenerService.fetchedAlbumArt,
+                MediaNotificationListenerService.isPlaying
+            )
+        } else {
+            stopMediaProgressTicker()
+        }
+    }
+
+    fun hideMediaOverlay(updatePref: Boolean = true) {
+        if (updatePref) {
+            sharedPref.edit().putBoolean("MEDIA_OVERLAY_VISIBLE", false).apply()
+        }
         if (binding.cvMediaOverlayCard.visibility == View.VISIBLE) {
             binding.cvMediaOverlayCard.visibility = View.GONE
             stopMediaProgressTicker()
