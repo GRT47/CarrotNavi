@@ -44,6 +44,7 @@ class MapActivity : AppCompatActivity() {
     private var isCameraEventActive = false
     private var lastCameraSignX = -1f
     private var lastCameraSignY = -1f
+    private var splitHandleManager: SplitHandleManager? = null
     
     private val mediaProgressHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val mediaProgressRunnable = object : Runnable {
@@ -242,6 +243,8 @@ class MapActivity : AppCompatActivity() {
         if (mainContainer != null && tmapLayout != null && mediaContainer != null) {
             mainContainer.weightSum = 5f
             
+            splitHandleManager?.updateHandleLayout(orientation)
+            
             val mediaWeight = 5f - ratio
             if (mediaWeight <= 0f) {
                 mediaContainer.visibility = android.view.View.GONE
@@ -349,6 +352,20 @@ class MapActivity : AppCompatActivity() {
         binding = ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
         checkNotificationPermissionAndPrompt()
+
+        val flSplitHandle = binding.root.findViewById<android.widget.FrameLayout>(R.id.flSplitHandle)
+        val vSplitHandleIndicator = binding.root.findViewById<android.view.View>(R.id.vSplitHandleIndicator)
+        val mainContainer = binding.root.findViewById<android.widget.LinearLayout>(R.id.llSplitContainer)
+        val mapContainer = binding.root.findViewById<android.widget.FrameLayout>(R.id.mapOverlayContainer)
+        val mediaContainer = binding.root.findViewById<android.widget.FrameLayout>(R.id.flMediaContainer)
+
+        if (flSplitHandle != null && vSplitHandleIndicator != null && mainContainer != null && mapContainer != null && mediaContainer != null) {
+            splitHandleManager = SplitHandleManager(
+                this, mainContainer, mapContainer, mediaContainer, flSplitHandle, vSplitHandleIndicator
+            ) {
+                updateMediaLayout(resources.configuration.orientation)
+            }
+        }
         
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         sharedPref.registerOnSharedPreferenceChangeListener(preferenceChangeListener)

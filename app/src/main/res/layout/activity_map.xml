@@ -25,6 +25,23 @@
     </FrameLayout>
 
     <FrameLayout
+        android:id="@+id/flSplitHandle"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:background="#151515"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="4dp">
+
+        <View
+            android:id="@+id/vSplitHandleIndicator"
+            android:layout_width="48dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_split_handle_indicator" />
+    </FrameLayout>
+
+    <FrameLayout
         android:id="@+id/flMediaContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"

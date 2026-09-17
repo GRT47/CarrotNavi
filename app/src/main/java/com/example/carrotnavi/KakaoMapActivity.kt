@@ -93,6 +93,7 @@ class KakaoMapActivity : AppCompatActivity(),
     private var isCameraEventActive = false
     private var lastCameraSignX: Float = -1f
     private var lastCameraSignY: Float = -1f
+    private var splitHandleManager: SplitHandleManager? = null
 
     private val bottomBarId by lazy {
         val id = resources.getIdentifier("component_bottom", "id", packageName)
@@ -380,6 +381,21 @@ class KakaoMapActivity : AppCompatActivity(),
             insets
         }
         androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
+
+        val flSplitHandle = binding.root.findViewById<android.widget.FrameLayout>(R.id.flSplitHandle)
+        val vSplitHandleIndicator = binding.root.findViewById<android.view.View>(R.id.vSplitHandleIndicator)
+        val mainContainer = binding.root.findViewById<android.widget.LinearLayout>(R.id.llSplitContainer)
+        val mapContainer = binding.root.findViewById<android.widget.FrameLayout>(R.id.mapOverlayContainer)
+        val mediaContainer = binding.root.findViewById<android.widget.FrameLayout>(R.id.flMediaContainer)
+
+        if (flSplitHandle != null && vSplitHandleIndicator != null && mainContainer != null && mapContainer != null && mediaContainer != null) {
+            splitHandleManager = SplitHandleManager(
+                this, mainContainer, mapContainer, mediaContainer, flSplitHandle, vSplitHandleIndicator
+            ) {
+                updateMediaLayout(resources.configuration.orientation)
+            }
+        }
+
         naviView = binding.naviView
         naviView.stateDelegate = this@KakaoMapActivity
         
@@ -606,6 +622,8 @@ class KakaoMapActivity : AppCompatActivity(),
         
         if (mainContainer != null && tmapLayout != null && mediaContainer != null) {
             mainContainer.weightSum = 5f
+            
+            splitHandleManager?.updateHandleLayout(orientation)
             
             val mediaWeight = 5f - ratio
             if (mediaWeight <= 0f) {
