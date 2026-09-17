@@ -63,10 +63,22 @@ class SplitHandleManager(
         }
     }
 
+    private var isHandleHiddenByOverlay = false
+
+    fun setHandleVisible(visible: Boolean) {
+        isHandleHiddenByOverlay = !visible
+        applyHandleVisibility()
+    }
+
+    private fun applyHandleVisibility() {
+        splitHandle.visibility = if (isHandleHiddenByOverlay) View.GONE else View.VISIBLE
+    }
+
     /**
      * 화면 회전 또는 레이아웃 업데이트 시 핸들의 가로/세로 크기 및 인디케이터 모양 갱신
      */
     fun updateHandleLayout(orientation: Int) {
+        applyHandleVisibility()
         val density = activity.resources.displayMetrics.density
         val handleThickness = (20 * density).toInt()
 

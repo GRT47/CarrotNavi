@@ -41,6 +41,7 @@ class HudOverlayManager(
 
     var onQuickDestinationSelected: ((KakaoDocument) -> Unit)? = null
     var onOverlayVisibilityChanged: (() -> Unit)? = null
+    var onMediaOverlayVisibilityChanged: ((Boolean) -> Unit)? = null
 
     private var initialX = 0f
     private var initialY = 0f
@@ -194,6 +195,7 @@ class HudOverlayManager(
             val card = binding.cvMediaOverlayCard
             val willShow = card.visibility != View.VISIBLE
             card.visibility = if (willShow) View.VISIBLE else View.GONE
+            notifyMediaOverlayVisibility(willShow)
             if (willShow) {
                 restoreMediaOverlayPosition(activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
                 updateMediaOverlayUi(
@@ -804,7 +806,10 @@ class HudOverlayManager(
         binding.btnMediaOverlay?.alpha = if (isOverlayVisible) 1.0f else 0.5f
         binding.btnSearchAddress.alpha = if (isOverlayVisible) 1.0f else 0.5f
         if (!isOverlayVisible) {
-            binding.cvMediaOverlayCard.visibility = View.GONE
+            if (binding.cvMediaOverlayCard.visibility == View.VISIBLE) {
+                binding.cvMediaOverlayCard.visibility = View.GONE
+                notifyMediaOverlayVisibility(false)
+            }
         }
         onOverlayVisibilityChanged?.invoke()
     }
@@ -1272,6 +1277,17 @@ class HudOverlayManager(
         } else {
             card.translationX = 0f
             card.translationY = 0f
+        }
+    }
+
+    fun notifyMediaOverlayVisibility(isVisible: Boolean) {
+        onMediaOverlayVisibilityChanged?.invoke(isVisible)
+    }
+
+    fun hideMediaOverlay() {
+        if (binding.cvMediaOverlayCard.visibility == View.VISIBLE) {
+            binding.cvMediaOverlayCard.visibility = View.GONE
+            notifyMediaOverlayVisibility(false)
         }
     }
 }

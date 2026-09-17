@@ -416,6 +416,9 @@ class KakaoMapActivity : AppCompatActivity(),
         
         val hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this@KakaoMapActivity, hudBinding, this@KakaoMapActivity)
+        hudOverlayManager.onMediaOverlayVisibilityChanged = { isVisible ->
+            splitHandleManager?.setHandleVisible(!isVisible)
+        }
         
         hudOverlayManager.binding.btnSearchAddress.setOnClickListener {
             val searchIntent = Intent(this@KakaoMapActivity, SearchActivity::class.java)
@@ -1857,7 +1860,7 @@ class KakaoMapActivity : AppCompatActivity(),
         hudOverlayManager.binding.llRouteEtaGroup?.visibility = android.view.View.GONE
         hudOverlayManager.binding.llQuickDestGroup.visibility = android.view.View.GONE
         hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.GONE
-        hudOverlayManager.binding.cvMediaOverlayCard.visibility = android.view.View.GONE
+        hudOverlayManager.hideMediaOverlay()
 
         binding.btnPreviewStart.setOnClickListener {
             hidePreviewOverlay()

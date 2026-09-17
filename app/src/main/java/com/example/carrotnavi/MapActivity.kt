@@ -389,6 +389,9 @@ class MapActivity : AppCompatActivity() {
 
         hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this, hudBinding, this)
+        hudOverlayManager.onMediaOverlayVisibilityChanged = { isVisible ->
+            splitHandleManager?.setHandleVisible(!isVisible)
+        }
         hudOverlayManager.binding.btnSearchAddress.setOnClickListener {
             showSearchDialog()
         }
