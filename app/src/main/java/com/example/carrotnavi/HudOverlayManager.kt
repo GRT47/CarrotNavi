@@ -43,6 +43,9 @@ class HudOverlayManager(
     var onOverlayVisibilityChanged: (() -> Unit)? = null
     var onMediaOverlayVisibilityChanged: ((Boolean) -> Unit)? = null
 
+    val isMediaOverlayActive: Boolean
+        get() = binding.cvMediaOverlayCard.visibility == View.VISIBLE
+
     private var initialX = 0f
     private var initialY = 0f
     private var initialTouchX = 0f
@@ -1143,7 +1146,10 @@ class HudOverlayManager(
         btnRatioFullScreen.setOnClickListener { applyRatio(5.0f) }
 
         btnClose.setOnClickListener { dialog.dismiss() }
-        btnConfirm.setOnClickListener { dialog.dismiss() }
+        btnConfirm.setOnClickListener {
+            hideMediaOverlay()
+            dialog.dismiss()
+        }
 
         dialog.show()
         val bottomSheet = dialog.findViewById<android.view.View>(com.google.android.material.R.id.design_bottom_sheet)
