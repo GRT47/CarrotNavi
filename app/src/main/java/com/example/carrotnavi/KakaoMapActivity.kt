@@ -611,6 +611,9 @@ class KakaoMapActivity : AppCompatActivity(),
         if (::binding.isInitialized) {
             updateMediaLayout(newConfig.orientation)
             updateRoadSpeedLimitVisibility()
+            if (::hudOverlayManager.isInitialized) {
+                hudOverlayManager.restoreMediaOverlayPosition(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+            }
             binding.root.postDelayed({
                 alignSpeedGroupWithCameraSign()
                 alignGpsOverlayWithBottomBar()

@@ -195,6 +195,7 @@ class HudOverlayManager(
             val willShow = card.visibility != View.VISIBLE
             card.visibility = if (willShow) View.VISIBLE else View.GONE
             if (willShow) {
+                restoreMediaOverlayPosition(activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
                 updateMediaOverlayUi(
                     MediaNotificationListenerService.currentTitle,
                     MediaNotificationListenerService.currentArtist,
@@ -204,7 +205,22 @@ class HudOverlayManager(
             }
         }
 
-        binding.cvMediaOverlayCard.setOnClickListener { /* Consume touch */ }
+        binding.btnMediaOverlay?.setOnLongClickListener {
+            val isLandscape = activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val keyPrefix = if (isLandscape) "cvMediaOverlayCard_land" else "cvMediaOverlayCard_port"
+            sharedPref.edit()
+                .remove("${keyPrefix}_x")
+                .remove("${keyPrefix}_y")
+                .remove("${keyPrefix}_saved")
+                .apply()
+            val card = binding.cvMediaOverlayCard
+            card.animate().translationX(0f).translationY(0f).setDuration(200).start()
+            Toast.makeText(activity, "미디어 오버레이 위치가 기본값으로 초기화되었습니다.", Toast.LENGTH_SHORT).show()
+            true
+        }
+
+        setupMediaOverlayDrag()
+        restoreMediaOverlayPosition(isLandscape)
 
         binding.btnMediaOverlayPrev?.setOnClickListener {
             sendMediaCommand("prev")
@@ -217,14 +233,6 @@ class HudOverlayManager(
 
         binding.btnMediaOverlayNext?.setOnClickListener {
             sendMediaCommand("next")
-        }
-
-        binding.cvMediaOverlayThumb?.setOnClickListener {
-            showMediaSettingsDialog()
-        }
-
-        binding.llMediaOverlayInfo?.setOnClickListener {
-            showMediaSettingsDialog()
         }
 
         binding.btnSettings?.setOnClickListener {
@@ -1168,5 +1176,102 @@ class HudOverlayManager(
         binding.btnMediaOverlayPlayPause?.setImageResource(
             if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24
         )
+    }
+
+    private fun setupMediaOverlayDrag() {
+        val card = binding.cvMediaOverlayCard ?: return
+        val touchSlop = android.view.ViewConfiguration.get(activity).scaledTouchSlop
+
+        var downX = 0f
+        var downY = 0f
+        var startTransX = 0f
+        var startTransY = 0f
+        var isDragging = false
+
+        card.setOnTouchListener { _, event ->
+            when (event.action and MotionEvent.ACTION_MASK) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = event.rawX
+                    downY = event.rawY
+                    startTransX = card.translationX
+                    startTransY = card.translationY
+                    isDragging = false
+                    card.bringToFront()
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX - downX
+                    val dy = event.rawY - downY
+                    if (!isDragging && Math.hypot(dx.toDouble(), dy.toDouble()) > touchSlop) {
+                        isDragging = true
+                    }
+                    if (isDragging) {
+                        var newX = startTransX + dx
+                        var newY = startTransY + dy
+
+                        val parent = card.parent as? ViewGroup
+                        if (parent != null && parent.width > 0 && parent.height > 0) {
+                            val minX = -card.left.toFloat()
+                            val maxX = (parent.width - card.right).toFloat()
+                            val minY = -card.top.toFloat()
+                            val maxY = (parent.height - card.bottom).toFloat()
+                            newX = newX.coerceIn(minX, maxX)
+                            newY = newY.coerceIn(minY, maxY)
+                        }
+
+                        card.translationX = newX
+                        card.translationY = newY
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (isDragging) {
+                        val isLandscape = activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                        val keyPrefix = if (isLandscape) "cvMediaOverlayCard_land" else "cvMediaOverlayCard_port"
+                        sharedPref.edit()
+                            .putFloat("${keyPrefix}_x", card.translationX)
+                            .putFloat("${keyPrefix}_y", card.translationY)
+                            .putBoolean("${keyPrefix}_saved", true)
+                            .apply()
+                    } else {
+                        showMediaSettingsDialog()
+                    }
+                    isDragging = false
+                    true
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    isDragging = false
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    fun restoreMediaOverlayPosition(isLandscape: Boolean) {
+        val card = binding.cvMediaOverlayCard ?: return
+        val keyPrefix = if (isLandscape) "cvMediaOverlayCard_land" else "cvMediaOverlayCard_port"
+        val isSaved = sharedPref.getBoolean("${keyPrefix}_saved", false)
+        if (isSaved) {
+            val savedX = sharedPref.getFloat("${keyPrefix}_x", 0f)
+            val savedY = sharedPref.getFloat("${keyPrefix}_y", 0f)
+            card.translationX = savedX
+            card.translationY = savedY
+
+            card.post {
+                val parent = card.parent as? ViewGroup
+                if (parent != null && parent.width > 0 && parent.height > 0) {
+                    val minX = -card.left.toFloat()
+                    val maxX = (parent.width - card.right).toFloat()
+                    val minY = -card.top.toFloat()
+                    val maxY = (parent.height - card.bottom).toFloat()
+                    card.translationX = card.translationX.coerceIn(minX, maxX)
+                    card.translationY = card.translationY.coerceIn(minY, maxY)
+                }
+            }
+        } else {
+            card.translationX = 0f
+            card.translationY = 0f
+        }
     }
 }

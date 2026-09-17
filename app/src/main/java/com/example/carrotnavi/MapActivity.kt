@@ -222,6 +222,9 @@ class MapActivity : AppCompatActivity() {
         if (::binding.isInitialized) {
             updateMediaLayout(newConfig.orientation)
             updateRoadSpeedLimitVisibility()
+            if (::hudOverlayManager.isInitialized) {
+                hudOverlayManager.restoreMediaOverlayPosition(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+            }
             binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 300)
             binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 800)
             binding.root.postDelayed({ alignSpeedGroupWithCameraSign() }, 300)
@@ -579,6 +582,14 @@ class MapActivity : AppCompatActivity() {
     override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
         if (::hudOverlayManager.isInitialized && hudOverlayManager.shouldBlockTouch(ev)) {
             return true
+        }
+
+        if (::hudBinding.isInitialized && hudBinding.cvMediaOverlayCard.visibility == View.VISIBLE) {
+            val cardRect = android.graphics.Rect()
+            hudBinding.cvMediaOverlayCard.getGlobalVisibleRect(cardRect)
+            if (cardRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                return super.dispatchTouchEvent(ev)
+            }
         }
 
         // TMAP 안심주행 하단 바 영역(navigation_eta: 주행종료, 현위치 주소, 메뉴 버튼 등) 터치 제한
