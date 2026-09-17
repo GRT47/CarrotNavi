@@ -21,6 +21,7 @@ import android.widget.Toast
 import android.content.Intent
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import android.app.Dialog
@@ -45,6 +46,11 @@ class HudOverlayManager(
 
     val isMediaOverlayActive: Boolean
         get() = binding.cvMediaOverlayCard.visibility == View.VISIBLE
+
+    private var lastMediaTitle: String? = null
+    private var lastMediaArtist: String? = null
+    private var lastMediaAlbumArt: android.graphics.Bitmap? = null
+    private var lastMediaIsPlaying: Boolean = false
 
     private var initialX = 0f
     private var initialY = 0f
@@ -239,6 +245,22 @@ class HudOverlayManager(
         binding.btnMediaOverlayNext?.setOnClickListener {
             sendMediaCommand("next")
         }
+
+        binding.btnMediaOverlayPrevVert?.setOnClickListener {
+            sendMediaCommand("prev")
+        }
+
+        binding.btnMediaOverlayPlayPauseVert?.setOnClickListener {
+            val cmd = if (MediaNotificationListenerService.isPlaying) "pause" else "play"
+            sendMediaCommand(cmd)
+        }
+
+        binding.btnMediaOverlayNextVert?.setOnClickListener {
+            sendMediaCommand("next")
+        }
+
+        val initialShape = sharedPref.getString("MEDIA_OVERLAY_SHAPE", "horizontal") ?: "horizontal"
+        applyMediaOverlayShape(initialShape)
 
         binding.btnSettings?.setOnClickListener {
             val dialogView = android.view.LayoutInflater.from(activity).inflate(R.layout.dialog_drive_settings, null)
@@ -1172,21 +1194,76 @@ class HudOverlayManager(
     }
 
     fun updateMediaOverlayUi(title: String?, artist: String?, albumArt: android.graphics.Bitmap?, isPlaying: Boolean) {
+        lastMediaTitle = title
+        lastMediaArtist = artist
+        lastMediaAlbumArt = albumArt
+        lastMediaIsPlaying = isPlaying
+
         val hasTrack = !title.isNullOrEmpty() && title != "재생중인 곡 없음" && title != "음악을 재생해 주세요"
-        binding.tvMediaOverlayTitle?.text = if (hasTrack) title else "재생 중인 음악 없음"
-        binding.tvMediaOverlayArtist?.text = if (hasTrack && !artist.isNullOrEmpty()) artist else "-"
+        val displayTitle = if (hasTrack) title else "재생 중인 음악 없음"
+        val displayArtist = if (hasTrack && !artist.isNullOrEmpty()) artist else "-"
+
+        // 가로 형태 UI 갱신
+        binding.tvMediaOverlayTitle?.text = displayTitle
+        binding.tvMediaOverlayArtist?.text = displayArtist
+
+        // 세로 형태 UI 갱신
+        binding.tvMediaOverlayTitleVert?.text = displayTitle
+        binding.tvMediaOverlayArtistVert?.text = displayArtist
 
         if (albumArt != null) {
             binding.ivMediaOverlayThumb?.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
             binding.ivMediaOverlayThumb?.setImageBitmap(albumArt)
+            binding.ivMediaOverlayThumbVert?.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+            binding.ivMediaOverlayThumbVert?.setImageBitmap(albumArt)
         } else {
             binding.ivMediaOverlayThumb?.scaleType = android.widget.ImageView.ScaleType.CENTER_INSIDE
             binding.ivMediaOverlayThumb?.setImageResource(R.drawable.ic_music_note)
+            binding.ivMediaOverlayThumbVert?.scaleType = android.widget.ImageView.ScaleType.CENTER_INSIDE
+            binding.ivMediaOverlayThumbVert?.setImageResource(R.drawable.ic_music_note)
         }
 
-        binding.btnMediaOverlayPlayPause?.setImageResource(
-            if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24
-        )
+        val playPauseRes = if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24
+        binding.btnMediaOverlayPlayPause?.setImageResource(playPauseRes)
+        binding.btnMediaOverlayPlayPauseVert?.setImageResource(playPauseRes)
+    }
+
+    fun applyMediaOverlayShape(shape: String) {
+        val card = binding.cvMediaOverlayCard ?: return
+        val isVert = shape == "vertical"
+        val density = activity.resources.displayMetrics.density
+        val targetWidth = if (isVert) (140 * density).toInt() else (280 * density).toInt()
+        val targetHeight = if (isVert) (204 * density).toInt() else (72 * density).toInt()
+
+        val params = card.layoutParams
+        params.width = targetWidth
+        params.height = targetHeight
+        card.layoutParams = params
+        card.requestLayout()
+
+        binding.llMediaOverlayHorizontal?.visibility = if (isVert) View.GONE else View.VISIBLE
+        binding.llMediaOverlayVertical?.visibility = if (isVert) View.VISIBLE else View.GONE
+
+        updateMediaOverlayUi(lastMediaTitle, lastMediaArtist, lastMediaAlbumArt, lastMediaIsPlaying)
+    }
+
+    fun showMediaOverlayShapeMenu(anchor: View) {
+        val popup = PopupMenu(activity, anchor)
+        val currentShape = sharedPref.getString("MEDIA_OVERLAY_SHAPE", "horizontal") ?: "horizontal"
+        popup.menu.add(0, 1, 0, if (currentShape == "horizontal") "✔ 가로 형태 (수평 바)" else "   가로 형태 (수평 바)")
+        popup.menu.add(0, 2, 1, if (currentShape == "vertical") "✔ 세로 형태 (콤팩트 카드)" else "   세로 형태 (콤팩트 카드)")
+        popup.setOnMenuItemClickListener { item ->
+            val newShape = if (item.itemId == 2) "vertical" else "horizontal"
+            sharedPref.edit().putString("MEDIA_OVERLAY_SHAPE", newShape).apply()
+            applyMediaOverlayShape(newShape)
+            Toast.makeText(
+                activity,
+                if (newShape == "vertical") "미디어 오버레이: 세로 형태로 변경되었습니다." else "미디어 오버레이: 가로 형태로 변경되었습니다.",
+                Toast.LENGTH_SHORT
+            ).show()
+            true
+        }
+        popup.show()
     }
 
     private fun setupMediaOverlayDrag() {
@@ -1245,7 +1322,18 @@ class HudOverlayManager(
                             .putBoolean("${keyPrefix}_saved", true)
                             .apply()
                     } else {
-                        showMediaSettingsDialog()
+                        val currentShape = sharedPref.getString("MEDIA_OVERLAY_SHAPE", "horizontal") ?: "horizontal"
+                        val activeThumb = if (currentShape == "vertical") binding.cvMediaOverlayThumbVert else binding.cvMediaOverlayThumb
+                        val thumbRect = android.graphics.Rect()
+                        activeThumb?.getGlobalVisibleRect(thumbRect)
+                        val touchX = event.rawX.toInt()
+                        val touchY = event.rawY.toInt()
+
+                        if (thumbRect.contains(touchX, touchY)) {
+                            showMediaOverlayShapeMenu(activeThumb ?: card)
+                        } else {
+                            showMediaSettingsDialog()
+                        }
                     }
                     isDragging = false
                     true
