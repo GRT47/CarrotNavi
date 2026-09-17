@@ -233,32 +233,6 @@ class HudOverlayManager(
         setupMediaOverlayDrag()
         restoreMediaOverlayPosition(isLandscape)
 
-        binding.btnMediaOverlayPrev?.setOnClickListener {
-            sendMediaCommand("prev")
-        }
-
-        binding.btnMediaOverlayPlayPause?.setOnClickListener {
-            val cmd = if (MediaNotificationListenerService.isPlaying) "pause" else "play"
-            sendMediaCommand(cmd)
-        }
-
-        binding.btnMediaOverlayNext?.setOnClickListener {
-            sendMediaCommand("next")
-        }
-
-        binding.btnMediaOverlayPrevVert?.setOnClickListener {
-            sendMediaCommand("prev")
-        }
-
-        binding.btnMediaOverlayPlayPauseVert?.setOnClickListener {
-            val cmd = if (MediaNotificationListenerService.isPlaying) "pause" else "play"
-            sendMediaCommand(cmd)
-        }
-
-        binding.btnMediaOverlayNextVert?.setOnClickListener {
-            sendMediaCommand("next")
-        }
-
         val initialShape = sharedPref.getString("MEDIA_OVERLAY_SHAPE", "horizontal") ?: "horizontal"
         applyMediaOverlayShape(initialShape)
 
@@ -1223,17 +1197,29 @@ class HudOverlayManager(
             binding.ivMediaOverlayThumbVert?.setImageResource(R.drawable.ic_music_note)
         }
 
-        val playPauseRes = if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24
-        binding.btnMediaOverlayPlayPause?.setImageResource(playPauseRes)
-        binding.btnMediaOverlayPlayPauseVert?.setImageResource(playPauseRes)
+        if (hasTrack) {
+            val statusIconRes = if (isPlaying) R.drawable.ic_round_play_arrow_24 else R.drawable.ic_round_pause_24
+            val statusTint = if (isPlaying) Color.parseColor("#FFEB3B") else Color.parseColor("#AAAAAA")
+
+            binding.ivMediaOverlayPlayStatus?.setImageResource(statusIconRes)
+            binding.ivMediaOverlayPlayStatus?.setColorFilter(statusTint)
+            binding.ivMediaOverlayPlayStatus?.visibility = View.VISIBLE
+
+            binding.ivMediaOverlayPlayStatusVert?.setImageResource(statusIconRes)
+            binding.ivMediaOverlayPlayStatusVert?.setColorFilter(statusTint)
+            binding.ivMediaOverlayPlayStatusVert?.visibility = View.VISIBLE
+        } else {
+            binding.ivMediaOverlayPlayStatus?.visibility = View.GONE
+            binding.ivMediaOverlayPlayStatusVert?.visibility = View.GONE
+        }
     }
 
     fun applyMediaOverlayShape(shape: String) {
         val card = binding.cvMediaOverlayCard ?: return
         val isVert = shape == "vertical"
         val density = activity.resources.displayMetrics.density
-        val targetWidth = if (isVert) (140 * density).toInt() else (280 * density).toInt()
-        val targetHeight = if (isVert) (204 * density).toInt() else (72 * density).toInt()
+        val targetWidth = if (isVert) (136 * density).toInt() else (230 * density).toInt()
+        val targetHeight = if (isVert) (172 * density).toInt() else (66 * density).toInt()
 
         val params = card.layoutParams
         params.width = targetWidth
