@@ -380,6 +380,14 @@ class MapActivity : AppCompatActivity() {
         hudOverlayManager.binding.btnSearchAddress.setOnClickListener {
             showSearchDialog()
         }
+
+        // 앨범아트 클릭 시 미디어 화면 분할 설정 메뉴 표시
+        binding.root.findViewById<android.view.View>(R.id.cvAlbumArtContainer)?.setOnClickListener {
+            hudOverlayManager.showMediaSettingsDialog()
+        }
+        binding.root.findViewById<android.view.View>(R.id.ivAlbumArtThumbnail)?.setOnClickListener {
+            hudOverlayManager.showMediaSettingsDialog()
+        }
         hudOverlayManager.onQuickDestinationSelected = { doc ->
             val naviIntent = Intent(this@MapActivity, KakaoMapActivity::class.java).apply {
                 putExtra("dest_place_name", doc.place_name)

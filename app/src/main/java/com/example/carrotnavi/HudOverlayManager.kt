@@ -1006,4 +1006,96 @@ class HudOverlayManager(
         override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {}
         override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
     }
+
+    fun showMediaSettingsDialog() {
+        val dialogView = android.view.LayoutInflater.from(activity).inflate(R.layout.dialog_media_split_settings, null)
+        val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(activity)
+        dialog.setContentView(dialogView)
+
+        val sp = activity.getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+
+        val btnClose = dialogView.findViewById<android.widget.ImageView>(R.id.btnCloseMediaSettings)
+        val btnConfirm = dialogView.findViewById<android.widget.Button>(R.id.btnConfirmMediaSettings)
+        val btnRatioHalf = dialogView.findViewById<android.widget.Button>(R.id.btnRatioHalf)
+        val btnRatioDefault = dialogView.findViewById<android.widget.Button>(R.id.btnRatioDefault)
+        val btnRatioMini = dialogView.findViewById<android.widget.Button>(R.id.btnRatioMini)
+        val btnRatioFullScreen = dialogView.findViewById<android.widget.Button>(R.id.btnRatioFullScreen)
+
+        val sliderMediaRatio = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderMediaRatio)
+        val tvMediaRatioValue = dialogView.findViewById<android.widget.TextView>(R.id.tvMediaRatioValue)
+
+        val rgMediaBgStyle = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgMediaBgStyle)
+        val rbBgAlbumArt = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgAlbumArt)
+        val rbBgEq = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEq)
+        val rbBgEqWave = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEqWave)
+        val rbBgEqCircle = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEqCircle)
+        val cbShowAlbumArtWithEq = dialogView.findViewById<android.widget.CheckBox>(R.id.cbShowAlbumArtWithEq)
+
+        // 초기 배경 스타일 설정
+        val currentStyle = sp.getString("MEDIA_BG_STYLE", "album")
+        when (currentStyle) {
+            "eq", "eq_bar" -> rbBgEq.isChecked = true
+            "eq_wave" -> rbBgEqWave.isChecked = true
+            "eq_circle" -> rbBgEqCircle.isChecked = true
+            else -> rbBgAlbumArt.isChecked = true
+        }
+        cbShowAlbumArtWithEq.isChecked = sp.getBoolean("SHOW_ALBUM_ART_WITH_EQ", false)
+
+        rgMediaBgStyle.setOnCheckedChangeListener { _, checkedId ->
+            val style = when (checkedId) {
+                R.id.rbBgEq -> "eq"
+                R.id.rbBgEqWave -> "eq_wave"
+                R.id.rbBgEqCircle -> "eq_circle"
+                else -> "album"
+            }
+            sp.edit().putString("MEDIA_BG_STYLE", style).apply()
+        }
+
+        cbShowAlbumArtWithEq.setOnCheckedChangeListener { _, isChecked ->
+            sp.edit().putBoolean("SHOW_ALBUM_ART_WITH_EQ", isChecked).apply()
+        }
+
+        // 초기 분할 비율 설정
+        val isPortrait = activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
+        val ratioKey = if (isPortrait) "MEDIA_SPLIT_RATIO_PORTRAIT_F" else "MEDIA_SPLIT_RATIO_LANDSCAPE_F"
+
+        val currentRatio = if (sp.contains(ratioKey)) {
+            sp.getFloat(ratioKey, 3.5f)
+        } else {
+            sp.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
+        }
+        sliderMediaRatio.value = currentRatio.coerceIn(0.5f, 5.0f)
+        fun fmt(v: Float) = if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()
+        tvMediaRatioValue.text = "${fmt(sliderMediaRatio.value)} : ${fmt(5f - sliderMediaRatio.value)}"
+
+        fun applyRatio(v: Float) {
+            sliderMediaRatio.value = v
+            tvMediaRatioValue.text = "${fmt(v)} : ${fmt(5f - v)}"
+            sp.edit()
+                .putFloat(ratioKey, v)
+                .putFloat("MEDIA_SPLIT_RATIO_F", v)
+                .apply()
+        }
+
+        sliderMediaRatio.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                applyRatio(value)
+            }
+        }
+
+        btnRatioHalf.setOnClickListener { applyRatio(2.5f) }
+        btnRatioDefault.setOnClickListener { applyRatio(3.5f) }
+        btnRatioMini.setOnClickListener { applyRatio(4.0f) }
+        btnRatioFullScreen.setOnClickListener { applyRatio(5.0f) }
+
+        btnClose.setOnClickListener { dialog.dismiss() }
+        btnConfirm.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+        val bottomSheet = dialog.findViewById<android.view.View>(com.google.android.material.R.id.design_bottom_sheet)
+        if (bottomSheet != null) {
+            val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
+            behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+        }
+    }
 }

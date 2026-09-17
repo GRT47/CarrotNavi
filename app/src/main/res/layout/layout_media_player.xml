@@ -45,6 +45,9 @@
             android:id="@+id/cvAlbumArtContainer"
             android:layout_width="120dp"
             android:layout_height="120dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
             app:cardBackgroundColor="#333333">
