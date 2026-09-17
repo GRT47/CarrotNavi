@@ -94,6 +94,7 @@ class KakaoMapActivity : AppCompatActivity(),
     private var isCalculatingRoute = false
     private var isShowingPreview = false
     private var previewTimer: android.os.CountDownTimer? = null
+    private var savedCameraMode: MapViewCameraMode? = null
     private lateinit var sharedPref: SharedPreferences
     private lateinit var locationManager: LocationManager
     private lateinit var hudOverlayManager: HudOverlayManager
@@ -640,6 +641,12 @@ class KakaoMapActivity : AppCompatActivity(),
             updateRoadSpeedLimitVisibility()
             if (::hudOverlayManager.isInitialized) {
                 hudOverlayManager.restoreMediaOverlayPosition(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+            }
+            if (isShowingPreview) {
+                applyPreviewOverlayOrientationLayout()
+                previewRouteCache[selectedRouteOption]?.let { route ->
+                    displayRouteInfo(route)
+                }
             }
             binding.root.postDelayed({
                 alignSpeedGroupWithCameraSign()
@@ -1892,6 +1899,25 @@ class KakaoMapActivity : AppCompatActivity(),
         binding.tvPreviewAddress.text = doc.address_name.ifEmpty { doc.road_address_name }
         binding.llPreviewOverlay.visibility = android.view.View.VISIBLE
 
+        applyPreviewOverlayOrientationLayout()
+
+        if (hasStartedRouteGuidance || isGuidanceActive) {
+            try {
+                KNSDK.sharedGuidance()?.stop()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            isGuidanceActive = false
+            hasStartedRouteGuidance = false
+        }
+
+        if (savedCameraMode == null && ::naviView.isInitialized) {
+            savedCameraMode = naviView.mapViewMode
+        }
+        if (::naviView.isInitialized) {
+            naviView.mapViewMode = MapViewCameraMode.Top
+        }
+
         // Reset to last used route option or default RECOMMENDED
         val savedOptionName = sharedPref.getString("LAST_ROUTE_OPTION", RoutePreviewOption.RECOMMENDED.name)
         selectedRouteOption = try {
@@ -1913,7 +1939,12 @@ class KakaoMapActivity : AppCompatActivity(),
             marker.icon = createMarkerBitmap()
             binding.naviView.mapComponent?.mapView?.addMarker(marker)
 
-            val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator.targetTo(floatPoint).anchorTo(com.kakaomobility.knsdk.common.util.FloatPoint(0.5f, 0.4f))
+            val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+            val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator
+                .targetTo(floatPoint)
+                .anchorTo(com.kakaomobility.knsdk.common.util.FloatPoint(if (isLandscape) 0.35f else 0.5f, 0.5f))
+                .tiltTo(0f)
+                .bearingTo(0f)
             binding.naviView.mapComponent?.mapView?.moveCamera(cameraUpdate, false, false)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -2074,11 +2105,20 @@ class KakaoMapActivity : AppCompatActivity(),
             binding.naviView.mapComponent?.mapView?.removeRoutesAll()
             binding.naviView.mapComponent?.mapView?.setRoute(route)
 
+            val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+            val density = resources.displayMetrics.density
+            val paddingRect = if (isLandscape) {
+                // In landscape, route selection card sits on the right (400dp), pad 430dp on right to center route in left map area
+                android.graphics.RectF(50f * density, 50f * density, 430f * density, 50f * density)
+            } else {
+                android.graphics.RectF(40f * density, 50f * density, 40f * density, 250f * density)
+            }
+
             val region = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCoordinateRegion().initWithRoute(listOf(route))
-            val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator.fitTo(
-                region,
-                android.graphics.RectF(60f, 60f, 60f, 220f)
-            )
+            val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator
+                .fitTo(region, paddingRect)
+                .tiltTo(0f)
+                .bearingTo(0f)
             binding.naviView.mapComponent?.mapView?.moveCamera(cameraUpdate, false, false)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -2086,15 +2126,14 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     private fun selectRouteOption(option: RoutePreviewOption) {
+        stopPreviewTimer()
         if (selectedRouteOption == option && previewRouteCache.containsKey(option)) {
-            restartPreviewTimer()
             return
         }
 
         selectedRouteOption = option
         sharedPref.edit().putString("LAST_ROUTE_OPTION", option.name).apply()
         updateRouteOptionTabsUI()
-        restartPreviewTimer()
 
         val trip = previewTrip
         if (trip != null) {
@@ -2105,6 +2144,12 @@ class KakaoMapActivity : AppCompatActivity(),
                 requestInitialTripAndRoute(doc)
             }
         }
+    }
+
+    private fun stopPreviewTimer() {
+        previewTimer?.cancel()
+        previewTimer = null
+        binding.btnPreviewStart.text = "안내 시작"
     }
 
     private fun updateRouteOptionTabsUI() {
@@ -2162,13 +2207,18 @@ class KakaoMapActivity : AppCompatActivity(),
     private fun hidePreviewOverlay() {
         isShowingPreview = false
         
-        previewTimer?.cancel()
-        previewTimer = null
-        binding.btnPreviewStart.text = "안내 시작"
+        stopPreviewTimer()
         binding.llPreviewOverlay.visibility = android.view.View.GONE
         binding.naviView.mapComponent?.mapView?.removeRoutesAll()
         binding.naviView.mapComponent?.mapView?.removeMarkersAll()
         
+        savedCameraMode?.let {
+            if (::naviView.isInitialized) {
+                naviView.mapViewMode = it
+            }
+            savedCameraMode = null
+        }
+
         val shouldShowCancel = hasStartedRouteGuidance && isGuidanceActive
         hudOverlayManager.binding.btnGpsCancelRoute?.visibility = if (shouldShowCancel) android.view.View.VISIBLE else android.view.View.GONE
         hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.VISIBLE
@@ -2182,13 +2232,35 @@ class KakaoMapActivity : AppCompatActivity(),
         }, 300)
     }
 
+    private fun applyPreviewOverlayOrientationLayout() {
+        val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        val density = resources.displayMetrics.density
+
+        val params = binding.llPreviewOverlay.layoutParams as? android.widget.FrameLayout.LayoutParams ?: return
+        if (isLandscape) {
+            // 가로 모드: 경로선택 카드를 우측에 배치 (너비 400dp)
+            params.width = (400 * density).toInt()
+            params.height = android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+            params.gravity = android.view.Gravity.END or android.view.Gravity.CENTER_VERTICAL
+            params.setMargins(0, (16 * density).toInt(), (16 * density).toInt(), (16 * density).toInt())
+            binding.llPreviewOverlay.setBackgroundResource(R.drawable.bg_route_preview_card_land)
+        } else {
+            // 세로 모드: 하단에 배치
+            params.width = android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+            params.height = android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+            params.gravity = android.view.Gravity.BOTTOM
+            params.setMargins(0, 0, 0, 0)
+            binding.llPreviewOverlay.setBackgroundResource(R.drawable.bg_route_preview_card)
+        }
+        binding.llPreviewOverlay.layoutParams = params
+    }
+
     private fun createMarkerBitmap(): android.graphics.Bitmap {
         val size = 120
         val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
         val canvas = android.graphics.Canvas(bitmap)
         val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
         paint.color = android.graphics.Color.parseColor("#E91E63") 
-        
         
         val cx = size / 2f
         val cy = size / 2f
@@ -2197,7 +2269,6 @@ class KakaoMapActivity : AppCompatActivity(),
         
         paint.color = android.graphics.Color.WHITE
         canvas.drawCircle(cx, cy, 12f, paint)
-        
         
         paint.style = android.graphics.Paint.Style.STROKE
         paint.strokeWidth = 4f
@@ -2209,7 +2280,11 @@ class KakaoMapActivity : AppCompatActivity(),
     // KNNaviView_StateDelegate
     override fun naviViewDidUpdateStatusBarColor(aColor: Int) {}
     override fun naviViewDidUpdateUseDarkMode(aMode: Boolean) {}
-    override fun naviViewDidUpdateMapCameraMode(aCameraMode: MapViewCameraMode) {}
+    override fun naviViewDidUpdateMapCameraMode(aCameraMode: MapViewCameraMode) {
+        if (!isShowingPreview) {
+            savedCameraMode = aCameraMode
+        }
+    }
     override fun naviViewDidUpdateSndVolume(aVolume: Float) {}
     override fun naviViewDidUpdateCustomButton(id: Int, toggleOn: Boolean?) {}
     override fun naviViewPopupOpenCheck(aOpen: Boolean) {}
