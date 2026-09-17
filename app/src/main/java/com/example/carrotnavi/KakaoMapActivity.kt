@@ -94,6 +94,7 @@ class KakaoMapActivity : AppCompatActivity(),
     private var isCalculatingRoute = false
     private var isShowingPreview = false
     private var previewTimer: android.os.CountDownTimer? = null
+    private var isTimerStoppedByUser = false
     private var savedCameraMode: MapViewCameraMode? = null
     private lateinit var sharedPref: SharedPreferences
     private lateinit var locationManager: LocationManager
@@ -1977,6 +1978,7 @@ class KakaoMapActivity : AppCompatActivity(),
         }
 
         // 5초 카운트다운 타이머 시작
+        isTimerStoppedByUser = false
         restartPreviewTimer()
 
         // 경로 계산 시작
@@ -2147,6 +2149,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     private fun stopPreviewTimer() {
+        isTimerStoppedByUser = true
         previewTimer?.cancel()
         previewTimer = null
         binding.btnPreviewStart.text = "안내 시작"
@@ -2174,15 +2177,28 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     private fun restartPreviewTimer() {
+        if (isTimerStoppedByUser) {
+            binding.btnPreviewStart.text = "안내 시작"
+            return
+        }
         previewTimer?.cancel()
         binding.btnPreviewStart.text = "안내 시작 (5)"
         previewTimer = object : android.os.CountDownTimer(5000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
+                if (isTimerStoppedByUser) {
+                    binding.btnPreviewStart.text = "안내 시작"
+                    cancel()
+                    return
+                }
                 val secondsLeft = (millisUntilFinished / 1000).toInt() + 1
                 binding.btnPreviewStart.text = "안내 시작 (${secondsLeft})"
             }
 
             override fun onFinish() {
+                if (isTimerStoppedByUser) {
+                    binding.btnPreviewStart.text = "안내 시작"
+                    return
+                }
                 binding.btnPreviewStart.text = "안내 시작"
                 if (isShowingPreview) {
                     binding.btnPreviewStart.performClick()
