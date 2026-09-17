@@ -169,6 +169,10 @@ class KakaoMapActivity : AppCompatActivity(),
                 val currentSecs = currentPos / 1000
                 tvCurrentTime?.text = String.format("%d:%02d", currentSecs / 60, currentSecs % 60)
                 
+                if (::hudOverlayManager.isInitialized) {
+                    hudOverlayManager.updateMediaProgress()
+                }
+
                 mediaProgressHandler.postDelayed(this, 1000)
             }
         }

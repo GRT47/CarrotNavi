@@ -499,6 +499,22 @@
                     android:layout_marginTop="2dp" />
             </LinearLayout>
         </LinearLayout>
+
+        <!-- 하단 재생바 (재생 현황 인디케이터) -->
+        <ProgressBar
+            android:id="@+id/pbMediaOverlayProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_gravity="bottom"
+            android:minHeight="0dp"
+            android:maxHeight="3dp"
+            android:max="1000"
+            android:progress="0"
+            android:clickable="false"
+            android:focusable="false"
+            android:progressDrawable="@drawable/progress_media_overlay"
+            android:visibility="gone" />
     </androidx.cardview.widget.CardView>
 
     <LinearLayout

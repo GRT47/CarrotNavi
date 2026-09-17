@@ -51,6 +51,17 @@ class HudOverlayManager(
     private var lastMediaArtist: String? = null
     private var lastMediaAlbumArt: android.graphics.Bitmap? = null
     private var lastMediaIsPlaying: Boolean = false
+    private var lastMediaHasTrack: Boolean = false
+
+    private val mediaProgressHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val mediaProgressRunnable = object : Runnable {
+        override fun run() {
+            updateMediaProgress()
+            if (lastMediaIsPlaying && binding.cvMediaOverlayCard.visibility == View.VISIBLE) {
+                mediaProgressHandler.postDelayed(this, 1000)
+            }
+        }
+    }
 
     private var initialX = 0f
     private var initialY = 0f
@@ -213,8 +224,17 @@ class HudOverlayManager(
                     MediaNotificationListenerService.currentAlbumArt ?: MediaNotificationListenerService.fetchedAlbumArt,
                     MediaNotificationListenerService.isPlaying
                 )
+            } else {
+                stopMediaProgressTicker()
             }
         }
+
+        binding.cvMediaOverlayCard.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) {}
+            override fun onViewDetachedFromWindow(v: View) {
+                stopMediaProgressTicker()
+            }
+        })
 
         binding.btnMediaOverlay?.setOnLongClickListener {
             val isLandscape = activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -1174,6 +1194,7 @@ class HudOverlayManager(
         lastMediaIsPlaying = isPlaying
 
         val hasTrack = !title.isNullOrEmpty() && title != "재생중인 곡 없음" && title != "음악을 재생해 주세요"
+        lastMediaHasTrack = hasTrack
         val displayTitle = if (hasTrack) title else "재생 중인 음악 없음"
         val displayArtist = if (hasTrack && !artist.isNullOrEmpty()) artist else "-"
 
@@ -1211,6 +1232,13 @@ class HudOverlayManager(
         } else {
             binding.ivMediaOverlayPlayStatus?.visibility = View.GONE
             binding.ivMediaOverlayPlayStatusVert?.visibility = View.GONE
+        }
+
+        updateMediaProgress()
+        if (isPlaying && binding.cvMediaOverlayCard.visibility == View.VISIBLE) {
+            startMediaProgressTicker()
+        } else {
+            stopMediaProgressTicker()
         }
     }
 
@@ -1367,7 +1395,41 @@ class HudOverlayManager(
     fun hideMediaOverlay() {
         if (binding.cvMediaOverlayCard.visibility == View.VISIBLE) {
             binding.cvMediaOverlayCard.visibility = View.GONE
+            stopMediaProgressTicker()
             notifyMediaOverlayVisibility(false)
+        }
+    }
+
+    fun startMediaProgressTicker() {
+        mediaProgressHandler.removeCallbacks(mediaProgressRunnable)
+        if (lastMediaIsPlaying && binding.cvMediaOverlayCard.visibility == View.VISIBLE) {
+            mediaProgressHandler.post(mediaProgressRunnable)
+        }
+    }
+
+    fun stopMediaProgressTicker() {
+        mediaProgressHandler.removeCallbacks(mediaProgressRunnable)
+    }
+
+    fun updateMediaProgress() {
+        val pb = binding.pbMediaOverlayProgress ?: return
+        val duration = MediaNotificationListenerService.duration
+        val hasTrack = lastMediaHasTrack && !lastMediaTitle.isNullOrBlank()
+
+        if (hasTrack && duration > 0L) {
+            val lastUpdate = MediaNotificationListenerService.lastUpdateTime
+            val elapsed = if (lastMediaIsPlaying && lastUpdate > 0L) {
+                (android.os.SystemClock.elapsedRealtime() - lastUpdate).coerceAtLeast(0L)
+            } else {
+                0L
+            }
+            val currentPos = (MediaNotificationListenerService.position + elapsed).coerceIn(0L, duration)
+            val progress = ((currentPos * 1000L) / duration).toInt()
+            pb.progress = progress
+            pb.visibility = View.VISIBLE
+        } else {
+            pb.progress = 0
+            pb.visibility = View.GONE
         }
     }
 }
