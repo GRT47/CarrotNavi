@@ -252,6 +252,15 @@ class KakaoMapActivity : AppCompatActivity(),
         if (isPlaying) {
             mediaProgressHandler.post(mediaProgressRunnable)
         }
+
+        if (::hudOverlayManager.isInitialized) {
+            hudOverlayManager.updateMediaOverlayUi(
+                title,
+                artist,
+                MediaNotificationListenerService.currentAlbumArt ?: MediaNotificationListenerService.fetchedAlbumArt,
+                isPlaying
+            )
+        }
     }
 
     private val preferenceChangeListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
@@ -1219,6 +1228,16 @@ class KakaoMapActivity : AppCompatActivity(),
                         gridParams.bottomMargin = bottomMargin
                         grid.layoutParams = gridParams
                     }
+
+                    val cardOffset = (168 * resources.displayMetrics.density).toInt()
+                    (hudOverlayManager.binding.cvMediaOverlayCard.layoutParams as? android.widget.FrameLayout.LayoutParams)?.let { cardParams ->
+                        val cardBottomMargin = bottomMargin + cardOffset
+                        if (cardParams.bottomMargin != cardBottomMargin) {
+                            cardParams.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
+                            cardParams.bottomMargin = cardBottomMargin
+                            hudOverlayManager.binding.cvMediaOverlayCard.layoutParams = cardParams
+                        }
+                    }
                 }
 
                 syncGoalTextAddress()
@@ -1835,6 +1854,7 @@ class KakaoMapActivity : AppCompatActivity(),
         hudOverlayManager.binding.llRouteEtaGroup?.visibility = android.view.View.GONE
         hudOverlayManager.binding.llQuickDestGroup.visibility = android.view.View.GONE
         hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.GONE
+        hudOverlayManager.binding.cvMediaOverlayCard.visibility = android.view.View.GONE
 
         binding.btnPreviewStart.setOnClickListener {
             hidePreviewOverlay()

@@ -190,6 +190,43 @@ class HudOverlayManager(
             updateOverlayVisibility()
         }
 
+        binding.btnMediaOverlay?.setOnClickListener {
+            val card = binding.cvMediaOverlayCard
+            val willShow = card.visibility != View.VISIBLE
+            card.visibility = if (willShow) View.VISIBLE else View.GONE
+            if (willShow) {
+                updateMediaOverlayUi(
+                    MediaNotificationListenerService.currentTitle,
+                    MediaNotificationListenerService.currentArtist,
+                    MediaNotificationListenerService.currentAlbumArt ?: MediaNotificationListenerService.fetchedAlbumArt,
+                    MediaNotificationListenerService.isPlaying
+                )
+            }
+        }
+
+        binding.cvMediaOverlayCard.setOnClickListener { /* Consume touch */ }
+
+        binding.btnMediaOverlayPrev?.setOnClickListener {
+            sendMediaCommand("prev")
+        }
+
+        binding.btnMediaOverlayPlayPause?.setOnClickListener {
+            val cmd = if (MediaNotificationListenerService.isPlaying) "pause" else "play"
+            sendMediaCommand(cmd)
+        }
+
+        binding.btnMediaOverlayNext?.setOnClickListener {
+            sendMediaCommand("next")
+        }
+
+        binding.cvMediaOverlayThumb?.setOnClickListener {
+            showMediaSettingsDialog()
+        }
+
+        binding.llMediaOverlayInfo?.setOnClickListener {
+            showMediaSettingsDialog()
+        }
+
         binding.btnSettings?.setOnClickListener {
             val dialogView = android.view.LayoutInflater.from(activity).inflate(R.layout.dialog_drive_settings, null)
             val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(activity)
@@ -756,7 +793,11 @@ class HudOverlayManager(
         
         binding.btnToggleVisibility.alpha = if (isOverlayVisible) 1.0f else 0.5f
         binding.btnSettings?.alpha = if (isOverlayVisible) 1.0f else 0.5f
+        binding.btnMediaOverlay?.alpha = if (isOverlayVisible) 1.0f else 0.5f
         binding.btnSearchAddress.alpha = if (isOverlayVisible) 1.0f else 0.5f
+        if (!isOverlayVisible) {
+            binding.cvMediaOverlayCard.visibility = View.GONE
+        }
         onOverlayVisibilityChanged?.invoke()
     }
 
@@ -1097,5 +1138,35 @@ class HudOverlayManager(
             val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
             behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
         }
+    }
+
+    private fun sendMediaCommand(command: String) {
+        try {
+            val intent = Intent(MediaNotificationListenerService.ACTION_MEDIA_CONTROL).apply {
+                setPackage(activity.packageName)
+                putExtra("command", command)
+            }
+            activity.sendBroadcast(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun updateMediaOverlayUi(title: String?, artist: String?, albumArt: android.graphics.Bitmap?, isPlaying: Boolean) {
+        val hasTrack = !title.isNullOrEmpty() && title != "재생중인 곡 없음" && title != "음악을 재생해 주세요"
+        binding.tvMediaOverlayTitle?.text = if (hasTrack) title else "재생 중인 음악 없음"
+        binding.tvMediaOverlayArtist?.text = if (hasTrack && !artist.isNullOrEmpty()) artist else "-"
+
+        if (albumArt != null) {
+            binding.ivMediaOverlayThumb?.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+            binding.ivMediaOverlayThumb?.setImageBitmap(albumArt)
+        } else {
+            binding.ivMediaOverlayThumb?.scaleType = android.widget.ImageView.ScaleType.CENTER_INSIDE
+            binding.ivMediaOverlayThumb?.setImageResource(R.drawable.ic_music_note)
+        }
+
+        binding.btnMediaOverlayPlayPause?.setImageResource(
+            if (isPlaying) R.drawable.ic_round_pause_24 else R.drawable.ic_round_play_arrow_24
+        )
     }
 }

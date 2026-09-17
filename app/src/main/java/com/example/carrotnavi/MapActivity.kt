@@ -146,6 +146,15 @@ class MapActivity : AppCompatActivity() {
         if (isPlaying) {
             mediaProgressHandler.post(mediaProgressRunnable)
         }
+
+        if (::hudOverlayManager.isInitialized) {
+            hudOverlayManager.updateMediaOverlayUi(
+                title,
+                artist,
+                MediaNotificationListenerService.currentAlbumArt ?: MediaNotificationListenerService.fetchedAlbumArt,
+                isPlaying
+            )
+        }
     }
 
     private var pendingSafeDriveRestart = false
@@ -1207,6 +1216,16 @@ class MapActivity : AppCompatActivity() {
                         gridParams.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
                         gridParams.bottomMargin = bottomMargin
                         grid.layoutParams = gridParams
+                    }
+
+                    val cardOffset = (168 * resources.displayMetrics.density).toInt()
+                    (hudBinding.cvMediaOverlayCard.layoutParams as? android.widget.FrameLayout.LayoutParams)?.let { cardParams ->
+                        val cardBottomMargin = bottomMargin + cardOffset
+                        if (cardParams.bottomMargin != cardBottomMargin) {
+                            cardParams.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
+                            cardParams.bottomMargin = cardBottomMargin
+                            hudBinding.cvMediaOverlayCard.layoutParams = cardParams
+                        }
                     }
                 }
 

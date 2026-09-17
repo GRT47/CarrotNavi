@@ -332,6 +332,114 @@
 
     </LinearLayout>
 
+    <!-- 플로팅 미니 미디어 정보 오버레이 카드 -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvMediaOverlayCard"
+        android:layout_width="280dp"
+        android:layout_height="72dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="72dp"
+        android:layout_marginBottom="256dp"
+        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="#F21E1E1E"
+        app:cardElevation="10dp"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp">
+
+            <!-- 앨범아트 썸네일 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cvMediaOverlayThumb"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#333333">
+                <ImageView
+                    android:id="@+id/ivMediaOverlayThumb"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- 곡 제목 & 아티스트 -->
+            <LinearLayout
+                android:id="@+id/llMediaOverlayInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:id="@+id/tvMediaOverlayTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="재생 중인 음악 없음"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:singleLine="true"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tvMediaOverlayArtist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-"
+                    android:textColor="#AAAAAA"
+                    android:textSize="11sp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- 미니 재생 컨트롤 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageButton
+                    android:id="@+id/btnMediaOverlayPrev"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_round_skip_previous_24"
+                    app:tint="#FFFFFF"
+                    android:scaleType="centerInside" />
+
+                <ImageButton
+                    android:id="@+id/btnMediaOverlayPlayPause"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_round_play_arrow_24"
+                    app:tint="#FFEB3B"
+                    android:scaleType="centerInside"
+                    android:layout_marginHorizontal="2dp" />
+
+                <ImageButton
+                    android:id="@+id/btnMediaOverlayNext"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_round_skip_next_24"
+                    app:tint="#FFFFFF"
+                    android:scaleType="centerInside" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
     <LinearLayout
         android:id="@+id/llRightBottomGrid"
         android:layout_width="wrap_content"
@@ -341,6 +449,16 @@
         android:gravity="center_horizontal"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="88dp">
+
+        <ImageButton 
+            android:id="@+id/btnMediaOverlay" 
+            android:layout_width="48dp" 
+            android:layout_height="48dp" 
+            android:layout_marginBottom="12dp"
+            android:src="@drawable/ic_music_note" 
+            android:background="@drawable/shape_circle_gray" 
+            android:scaleType="center" 
+            android:elevation="6dp" />
 
         <ImageButton 
             android:id="@+id/btnSettings" 
