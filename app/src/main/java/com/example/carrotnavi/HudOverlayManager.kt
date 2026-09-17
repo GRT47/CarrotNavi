@@ -1247,7 +1247,7 @@ class HudOverlayManager(
         val isVert = shape == "vertical"
         val density = activity.resources.displayMetrics.density
         val targetWidth = if (isVert) (136 * density).toInt() else (230 * density).toInt()
-        val targetHeight = if (isVert) (172 * density).toInt() else (66 * density).toInt()
+        val targetHeight = if (isVert) (188 * density).toInt() else (66 * density).toInt()
 
         val params = card.layoutParams
         params.width = targetWidth

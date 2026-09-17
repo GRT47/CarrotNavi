@@ -429,7 +429,10 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:padding="8dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="10dp"
             android:visibility="gone">
 
             <!-- 세로형 앨범아트 썸네일 + 재생상태 뱃지 -->
@@ -472,7 +475,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:layout_marginTop="6dp">
+                android:layout_marginTop="5dp">
 
                 <TextView
                     android:id="@+id/tvMediaOverlayTitleVert"
@@ -492,11 +495,13 @@
                     android:layout_height="wrap_content"
                     android:text="-"
                     android:textColor="#AAAAAA"
-                    android:textSize="10sp"
+                    android:textSize="10.5sp"
                     android:gravity="center"
                     android:singleLine="true"
                     android:ellipsize="end"
-                    android:layout_marginTop="2dp" />
+                    android:layout_marginTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:includeFontPadding="false" />
             </LinearLayout>
         </LinearLayout>
 
