@@ -407,7 +407,11 @@
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:singleLine="true"
-                    android:ellipsize="end" />
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true" />
 
                 <TextView
                     android:id="@+id/tvMediaOverlayArtist"
@@ -417,7 +421,11 @@
                     android:textColor="#AAAAAA"
                     android:textSize="11sp"
                     android:singleLine="true"
-                    android:ellipsize="end"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
                     android:layout_marginTop="2dp" />
             </LinearLayout>
         </LinearLayout>
@@ -487,7 +495,11 @@
                     android:textStyle="bold"
                     android:gravity="center"
                     android:singleLine="true"
-                    android:ellipsize="end" />
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true" />
 
                 <TextView
                     android:id="@+id/tvMediaOverlayArtistVert"
@@ -498,7 +510,11 @@
                     android:textSize="10.5sp"
                     android:gravity="center"
                     android:singleLine="true"
-                    android:ellipsize="end"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
                     android:layout_marginTop="2dp"
                     android:paddingBottom="2dp"
                     android:includeFontPadding="false" />

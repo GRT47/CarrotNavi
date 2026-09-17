@@ -1200,11 +1200,15 @@ class HudOverlayManager(
 
         // 가로 형태 UI 갱신
         binding.tvMediaOverlayTitle?.text = displayTitle
+        binding.tvMediaOverlayTitle?.isSelected = true
         binding.tvMediaOverlayArtist?.text = displayArtist
+        binding.tvMediaOverlayArtist?.isSelected = true
 
         // 세로 형태 UI 갱신
         binding.tvMediaOverlayTitleVert?.text = displayTitle
+        binding.tvMediaOverlayTitleVert?.isSelected = true
         binding.tvMediaOverlayArtistVert?.text = displayArtist
+        binding.tvMediaOverlayArtistVert?.isSelected = true
 
         if (albumArt != null) {
             binding.ivMediaOverlayThumb?.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
