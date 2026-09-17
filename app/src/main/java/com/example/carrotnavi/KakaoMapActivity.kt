@@ -76,7 +76,22 @@ class KakaoMapActivity : AppCompatActivity(),
     private lateinit var naviView: KNNaviView
     private var isGuidanceActive = false
     private var isMuted = false
-    private var pendingDestination: KakaoDocument? = null
+    enum class RoutePreviewOption(
+        val title: String,
+        val priority: KNRoutePriority,
+        val avoidOption: Int
+    ) {
+        RECOMMENDED("추천경로", KNRoutePriority.KNRoutePriority_Recommand, KNRouteAvoidOption.KNRouteAvoidOption_None.value),
+        FREE("무료우선", KNRoutePriority.KNRoutePriority_Recommand, KNRouteAvoidOption.KNRouteAvoidOption_Fare.value),
+        PAID("유료우선", KNRoutePriority.KNRoutePriority_HighWay, KNRouteAvoidOption.KNRouteAvoidOption_None.value),
+        SHORTEST("최단경로", KNRoutePriority.KNRoutePriority_Distance, KNRouteAvoidOption.KNRouteAvoidOption_None.value)
+    }
+
+    private var selectedRouteOption: RoutePreviewOption = RoutePreviewOption.RECOMMENDED
+    private var previewTrip: KNTrip? = null
+    private var previewDoc: KakaoDocument? = null
+    private val previewRouteCache = mutableMapOf<RoutePreviewOption, KNRoute>()
+    private var isCalculatingRoute = false
     private var isShowingPreview = false
     private var previewTimer: android.os.CountDownTimer? = null
     private lateinit var sharedPref: SharedPreferences
@@ -1690,8 +1705,18 @@ class KakaoMapActivity : AppCompatActivity(),
         }
     }
 
-    private fun startRouteGuidance(doc: KakaoDocument) {
+    private fun startRouteGuidance(
+        doc: KakaoDocument,
+        trip: KNTrip? = null,
+        option: RoutePreviewOption = selectedRouteOption
+    ) {
         if (isFinishing || isDestroyed) return
+        
+        if (trip != null) {
+            executeGuidanceWithTrip(doc, trip, option)
+            return
+        }
+
         var startPoi: KNPOI? = null
         val gpsManager = com.kakaomobility.knsdk.KNSDK.sharedGpsManager()
         val currentGps = gpsManager?.recentGpsData
@@ -1712,7 +1737,7 @@ class KakaoMapActivity : AppCompatActivity(),
         if (startPoi == null) {
             Toast.makeText(this@KakaoMapActivity, "GPS 확인 중입니다...", Toast.LENGTH_SHORT).show()
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                startRouteGuidance(doc)
+                startRouteGuidance(doc, null, option)
             }, 1000)
             return
         }
@@ -1727,71 +1752,82 @@ class KakaoMapActivity : AppCompatActivity(),
 
         Toast.makeText(this@KakaoMapActivity, "경로 탐색 중...", Toast.LENGTH_SHORT).show()
 
-        com.kakaomobility.knsdk.KNSDK.makeTripWithStart(startPoi, goalPoi, null) { error, trip ->
+        com.kakaomobility.knsdk.KNSDK.makeTripWithStart(startPoi, goalPoi, null) { error, createdTrip ->
             runOnUiThread {
-            if (error != null || trip == null) {
-                Toast.makeText(this@KakaoMapActivity, "경로 탐색 실패: ${error?.msg ?: "알 수 없는 오류"}", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this@KakaoMapActivity, "경로 안내를 시작합니다.", Toast.LENGTH_SHORT).show()
-                SearchHistoryManager.addHistory(this@KakaoMapActivity, SearchHistoryItem.fromKakaoDocument(doc))
-                val guidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance()!!
-                
-                binding.naviView.guideNewDestinations(
-                    trip,
-                    com.kakaomobility.knsdk.KNRoutePriority.KNRoutePriority_Recommand,
-                    com.kakaomobility.knsdk.KNRouteAvoidOption.KNRouteAvoidOption_None.value
-                )
-
-                guidance.guideStateDelegate = this@KakaoMapActivity
-                guidance.routeGuideDelegate = this@KakaoMapActivity
-                guidance.safetyGuideDelegate = this@KakaoMapActivity
-                guidance.voiceGuideDelegate = this@KakaoMapActivity
-                guidance.citsGuideDelegate = this@KakaoMapActivity
-                guidance.locationGuideDelegate = this@KakaoMapActivity
-                
-                hasStartedRouteGuidance = true
-                hudOverlayManager.binding.btnGpsCancelRoute?.visibility = android.view.View.VISIBLE
-                hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.VISIBLE
-                hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.VISIBLE
-                val destTitle = doc.road_address_name.ifEmpty { doc.address_name.ifEmpty { doc.place_name } }
-                if (destTitle.isNotEmpty()) {
-                    lastKnownAddress = destTitle
-                    updateGpsAddressUi(destTitle)
-                }
-                lastCameraSignX = -1f
-                lastCameraSignY = -1f
-                if (::binding.isInitialized) {
-                    binding.root.postDelayed({
-                        alignSpeedGroupWithCameraSign()
-                        alignGpsOverlayWithBottomBar()
-                        alignQuickDestGroupWithTbt()
-                    }, 300)
-                    binding.root.postDelayed({
-                        alignSpeedGroupWithCameraSign()
-                        alignGpsOverlayWithBottomBar()
-                        alignQuickDestGroupWithTbt()
-                    }, 1000)
-                    binding.root.postDelayed({
-                        alignGpsOverlayWithBottomBar()
-                        alignQuickDestGroupWithTbt()
-                    }, 2500)
-                }
-                intent.removeExtra("dest_place_name")
-                
-                // 최근 목적지 정보 저장 (안내 중 비정상 종료 시 복구 목적)
-                sharedPref.edit().apply {
-                    putString("RECENT_DEST_NAME", doc.place_name)
-                    putString("RECENT_DEST_ROAD_ADDRESS", doc.road_address_name)
-                    putString("RECENT_DEST_ADDRESS", doc.address_name)
-                    putString("RECENT_DEST_X", doc.x)
-                    putString("RECENT_DEST_Y", doc.y)
-                    putLong("RECENT_DEST_TIMESTAMP", System.currentTimeMillis())
-                    apply()
+                if (error != null || createdTrip == null) {
+                    Toast.makeText(this@KakaoMapActivity, "경로 탐색 실패: ${error?.msg ?: "알 수 없는 오류"}", Toast.LENGTH_SHORT).show()
+                } else {
+                    executeGuidanceWithTrip(doc, createdTrip, option)
                 }
             }
         }
     }
-}
+
+    private fun executeGuidanceWithTrip(
+        doc: KakaoDocument,
+        trip: KNTrip,
+        option: RoutePreviewOption
+    ) {
+        Toast.makeText(this@KakaoMapActivity, "${option.title}로 안내를 시작합니다.", Toast.LENGTH_SHORT).show()
+        SearchHistoryManager.addHistory(this@KakaoMapActivity, SearchHistoryItem.fromKakaoDocument(doc))
+        val guidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance() ?: return
+
+        binding.naviView.mapComponent?.mapView?.removeRoutesAll()
+        binding.naviView.mapComponent?.mapView?.removeMarkersAll()
+
+        binding.naviView.guideNewDestinations(
+            trip,
+            option.priority,
+            option.avoidOption
+        )
+
+        guidance.guideStateDelegate = this@KakaoMapActivity
+        guidance.routeGuideDelegate = this@KakaoMapActivity
+        guidance.safetyGuideDelegate = this@KakaoMapActivity
+        guidance.voiceGuideDelegate = this@KakaoMapActivity
+        guidance.citsGuideDelegate = this@KakaoMapActivity
+        guidance.locationGuideDelegate = this@KakaoMapActivity
+        
+        hasStartedRouteGuidance = true
+        hudOverlayManager.binding.btnGpsCancelRoute?.visibility = android.view.View.VISIBLE
+        hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.VISIBLE
+        hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.VISIBLE
+        val destTitle = doc.road_address_name.ifEmpty { doc.address_name.ifEmpty { doc.place_name } }
+        if (destTitle.isNotEmpty()) {
+            lastKnownAddress = destTitle
+            updateGpsAddressUi(destTitle)
+        }
+        lastCameraSignX = -1f
+        lastCameraSignY = -1f
+        if (::binding.isInitialized) {
+            binding.root.postDelayed({
+                alignSpeedGroupWithCameraSign()
+                alignGpsOverlayWithBottomBar()
+                alignQuickDestGroupWithTbt()
+            }, 300)
+            binding.root.postDelayed({
+                alignSpeedGroupWithCameraSign()
+                alignGpsOverlayWithBottomBar()
+                alignQuickDestGroupWithTbt()
+            }, 1000)
+            binding.root.postDelayed({
+                alignGpsOverlayWithBottomBar()
+                alignQuickDestGroupWithTbt()
+            }, 2500)
+        }
+        intent.removeExtra("dest_place_name")
+        
+        // 최근 목적지 정보 저장 (안내 중 비정상 종료 시 복구 목적)
+        sharedPref.edit().apply {
+            putString("RECENT_DEST_NAME", doc.place_name)
+            putString("RECENT_DEST_ROAD_ADDRESS", doc.road_address_name)
+            putString("RECENT_DEST_ADDRESS", doc.address_name)
+            putString("RECENT_DEST_X", doc.x)
+            putString("RECENT_DEST_Y", doc.y)
+            putLong("RECENT_DEST_TIMESTAMP", System.currentTimeMillis())
+            apply()
+        }
+    }
 
     override fun onResume() {
         super.onResume()
@@ -1827,6 +1863,8 @@ class KakaoMapActivity : AppCompatActivity(),
         
         previewTimer?.cancel()
         previewTimer = null
+        previewTrip = null
+        previewRouteCache.clear()
         mediaProgressHandler.removeCallbacksAndMessages(null)
         
         try {
@@ -1846,11 +1884,23 @@ class KakaoMapActivity : AppCompatActivity(),
 
     private fun showPreviewOverlay(doc: KakaoDocument, destName: String) {
         isShowingPreview = true
+        previewDoc = doc
+        previewRouteCache.clear()
+        previewTrip = null
         
         binding.tvPreviewDestName.text = destName
-        binding.tvPreviewAddress.text = doc.address_name
+        binding.tvPreviewAddress.text = doc.address_name.ifEmpty { doc.road_address_name }
         binding.llPreviewOverlay.visibility = android.view.View.VISIBLE
-        
+
+        // Reset to last used route option or default RECOMMENDED
+        val savedOptionName = sharedPref.getString("LAST_ROUTE_OPTION", RoutePreviewOption.RECOMMENDED.name)
+        selectedRouteOption = try {
+            RoutePreviewOption.valueOf(savedOptionName ?: RoutePreviewOption.RECOMMENDED.name)
+        } catch (e: Exception) {
+            RoutePreviewOption.RECOMMENDED
+        }
+        updateRouteOptionTabsUI()
+
         try {
             val goalX = doc.x.toDoubleOrNull() ?: 0.0
             val goalY = doc.y.toDoubleOrNull() ?: 0.0
@@ -1858,6 +1908,7 @@ class KakaoMapActivity : AppCompatActivity(),
             val floatPoint = com.kakaomobility.knsdk.common.util.FloatPoint(katec.x.toFloat(), katec.y.toFloat())
             
             binding.naviView.mapComponent?.mapView?.removeMarkersAll()
+            binding.naviView.mapComponent?.mapView?.removeRoutesAll()
             val marker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(floatPoint)
             marker.icon = createMarkerBitmap()
             binding.naviView.mapComponent?.mapView?.addMarker(marker)
@@ -1876,9 +1927,17 @@ class KakaoMapActivity : AppCompatActivity(),
         hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.GONE
         hudOverlayManager.hideMediaOverlay(updatePref = false)
 
+        // 4가지 옵션 클릭 리스너 설정
+        binding.btnOptionRecommend.setOnClickListener { selectRouteOption(RoutePreviewOption.RECOMMENDED) }
+        binding.btnOptionFree.setOnClickListener { selectRouteOption(RoutePreviewOption.FREE) }
+        binding.btnOptionPaid.setOnClickListener { selectRouteOption(RoutePreviewOption.PAID) }
+        binding.btnOptionShortest.setOnClickListener { selectRouteOption(RoutePreviewOption.SHORTEST) }
+
         binding.btnPreviewStart.setOnClickListener {
+            val option = selectedRouteOption
+            val trip = previewTrip
             hidePreviewOverlay()
-            startRouteGuidance(doc)
+            startRouteGuidance(doc, trip, option)
         }
         
         binding.btnPreviewCancel.setOnClickListener {
@@ -1886,16 +1945,200 @@ class KakaoMapActivity : AppCompatActivity(),
             finish()
         }
 
-        // Start 5 second countdown timer
+        // 5초 카운트다운 타이머 시작
+        restartPreviewTimer()
+
+        // 경로 계산 시작
+        requestInitialTripAndRoute(doc)
+    }
+
+    private fun requestInitialTripAndRoute(doc: KakaoDocument) {
+        var startPoi: KNPOI? = null
+        val gpsManager = com.kakaomobility.knsdk.KNSDK.sharedGpsManager()
+        val currentGps = gpsManager?.recentGpsData
+
+        if (currentGps != null && currentGps.pos.x > 0 && currentGps.pos.y > 0) {
+            startPoi = KNPOI("현 위치", currentGps.pos.x.toInt(), currentGps.pos.y.toInt(), "")
+        } else {
+            try {
+                val loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) 
+                    ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                if (loc != null) {
+                    val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(loc.longitude, loc.latitude)
+                    startPoi = KNPOI("현 위치", katec.x.toInt(), katec.y.toInt(), "")
+                }
+            } catch (e: SecurityException) { }
+        }
+
+        if (startPoi == null) {
+            showRouteLoadingState(true, "GPS 확인 중...")
+            return
+        }
+
+        val goalX = doc.x.toDoubleOrNull() ?: 0.0
+        val goalY = doc.y.toDoubleOrNull() ?: 0.0
+        val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(goalX, goalY)
+        val goalPoi = KNPOI(doc.place_name.ifEmpty { doc.road_address_name }, katec.x.toInt(), katec.y.toInt(), doc.address_name)
+
+        showRouteLoadingState(true, "경로를 탐색하고 있습니다...")
+        isCalculatingRoute = true
+
+        com.kakaomobility.knsdk.KNSDK.makeTripWithStart(startPoi, goalPoi, null) { error, trip ->
+            runOnUiThread {
+                if (!isShowingPreview) return@runOnUiThread
+                isCalculatingRoute = false
+                if (error != null || trip == null) {
+                    showRouteLoadingState(false)
+                    binding.tvRouteEta.text = "탐색 실패"
+                    binding.tvRouteArrivalTime.text = ""
+                    binding.tvRouteDistance.text = ""
+                    binding.tvRouteToll.text = error?.msg ?: "경로 탐색 오류"
+                } else {
+                    previewTrip = trip
+                    fetchRouteForOption(trip, selectedRouteOption)
+                }
+            }
+        }
+    }
+
+    private fun fetchRouteForOption(trip: KNTrip, option: RoutePreviewOption) {
+        val cached = previewRouteCache[option]
+        if (cached != null) {
+            showRouteLoadingState(false)
+            displayRouteInfo(cached)
+            return
+        }
+
+        showRouteLoadingState(true, "${option.title} 탐색 중...")
+        isCalculatingRoute = true
+
+        trip.routeWithPriority(option.priority, option.avoidOption) { error, routes ->
+            runOnUiThread {
+                if (!isShowingPreview) return@runOnUiThread
+                isCalculatingRoute = false
+                showRouteLoadingState(false)
+                val route = routes?.firstOrNull()
+                if (error != null || route == null) {
+                    binding.tvRouteEta.text = "탐색 실패"
+                    binding.tvRouteArrivalTime.text = ""
+                    binding.tvRouteDistance.text = ""
+                    binding.tvRouteToll.text = error?.msg ?: "경로 없음"
+                } else {
+                    previewRouteCache[option] = route
+                    displayRouteInfo(route)
+                }
+            }
+        }
+    }
+
+    private fun displayRouteInfo(route: KNRoute) {
+        // ETA & Arrival time
+        val totalSec = route.totalTime
+        val totalMin = Math.round(totalSec / 60.0).toInt()
+        val etaStr = if (totalMin < 60) {
+            "${totalMin}분"
+        } else {
+            val hours = totalMin / 60
+            val mins = totalMin % 60
+            if (mins > 0) "${hours}시간 ${mins}분" else "${hours}시간"
+        }
+        binding.tvRouteEta.text = etaStr
+
+        val calendar = java.util.Calendar.getInstance()
+        calendar.add(java.util.Calendar.SECOND, totalSec)
+        val hour24 = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+        val min = calendar.get(java.util.Calendar.MINUTE)
+        val amPm = if (hour24 < 12) "오전" else "오후"
+        val hour12 = if (hour24 % 12 == 0) 12 else hour24 % 12
+        binding.tvRouteArrivalTime.text = String.format("(%s %d:%02d 도착)", amPm, hour12, min)
+
+        // Distance
+        val distMeter = route.totalDist
+        val distStr = if (distMeter < 1000) {
+            "${distMeter}m"
+        } else {
+            String.format("%.1f km", distMeter / 1000.0)
+        }
+        binding.tvRouteDistance.text = distStr
+
+        // Toll fee
+        val cost = route.totalCost
+        binding.tvRouteToll.text = if (cost <= 0) {
+            "통행료 무료"
+        } else {
+            String.format("통행료 %,d원", cost)
+        }
+
+        // Draw route on map
+        try {
+            binding.naviView.mapComponent?.mapView?.removeRoutesAll()
+            binding.naviView.mapComponent?.mapView?.setRoute(route)
+
+            val region = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCoordinateRegion().initWithRoute(listOf(route))
+            val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator.fitTo(
+                region,
+                android.graphics.RectF(60f, 60f, 60f, 220f)
+            )
+            binding.naviView.mapComponent?.mapView?.moveCamera(cameraUpdate, false, false)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun selectRouteOption(option: RoutePreviewOption) {
+        if (selectedRouteOption == option && previewRouteCache.containsKey(option)) {
+            restartPreviewTimer()
+            return
+        }
+
+        selectedRouteOption = option
+        sharedPref.edit().putString("LAST_ROUTE_OPTION", option.name).apply()
+        updateRouteOptionTabsUI()
+        restartPreviewTimer()
+
+        val trip = previewTrip
+        if (trip != null) {
+            fetchRouteForOption(trip, option)
+        } else {
+            val doc = previewDoc
+            if (doc != null) {
+                requestInitialTripAndRoute(doc)
+            }
+        }
+    }
+
+    private fun updateRouteOptionTabsUI() {
+        val tabs = listOf(
+            Triple(binding.btnOptionRecommend, RoutePreviewOption.RECOMMENDED, "추천경로"),
+            Triple(binding.btnOptionFree, RoutePreviewOption.FREE, "무료우선"),
+            Triple(binding.btnOptionPaid, RoutePreviewOption.PAID, "유료우선"),
+            Triple(binding.btnOptionShortest, RoutePreviewOption.SHORTEST, "최단경로")
+        )
+
+        for ((view, opt, _) in tabs) {
+            if (opt == selectedRouteOption) {
+                view.setBackgroundResource(R.drawable.bg_route_option_selected)
+                view.setTextColor(android.graphics.Color.parseColor("#000000"))
+                view.setTypeface(null, android.graphics.Typeface.BOLD)
+            } else {
+                view.setBackgroundResource(R.drawable.bg_route_option_normal)
+                view.setTextColor(android.graphics.Color.parseColor("#AEAEB2"))
+                view.setTypeface(null, android.graphics.Typeface.NORMAL)
+            }
+        }
+    }
+
+    private fun restartPreviewTimer() {
         previewTimer?.cancel()
+        binding.btnPreviewStart.text = "안내 시작 (5)"
         previewTimer = object : android.os.CountDownTimer(5000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val secondsLeft = (millisUntilFinished / 1000).toInt() + 1
-                binding.btnPreviewStart.text = "안내시작(${secondsLeft})"
+                binding.btnPreviewStart.text = "안내 시작 (${secondsLeft})"
             }
 
             override fun onFinish() {
-                binding.btnPreviewStart.text = "안내시작(0)"
+                binding.btnPreviewStart.text = "안내 시작"
                 if (isShowingPreview) {
                     binding.btnPreviewStart.performClick()
                 }
@@ -1903,13 +2146,27 @@ class KakaoMapActivity : AppCompatActivity(),
         }.start()
     }
 
+    private fun showRouteLoadingState(loading: Boolean, message: String = "") {
+        if (loading) {
+            binding.llRouteLoading.visibility = android.view.View.VISIBLE
+            binding.llRouteInfoContent.visibility = android.view.View.GONE
+            if (message.isNotEmpty()) {
+                binding.tvRouteLoadingText.text = message
+            }
+        } else {
+            binding.llRouteLoading.visibility = android.view.View.GONE
+            binding.llRouteInfoContent.visibility = android.view.View.VISIBLE
+        }
+    }
+
     private fun hidePreviewOverlay() {
         isShowingPreview = false
         
         previewTimer?.cancel()
         previewTimer = null
-        binding.btnPreviewStart.text = "안내시작"
+        binding.btnPreviewStart.text = "안내 시작"
         binding.llPreviewOverlay.visibility = android.view.View.GONE
+        binding.naviView.mapComponent?.mapView?.removeRoutesAll()
         binding.naviView.mapComponent?.mapView?.removeMarkersAll()
         
         val shouldShowCancel = hasStartedRouteGuidance && isGuidanceActive
