@@ -90,6 +90,8 @@ class KakaoMapActivity : AppCompatActivity(),
     private var selectedRouteOption: RoutePreviewOption = RoutePreviewOption.RECOMMENDED
     private var previewTrip: KNTrip? = null
     private var previewDoc: KakaoDocument? = null
+    private var previewStartFloatPoint: com.kakaomobility.knsdk.common.util.FloatPoint? = null
+    private var previewDestFloatPoint: com.kakaomobility.knsdk.common.util.FloatPoint? = null
     private val previewRouteCache = mutableMapOf<RoutePreviewOption, KNRoute>()
     private var isCalculatingRoute = false
     private var isShowingPreview = false
@@ -428,6 +430,11 @@ class KakaoMapActivity : AppCompatActivity(),
 
         naviView = binding.naviView
         naviView.stateDelegate = this@KakaoMapActivity
+        binding.naviView.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            if (isShowingPreview) {
+                setNaviViewDrivingUiVisible(false)
+            }
+        }
         
         SdiDataRepository.isNightMode.observe(this, androidx.lifecycle.Observer { isNight ->
             if (::naviView.isInitialized) {
@@ -874,7 +881,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     override fun guidanceDidUpdateSafetyGuide(guidance: KNGuidance, safetyGuide: KNGuide_Safety?) {
-        if(::naviView.isInitialized) naviView.guidanceDidUpdateSafetyGuide(guidance, safetyGuide)
+        if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceDidUpdateSafetyGuide(guidance, safetyGuide)
         currentSafetyGuide = safetyGuide
         processSafeties(guidance.locationGuide)
     }
@@ -963,7 +970,7 @@ class KakaoMapActivity : AppCompatActivity(),
             if (!::hudOverlayManager.isInitialized) return@runOnUiThread
             // 단속 카메라 이벤트가 없을 때만 도로 기본 제한속도(30 이상) 파란색 원을 표시
             // 단속 이벤트 발생 시 파란색 원을 숨겨서 KNSDK 단속 카메라 위젯만 보이도록 함
-            val shouldShow = !isCameraEventActive && currentRoadLimitSpeed >= 30 && hudOverlayManager.isOverlayVisible
+            val shouldShow = !isShowingPreview && !isCameraEventActive && currentRoadLimitSpeed >= 30 && hudOverlayManager.isOverlayVisible
             if (shouldShow) {
                 hudOverlayManager.binding.llSpeedGroup.visibility = View.VISIBLE
                 hudOverlayManager.binding.llRoadSpeedLimit.visibility = View.VISIBLE
@@ -1439,7 +1446,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     override fun guidanceDidUpdateAroundSafeties(guidance: KNGuidance, safeties: List<KNSafety>?) {
-        if(::naviView.isInitialized) naviView.guidanceDidUpdateAroundSafeties(guidance, safeties)
+        if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceDidUpdateAroundSafeties(guidance, safeties)
     }
 
     override fun guidanceGuideStarted(guidance: KNGuidance) {
@@ -1659,26 +1666,26 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     override fun guidanceDidUpdateRouteGuide(guidance: KNGuidance, routeGuide: KNGuide_Route) {
-        if(::naviView.isInitialized) naviView.guidanceDidUpdateRouteGuide(guidance, routeGuide)
+        if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceDidUpdateRouteGuide(guidance, routeGuide)
     }
 
     override fun guidanceCheckingRouteChange(guidance: KNGuidance) {
-        if(::naviView.isInitialized) naviView.guidanceCheckingRouteChange(guidance)
+        if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceCheckingRouteChange(guidance)
     }
     override fun guidanceRouteUnchanged(guidance: KNGuidance) {
-        if(::naviView.isInitialized) naviView.guidanceRouteUnchanged(guidance)
+        if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceRouteUnchanged(guidance)
     }
     override fun guidanceRouteUnchangedWithError(guidance: KNGuidance, error: KNError) {
-        if(::naviView.isInitialized) naviView.guidanceRouteUnchangedWithError(guidance, error)
+        if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceRouteUnchangedWithError(guidance, error)
     }
     override fun guidanceOutOfRoute(guidance: KNGuidance) {
-        if(::naviView.isInitialized) naviView.guidanceOutOfRoute(guidance)
+        if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceOutOfRoute(guidance)
     }
     override fun guidanceRouteChanged(guidance: KNGuidance, fromRoute: KNRoute, fromLocation: KNLocation, toRoute: KNRoute, toLocation: KNLocation, changeReason: KNGuideRouteChangeReason) {
-        if(::naviView.isInitialized) naviView.guidanceRouteChanged(guidance)
+        if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceRouteChanged(guidance)
     }
     override fun guidanceDidUpdateRoutes(guidance: KNGuidance, routes: List<KNRoute>, multiRouteInfo: com.kakaomobility.knsdk.guidance.knguidance.routeguide.objects.KNMultiRouteInfo?) {
-        if(::naviView.isInitialized) naviView.guidanceDidUpdateRoutes(guidance, routes, multiRouteInfo)
+        if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceDidUpdateRoutes(guidance, routes, multiRouteInfo)
     }
     override fun guidanceDidUpdateIndoorRoute(guidance: KNGuidance, route: KNRoute?) {
         
@@ -1894,6 +1901,208 @@ class KakaoMapActivity : AppCompatActivity(),
         }
     }
 
+    private fun setNaviViewDrivingUiVisible(visible: Boolean) {
+        if (!::naviView.isInitialized) return
+        val targetVisibility = if (visible) View.VISIBLE else View.GONE
+
+        // 1. Map container and naviView itself MUST remain visible
+        binding.mapOverlayContainer.visibility = View.VISIBLE
+        binding.naviView.visibility = View.VISIBLE
+
+        // 2. Identify mapComponent and ensure its entire ancestor chain is VISIBLE
+        val mapComp = (binding.naviView.mapComponent as? View)
+            ?: binding.naviView.findViewById<View>(resources.getIdentifier("component_map", "id", packageName))
+
+        if (mapComp != null) {
+            mapComp.visibility = View.VISIBLE
+
+            val mapAncestors = mutableSetOf<View>()
+            var p: android.view.ViewParent? = mapComp.parent
+            while (p is View) {
+                mapAncestors.add(p)
+                p.visibility = View.VISIBLE
+                if (p === binding.naviView) break
+                p = p.parent
+            }
+
+            // In mapComp's immediate container (e.g. ConstraintLayout of view_navi),
+            // hide/restore all sibling driving UI views while keeping mapComp visible
+            val container = mapComp.parent as? ViewGroup
+            if (container != null) {
+                container.visibility = View.VISIBLE
+                for (i in 0 until container.childCount) {
+                    val child = container.getChildAt(i)
+                    if (child !== mapComp && !mapAncestors.contains(child)) {
+                        if (child.visibility != targetVisibility) {
+                            child.visibility = targetVisibility
+                        }
+                    }
+                }
+            }
+
+            // Also check direct children of naviView
+            for (i in 0 until binding.naviView.childCount) {
+                val child = binding.naviView.getChildAt(i)
+                if (child !== mapComp && !mapAncestors.contains(child)) {
+                    if (child.visibility != targetVisibility) {
+                        child.visibility = targetVisibility
+                    }
+                }
+            }
+        }
+
+        // 3. Specifically hide/restore known Kakao UI components by id
+        val componentNames = listOf(
+            "component_cur_position",
+            "component_cur_direction",
+            "component_next_direction",
+            "component_speed",
+            "component_around_menu",
+            "component_bottom",
+            "component_bottom_menu",
+            "component_traffic",
+            "component_info",
+            "component_sign_first",
+            "component_sign_second",
+            "component_custom_toast",
+            "component_compass",
+            "component_zoom",
+            "component_mapmode",
+            "component_highway_mode",
+            "component_highway_info",
+            "component_highway_mode_bg",
+            "component_map_around_pin_list",
+            "component_yugo",
+            "component_accident",
+            "component_emergency",
+            "component_simul_drive_view",
+            "component_route_info_container",
+            "component_section_info_container",
+            "component_lane",
+            "component_cross"
+        )
+        for (name in componentNames) {
+            findKakaoViewById(name)?.let { v ->
+                if (v !== mapComp) {
+                    if (v.visibility != targetVisibility) {
+                        v.visibility = targetVisibility
+                    }
+                }
+            }
+        }
+
+        // 주행 화살표(커서/유저 위치 마커) 숨김/표시 처리
+        try {
+            binding.naviView.mapComponent?.mapView?.userLocation?.isVisible = visible
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun getStartFloatPoint(): com.kakaomobility.knsdk.common.util.FloatPoint? {
+        val gpsManager = com.kakaomobility.knsdk.KNSDK.sharedGpsManager()
+        val currentGps = gpsManager?.recentGpsData
+        if (currentGps != null && currentGps.pos.x > 0 && currentGps.pos.y > 0) {
+            return com.kakaomobility.knsdk.common.util.FloatPoint(currentGps.pos.x.toFloat(), currentGps.pos.y.toFloat())
+        }
+        try {
+            val loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                ?: locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+            if (loc != null) {
+                val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(loc.longitude, loc.latitude)
+                return com.kakaomobility.knsdk.common.util.FloatPoint(katec.x.toFloat(), katec.y.toFloat())
+            }
+        } catch (e: SecurityException) { }
+        return null
+    }
+
+    private fun getDestFloatPoint(doc: KakaoDocument): com.kakaomobility.knsdk.common.util.FloatPoint? {
+        val goalX = doc.x.toDoubleOrNull() ?: return null
+        val goalY = doc.y.toDoubleOrNull() ?: return null
+        val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(goalX, goalY)
+        return com.kakaomobility.knsdk.common.util.FloatPoint(katec.x.toFloat(), katec.y.toFloat())
+    }
+
+    private fun fitMapToRoute(route: KNRoute? = null, markers: List<com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker> = emptyList()) {
+        try {
+            val mapView = binding.naviView.mapComponent?.mapView ?: return
+
+            val startP = previewStartFloatPoint
+            val destP = previewDestFloatPoint
+            if (startP == null && destP == null && route == null) return
+
+            var minX = Float.MAX_VALUE
+            var maxX = -Float.MAX_VALUE
+            var minY = Float.MAX_VALUE
+            var maxY = -Float.MAX_VALUE
+
+            startP?.let {
+                if (it.x < minX) minX = it.x
+                if (it.x > maxX) maxX = it.x
+                if (it.y < minY) minY = it.y
+                if (it.y > maxY) maxY = it.y
+            }
+
+            destP?.let {
+                if (it.x < minX) minX = it.x
+                if (it.x > maxX) maxX = it.x
+                if (it.y < minY) minY = it.y
+                if (it.y > maxY) maxY = it.y
+            }
+
+            try {
+                val polyline = route?.routePolylineWGS84()
+                if (!polyline.isNullOrEmpty()) {
+                    for (pt in polyline) {
+                        val x = (pt["x"] as? Number)?.toDouble() ?: continue
+                        val y = (pt["y"] as? Number)?.toDouble() ?: continue
+                        val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(x, y)
+                        val kx = katec.x.toFloat()
+                        val ky = katec.y.toFloat()
+                        if (kx < minX) minX = kx
+                        if (kx > maxX) maxX = kx
+                        if (ky < minY) minY = ky
+                        if (ky > maxY) maxY = ky
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            if (minX >= maxX || minY >= maxY) return
+
+            val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+
+            val spanX = (maxX - minX).coerceAtLeast(100f)
+            val spanY = (maxY - minY).coerceAtLeast(100f)
+
+            // 세로 모드: 하단 패널(45%) 및 KNSDK 내부 오프셋을 상쇄하기 위해 남쪽(minY) 여백을 적절히 주어
+            // 출발지(청주)와 도착지(서울)가 상/하 균형 있게 화면 중앙부에 편안한 여백으로 표시되도록 함.
+            val marginXLeft = spanX * 0.15f
+            val marginXRight = if (isLandscape) spanX * 0.40f else spanX * 0.15f
+            val marginTop = if (isLandscape) spanY * 0.15f else spanY * 0.10f
+            val marginBottom = if (isLandscape) spanY * 0.15f else spanY * 0.85f
+
+            val region = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCoordinateRegion()
+                .initWithMinMax(
+                    com.kakaomobility.knsdk.common.util.FloatPoint(minX - marginXLeft, minY - marginBottom),
+                    com.kakaomobility.knsdk.common.util.FloatPoint(maxX + marginXRight, maxY + marginTop)
+                )
+
+            val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator
+                .fitTo(region, null)
+                .tiltTo(0f)
+                .bearingTo(0f)
+            mapView.moveCamera(cameraUpdate, false, false)
+
+            android.util.Log.d("CarrotNavi", "fitMapToRoute executed: min=(${minX - marginXLeft}, ${minY - marginBottom}), max=(${maxX + marginXRight}, ${maxY + marginTop}), route=${route != null}")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            android.util.Log.e("CarrotNavi", "fitMapToRoute error: ${e.message}")
+        }
+    }
+
     private fun showPreviewOverlay(doc: KakaoDocument, destName: String) {
         isShowingPreview = true
         previewDoc = doc
@@ -1904,6 +2113,17 @@ class KakaoMapActivity : AppCompatActivity(),
         binding.tvPreviewAddress.text = doc.address_name.ifEmpty { doc.road_address_name }
         
         applyPreviewSplitLayout()
+        setNaviViewDrivingUiVisible(false)
+        binding.root.postDelayed({
+            if (isShowingPreview) {
+                setNaviViewDrivingUiVisible(false)
+            }
+        }, 150)
+        binding.root.postDelayed({
+            if (isShowingPreview) {
+                setNaviViewDrivingUiVisible(false)
+            }
+        }, 500)
 
         if (hasStartedRouteGuidance || isGuidanceActive) {
             try {
@@ -1913,13 +2133,6 @@ class KakaoMapActivity : AppCompatActivity(),
             }
             isGuidanceActive = false
             hasStartedRouteGuidance = false
-        }
-
-        if (savedCameraMode == null && ::naviView.isInitialized) {
-            savedCameraMode = naviView.mapViewMode
-        }
-        if (::naviView.isInitialized) {
-            naviView.mapViewMode = MapViewCameraMode.Top
         }
 
         // Reset to last used route option or default RECOMMENDED
@@ -1932,33 +2145,54 @@ class KakaoMapActivity : AppCompatActivity(),
         updateRouteOptionTabsUI()
 
         try {
-            val goalX = doc.x.toDoubleOrNull() ?: 0.0
-            val goalY = doc.y.toDoubleOrNull() ?: 0.0
-            val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(goalX, goalY)
-            val floatPoint = com.kakaomobility.knsdk.common.util.FloatPoint(katec.x.toFloat(), katec.y.toFloat())
-            
             binding.naviView.mapComponent?.mapView?.removeMarkersAll()
             binding.naviView.mapComponent?.mapView?.removeRoutesAll()
-            val marker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(floatPoint)
-            marker.icon = createMarkerBitmap()
-            binding.naviView.mapComponent?.mapView?.addMarker(marker)
 
-            val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator
-                .targetTo(floatPoint)
-                .anchorTo(com.kakaomobility.knsdk.common.util.FloatPoint(0.5f, 0.5f))
-                .tiltTo(0f)
-                .bearingTo(0f)
-            binding.naviView.mapComponent?.mapView?.moveCamera(cameraUpdate, false, false)
+            val startPoint = getStartFloatPoint()
+            val destPoint = getDestFloatPoint(doc)
+
+            previewStartFloatPoint = startPoint
+            previewDestFloatPoint = destPoint
+
+            val initialMarkers = mutableListOf<com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker>()
+
+            if (startPoint != null) {
+                val startMarker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(startPoint).apply {
+                    val bmp = createMarkerBadgeBitmap("출발", "#1E88E5", "#1565C0")
+                    icon = bmp
+                    val density = resources.displayMetrics.density
+                    pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
+                }
+                binding.naviView.mapComponent?.mapView?.addMarker(startMarker)
+                initialMarkers.add(startMarker)
+            }
+
+            if (destPoint != null) {
+                val destMarker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(destPoint).apply {
+                    val bmp = createMarkerBadgeBitmap("도착", "#E53935", "#C62828")
+                    icon = bmp
+                    val density = resources.displayMetrics.density
+                    pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
+                }
+                binding.naviView.mapComponent?.mapView?.addMarker(destMarker)
+                initialMarkers.add(destMarker)
+            }
+
+            if (initialMarkers.isNotEmpty() || (previewStartFloatPoint != null && previewDestFloatPoint != null)) {
+                fitMapToRoute(null, initialMarkers)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
         
         hudOverlayManager.binding.llSpeedGroup.visibility = android.view.View.GONE
+        hudOverlayManager.binding.llRoadSpeedLimit.visibility = android.view.View.GONE
         hudOverlayManager.binding.llStatusGroup.visibility = android.view.View.GONE
         hudOverlayManager.binding.btnGpsCancelRoute?.visibility = android.view.View.GONE
         hudOverlayManager.binding.llRouteEtaGroup?.visibility = android.view.View.GONE
         hudOverlayManager.binding.llQuickDestGroup.visibility = android.view.View.GONE
         hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.GONE
+        hudOverlayManager.binding.llTopUiGroup.visibility = android.view.View.GONE
         hudOverlayManager.hideMediaOverlay(updatePref = false)
 
         // 4가지 옵션 클릭 리스너 설정
@@ -1998,6 +2232,7 @@ class KakaoMapActivity : AppCompatActivity(),
             try {
                 val loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) 
                     ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                    ?: locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
                 if (loc != null) {
                     val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(loc.longitude, loc.latitude)
                     startPoi = KNPOI("현 위치", katec.x.toInt(), katec.y.toInt(), "")
@@ -2014,6 +2249,9 @@ class KakaoMapActivity : AppCompatActivity(),
         val goalY = doc.y.toDoubleOrNull() ?: 0.0
         val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(goalX, goalY)
         val goalPoi = KNPOI(doc.place_name.ifEmpty { doc.road_address_name }, katec.x.toInt(), katec.y.toInt(), doc.address_name)
+
+        previewStartFloatPoint = com.kakaomobility.knsdk.common.util.FloatPoint(startPoi.pos.x.toFloat(), startPoi.pos.y.toFloat())
+        previewDestFloatPoint = com.kakaomobility.knsdk.common.util.FloatPoint(katec.x.toFloat(), katec.y.toFloat())
 
         showRouteLoadingState(true, "경로를 탐색하고 있습니다...")
         isCalculatingRoute = true
@@ -2107,17 +2345,63 @@ class KakaoMapActivity : AppCompatActivity(),
         // Draw route on map
         try {
             binding.naviView.mapComponent?.mapView?.removeRoutesAll()
+            binding.naviView.mapComponent?.mapView?.removeMarkersAll()
+
+            val routeProps = binding.naviView.mapComponent?.mapView?.routeProperties
+                ?: com.kakaomobility.knsdk.map.knmapview.idl.KNMapRouteProperties()
+            routeProps.isVisible = true
+            routeProps.isVisibleFullRoute = true
+            routeProps.isVisibleRGArrow = true
+            binding.naviView.mapComponent?.mapView?.routeProperties = routeProps
+
             binding.naviView.mapComponent?.mapView?.setRoute(route)
+            binding.naviView.mapComponent?.mapView?.userLocation?.isVisible = false
 
-            val density = resources.displayMetrics.density
-            val paddingRect = android.graphics.RectF(40f * density, 40f * density, 40f * density, 40f * density)
+            val currentMarkers = mutableListOf<com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker>()
 
-            val region = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCoordinateRegion().initWithRoute(listOf(route))
-            val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator
-                .fitTo(region, paddingRect)
-                .tiltTo(0f)
-                .bearingTo(0f)
-            binding.naviView.mapComponent?.mapView?.moveCamera(cameraUpdate, false, false)
+            previewStartFloatPoint?.let { sp ->
+                val startMarker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(sp).apply {
+                    val bmp = createMarkerBadgeBitmap("출발", "#1E88E5", "#1565C0")
+                    icon = bmp
+                    val density = resources.displayMetrics.density
+                    pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
+                }
+                binding.naviView.mapComponent?.mapView?.addMarker(startMarker)
+                currentMarkers.add(startMarker)
+            }
+
+            previewDestFloatPoint?.let { dp ->
+                val destMarker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(dp).apply {
+                    val bmp = createMarkerBadgeBitmap("도착", "#E53935", "#C62828")
+                    icon = bmp
+                    val density = resources.displayMetrics.density
+                    pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
+                }
+                binding.naviView.mapComponent?.mapView?.addMarker(destMarker)
+                currentMarkers.add(destMarker)
+            }
+
+            fitMapToRoute(route, currentMarkers)
+            binding.naviView.postDelayed({
+                if (isShowingPreview) {
+                    fitMapToRoute(route, currentMarkers)
+                }
+            }, 200)
+            binding.naviView.postDelayed({
+                if (isShowingPreview) {
+                    fitMapToRoute(route, currentMarkers)
+                }
+            }, 500)
+            binding.naviView.postDelayed({
+                if (isShowingPreview) {
+                    fitMapToRoute(route, currentMarkers)
+                }
+            }, 800)
+            binding.naviView.postDelayed({
+                if (isShowingPreview) {
+                    fitMapToRoute(route, currentMarkers)
+                }
+            }, 1200)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -2223,6 +2507,8 @@ class KakaoMapActivity : AppCompatActivity(),
         binding.flPreviewPanel.visibility = android.view.View.GONE
         binding.naviView.mapComponent?.mapView?.removeRoutesAll()
         binding.naviView.mapComponent?.mapView?.removeMarkersAll()
+        previewStartFloatPoint = null
+        previewDestFloatPoint = null
         
         savedCameraMode?.let {
             if (::naviView.isInitialized) {
@@ -2234,10 +2520,14 @@ class KakaoMapActivity : AppCompatActivity(),
         // 주행 모드 미디어 분할 레이아웃 복원
         updateMediaLayout(resources.configuration.orientation)
 
+        // 주행 모드 내비 UI 복원
+        setNaviViewDrivingUiVisible(true)
+
         val shouldShowCancel = hasStartedRouteGuidance && isGuidanceActive
         hudOverlayManager.binding.btnGpsCancelRoute?.visibility = if (shouldShowCancel) android.view.View.VISIBLE else android.view.View.GONE
         hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.VISIBLE
         hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.VISIBLE
+        hudOverlayManager.binding.llTopUiGroup.visibility = android.view.View.VISIBLE
         hudOverlayManager.updateOverlayVisibility()
         updateRoadSpeedLimitVisibility()
         updateEtaUi()
@@ -2256,6 +2546,7 @@ class KakaoMapActivity : AppCompatActivity(),
         binding.flMediaContainer.visibility = android.view.View.GONE
         
         binding.flPreviewPanel.visibility = android.view.View.VISIBLE
+        setNaviViewDrivingUiVisible(false)
 
         val mainContainer = binding.llSplitContainer
         val mapLayout = binding.mapOverlayContainer
@@ -2296,26 +2587,95 @@ class KakaoMapActivity : AppCompatActivity(),
         }
     }
 
-    private fun createMarkerBitmap(): android.graphics.Bitmap {
-        val size = 120
-        val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+    private fun createMarkerBadgeBitmap(text: String, startColorHex: String, endColorHex: String): android.graphics.Bitmap {
+        val density = resources.displayMetrics.density
+        
+        val badgeWidthDp = 58f
+        val badgeHeightDp = 28f
+        val cornerRadiusDp = 14f
+        val pointerWidthDp = 10f
+        val pointerHeightDp = 6f
+        val shadowPaddingDp = 4f
+        
+        val width = ((badgeWidthDp + shadowPaddingDp * 2) * density).toInt()
+        val height = ((badgeHeightDp + pointerHeightDp + shadowPaddingDp * 2) * density).toInt()
+        
+        val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
         val canvas = android.graphics.Canvas(bitmap)
-        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
-        paint.color = android.graphics.Color.parseColor("#E91E63") 
         
-        val cx = size / 2f
-        val cy = size / 2f
+        val left = shadowPaddingDp * density
+        val top = shadowPaddingDp * density
+        val right = left + badgeWidthDp * density
+        val bottom = top + badgeHeightDp * density
+        val cx = (left + right) / 2f
+        val pointerH = pointerHeightDp * density
+        val pointerHalfW = (pointerWidthDp * density) / 2f
         
-        canvas.drawCircle(cx, cy, 30f, paint)
+        // 1. Drop shadow
+        val shadowPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#40000000")
+            style = android.graphics.Paint.Style.FILL
+        }
+        val cornerRadius = cornerRadiusDp * density
+        val shadowRect = android.graphics.RectF(left, top + 2f * density, right, bottom + 2f * density)
+        canvas.drawRoundRect(shadowRect, cornerRadius, cornerRadius, shadowPaint)
         
-        paint.color = android.graphics.Color.WHITE
-        canvas.drawCircle(cx, cy, 12f, paint)
+        val shadowPath = android.graphics.Path().apply {
+            moveTo(cx - pointerHalfW, bottom + 2f * density)
+            lineTo(cx, bottom + pointerH + 2f * density)
+            lineTo(cx + pointerHalfW, bottom + 2f * density)
+            close()
+        }
+        canvas.drawPath(shadowPath, shadowPaint)
+
+        // 2. Badge gradient fill
+        val badgePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            shader = android.graphics.LinearGradient(
+                cx, top, cx, bottom + pointerH,
+                android.graphics.Color.parseColor(startColorHex),
+                android.graphics.Color.parseColor(endColorHex),
+                android.graphics.Shader.TileMode.CLAMP
+            )
+            style = android.graphics.Paint.Style.FILL
+        }
+        val badgeRect = android.graphics.RectF(left, top, right, bottom)
+        canvas.drawRoundRect(badgeRect, cornerRadius, cornerRadius, badgePaint)
         
-        paint.style = android.graphics.Paint.Style.STROKE
-        paint.strokeWidth = 4f
-        paint.color = android.graphics.Color.parseColor("#FFFFFF")
-        canvas.drawCircle(cx, cy, 30f, paint)
+        // 3. Pointer fill
+        val pointerPath = android.graphics.Path().apply {
+            moveTo(cx - pointerHalfW, bottom - 1f)
+            lineTo(cx, bottom + pointerH)
+            lineTo(cx + pointerHalfW, bottom - 1f)
+            close()
+        }
+        canvas.drawPath(pointerPath, badgePaint)
+
+        // 4. White stroke border
+        val strokePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.WHITE
+            style = android.graphics.Paint.Style.STROKE
+            strokeWidth = 1.5f * density
+        }
+        canvas.drawRoundRect(badgeRect, cornerRadius, cornerRadius, strokePaint)
         
+        val pointerStrokePath = android.graphics.Path().apply {
+            moveTo(cx - pointerHalfW, bottom)
+            lineTo(cx, bottom + pointerH)
+            lineTo(cx + pointerHalfW, bottom)
+        }
+        canvas.drawPath(pointerStrokePath, strokePaint)
+
+        // 5. White bold text
+        val textPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.WHITE
+            textSize = 13.5f * density
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
+        val fontMetrics = textPaint.fontMetrics
+        val textY = (top + bottom) / 2f - (fontMetrics.ascent + fontMetrics.descent) / 2f
+        canvas.drawText(text, cx, textY, textPaint)
+
         return bitmap
     }
     // KNNaviView_StateDelegate
