@@ -609,6 +609,14 @@ class MapActivity : AppCompatActivity() {
             }
         }
 
+        if (::hudBinding.isInitialized && hudBinding.llQuickDestGroup?.visibility == View.VISIBLE) {
+            val quickRect = android.graphics.Rect()
+            hudBinding.llQuickDestGroup?.getGlobalVisibleRect(quickRect)
+            if (quickRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                return super.dispatchTouchEvent(ev)
+            }
+        }
+
         // TMAP 안심주행 하단 바 영역(navigation_eta: 주행종료, 현위치 주소, 메뉴 버튼 등) 터치 제한
         val etaView = if (etaViewId != 0) findViewById<View?>(etaViewId) else null
         if (etaView != null && etaView.isShown) {
@@ -1206,19 +1214,21 @@ class MapActivity : AppCompatActivity() {
                     gpsInfo.setBackgroundResource(R.drawable.bg_gps_end_btn)
 
                     if (hasValidBar) {
-                        // 가로/세로 공통: 좌측에 GPS 상태, 중앙에 현재 주소 표시
+                        // 가로/세로 공통: 좌측에 GPS 상태, 중앙에 현재 주소 표시, 우측에 원터치 목적지 버튼
                         gpsInfo.gravity = android.view.Gravity.CENTER_VERTICAL
-                        val padH = (16 * resources.displayMetrics.density).toInt()
+                        val padH = (12 * resources.displayMetrics.density).toInt()
                         gpsInfo.setPadding(padH, 0, padH, 0)
                         val hasAddr = lastKnownAddress.isNotEmpty()
-                        hudBinding.tvGpsAddress?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
+                        hudBinding.tvGpsAddress?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.INVISIBLE
                         hudBinding.vGpsDivider?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
+                        hudBinding.llQuickDestGroup?.visibility = if (hudOverlayManager.isOverlayVisible) android.view.View.VISIBLE else android.view.View.GONE
                     } else {
                         // 예외 fallback: 주행종료 버튼 크기이므로 GPS 상태만 중앙 정렬
                         gpsInfo.gravity = android.view.Gravity.CENTER
                         gpsInfo.setPadding(0, 0, 0, 0)
                         hudBinding.tvGpsAddress?.visibility = android.view.View.GONE
                         hudBinding.vGpsDivider?.visibility = android.view.View.GONE
+                        hudBinding.llQuickDestGroup?.visibility = android.view.View.GONE
                     }
                 }
 
@@ -1298,7 +1308,7 @@ class MapActivity : AppCompatActivity() {
         hudBinding.tvGpsAddress?.let { tv ->
             tv.text = address
             tv.isSelected = true
-            tv.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+            tv.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.INVISIBLE
         }
         hudBinding.vGpsDivider?.let { divider ->
             divider.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE

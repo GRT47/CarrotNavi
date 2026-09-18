@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -181,11 +182,12 @@ class HudOverlayManager(
         binding.llStatusGroup?.scaleX = 1f
         binding.llStatusGroup?.scaleY = 1f
 
-        // 원터치 목적지 버튼 그룹 (집, 회사, 즐겨찾기) 최상단 고정
+        // 원터치 목적지 버튼 그룹 (집, 회사, 즐겨찾기) - 티맵 안전운행 화면에서만 표시
         binding.llQuickDestGroup?.translationX = 0f
         binding.llQuickDestGroup?.translationY = 0f
         binding.llQuickDestGroup?.scaleX = 1f
         binding.llQuickDestGroup?.scaleY = 1f
+        binding.llQuickDestGroup?.visibility = if (isOverlayVisible && activity is MapActivity) View.VISIBLE else View.GONE
 
         draggables.forEach { view ->
             view.post {
@@ -526,6 +528,7 @@ class HudOverlayManager(
 
         // 퀵 목적지 버튼 (집, 사무실, 즐겨찾기)
         binding.btnQuickHome.setOnClickListener {
+            Log.d("HudOverlayManager", "btnQuickHome clicked")
             val home = DestinationBookmarkManager.getHome(activity)
             if (home != null) {
                 onQuickDestinationSelected?.invoke(home.toKakaoDocument())
@@ -554,6 +557,7 @@ class HudOverlayManager(
         }
 
         binding.btnQuickOffice.setOnClickListener {
+            Log.d("HudOverlayManager", "btnQuickOffice clicked")
             val office = DestinationBookmarkManager.getOffice(activity)
             if (office != null) {
                 onQuickDestinationSelected?.invoke(office.toKakaoDocument())
@@ -582,6 +586,7 @@ class HudOverlayManager(
         }
 
         binding.btnQuickFavorites.setOnClickListener {
+            Log.d("HudOverlayManager", "btnQuickFavorites clicked")
             showFavoritesDialog()
         }
     }
@@ -807,7 +812,8 @@ class HudOverlayManager(
         binding.llSpeedGroup.visibility = visibility
         binding.llBottomLeftOverlays.visibility = visibility
         binding.llTopUiGroup?.visibility = visibility
-        binding.llQuickDestGroup.visibility = visibility
+        // 티맵 주행화면의 GPS 오버레이 내부에서만 표시, 카카오 경로안내 중에는 숨김
+        binding.llQuickDestGroup?.visibility = if (isOverlayVisible && activity is MapActivity) View.VISIBLE else View.GONE
         
         // 티맵 및 카카오 주행 화면에서는 하단 바를 가리기 위해 오버레이가 켜져 있으면 항상 표시
         binding.llStatusGroup?.visibility = if (isOverlayVisible) View.VISIBLE else View.GONE

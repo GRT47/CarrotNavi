@@ -1076,145 +1076,14 @@ class KakaoMapActivity : AppCompatActivity(),
 
     private fun alignQuickDestGroupWithTbt() {
         if (!::hudOverlayManager.isInitialized || !::binding.isInitialized) return
-        val quickDestGroup = hudOverlayManager.binding.llQuickDestGroup ?: return
-        val topUiGroup = hudOverlayManager.binding.llTopUiGroup
-        val mapContainer = binding.mapOverlayContainer ?: return
-
+        hudOverlayManager.binding.llQuickDestGroup?.visibility = android.view.View.GONE
+        val topUiGroup = hudOverlayManager.binding.llTopUiGroup ?: return
         val density = resources.displayMetrics.density
-        val defaultLeftMargin = (16 * density).toInt()
-        val defaultTopMargin = 0
-
-        val isPortrait = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
-
-        // 경로안내 중이 아니거나 미리보기 화면이면 기본 위치(최상단 좌측)로 복원
-        if (!hasStartedRouteGuidance || !isGuidanceActive || isShowingPreview) {
-            val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
-                ?: android.widget.FrameLayout.LayoutParams(
-                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
-                )
-            if (params.leftMargin != defaultLeftMargin || params.topMargin != defaultTopMargin || params.gravity != (android.view.Gravity.TOP or android.view.Gravity.START)) {
-                params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
-                params.leftMargin = defaultLeftMargin
-                params.rightMargin = 0
-                params.topMargin = defaultTopMargin
-                quickDestGroup.layoutParams = params
-            }
-            quickDestGroup.translationX = 0f
-            quickDestGroup.translationY = 0f
-
-            // OP 연결 상태 뷰 기본 위치 복원
-            topUiGroup?.let { topUi ->
-                val topParams = topUi.layoutParams as? android.widget.FrameLayout.LayoutParams
-                val defaultTop = (4 * density).toInt()
-                if (topParams != null && topParams.topMargin != defaultTop) {
-                    topParams.topMargin = defaultTop
-                    topUi.layoutParams = topParams
-                }
-            }
-            return
-        }
-
-        // OP 연결 뷰 기본 위치(최상단 우측) 유지
-        topUiGroup?.let { topUi ->
-            val topParams = topUi.layoutParams as? android.widget.FrameLayout.LayoutParams
-            val defaultTop = (4 * density).toInt()
-            if (topParams != null && topParams.topMargin != defaultTop) {
-                topParams.topMargin = defaultTop
-                topUi.layoutParams = topParams
-            }
-        }
-
-        // TBT 회전 안내 뷰 탐색 (KNSDK 주행 가이드 뷰)
-        val tbtView = findKakaoViewById("component_cur_direction")
-            ?: findKakaoViewById("cur_direction_layout")
-
-        if (tbtView != null && (tbtView.width > 0 || tbtView.height > 0 || tbtView.isShown)) {
-            val tbtLoc = IntArray(2)
-            val containerLoc = IntArray(2)
-            tbtView.getLocationOnScreen(tbtLoc)
-            mapContainer.getLocationOnScreen(containerLoc)
-
-            val relX = (tbtLoc[0] - containerLoc[0]).coerceAtLeast(0)
-            val relY = (tbtLoc[1] - containerLoc[1]).coerceAtLeast(0)
-            val tbtWidth = tbtView.width
-            val tbtHeight = tbtView.height
-
-            val targetLeft: Int
-            val targetTop: Int
-
-            if (isPortrait) {
-                // 세로 화면: TBT 패널 밑(아래) 높이이면서 화면 우측(오른쪽)에 배치
-                val gap = (8 * density).toInt()
-                val targetTop = relY + tbtHeight + gap
-                val marginEnd = (8 * density).toInt()
-
-                val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
-                    ?: android.widget.FrameLayout.LayoutParams(
-                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
-                    )
-                if (params.gravity != (android.view.Gravity.TOP or android.view.Gravity.END) ||
-                    params.rightMargin != marginEnd ||
-                    params.topMargin != targetTop ||
-                    params.leftMargin != 0
-                ) {
-                    params.gravity = android.view.Gravity.TOP or android.view.Gravity.END
-                    params.leftMargin = 0
-                    params.rightMargin = marginEnd
-                    params.topMargin = targetTop
-                    quickDestGroup.layoutParams = params
-                }
-                quickDestGroup.translationX = 0f
-                quickDestGroup.translationY = 0f
-            } else {
-                // 가로 화면: TBT 패널 우측 옆으로 배치
-                val gap = (12 * density).toInt()
-                val targetLeft = relX + tbtWidth + gap
-                val targetTop = relY.coerceAtLeast(0)
-
-                val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
-                    ?: android.widget.FrameLayout.LayoutParams(
-                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
-                    )
-                if (params.gravity != (android.view.Gravity.TOP or android.view.Gravity.START) ||
-                    params.leftMargin != targetLeft ||
-                    params.topMargin != targetTop ||
-                    params.rightMargin != 0
-                ) {
-                    params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
-                    params.leftMargin = targetLeft
-                    params.rightMargin = 0
-                    params.topMargin = targetTop
-                    quickDestGroup.layoutParams = params
-                }
-                quickDestGroup.translationX = 0f
-                quickDestGroup.translationY = 0f
-            }
-        } else {
-            if (isPortrait) {
-                // TBT 측정 전 세로 화면 임시 우측 정렬
-                val params = quickDestGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
-                    ?: android.widget.FrameLayout.LayoutParams(
-                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
-                    )
-                val marginEnd = (8 * density).toInt()
-                val targetTop = (80 * density).toInt()
-                if (params.gravity != (android.view.Gravity.TOP or android.view.Gravity.END) ||
-                    params.rightMargin != marginEnd ||
-                    params.topMargin != targetTop ||
-                    params.leftMargin != 0
-                ) {
-                    params.gravity = android.view.Gravity.TOP or android.view.Gravity.END
-                    params.leftMargin = 0
-                    params.rightMargin = marginEnd
-                    params.topMargin = targetTop
-                    quickDestGroup.layoutParams = params
-                }
-            }
-            tbtView?.post { alignQuickDestGroupWithTbt() }
+        val defaultTop = (4 * density).toInt()
+        val topParams = topUiGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
+        if (topParams != null && topParams.topMargin != defaultTop) {
+            topParams.topMargin = defaultTop
+            topUiGroup.layoutParams = topParams
         }
     }
 
@@ -1275,6 +1144,7 @@ class KakaoMapActivity : AppCompatActivity(),
                     hudOverlayManager.binding.vGpsDivider?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
                     val shouldShowCancel = hasStartedRouteGuidance && isGuidanceActive && !isShowingPreview
                     hudOverlayManager.binding.btnGpsCancelRoute?.visibility = if (shouldShowCancel) android.view.View.VISIBLE else android.view.View.GONE
+                    hudOverlayManager.binding.llQuickDestGroup?.visibility = android.view.View.GONE
                     updateEtaUi()
                 }
 
