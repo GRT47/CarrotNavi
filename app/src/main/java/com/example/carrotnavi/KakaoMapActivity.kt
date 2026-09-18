@@ -638,16 +638,19 @@ class KakaoMapActivity : AppCompatActivity(),
         lastCameraSignX = -1f
         lastCameraSignY = -1f
         if (::binding.isInitialized) {
-            updateMediaLayout(newConfig.orientation)
+            if (isShowingPreview) {
+                applyPreviewSplitLayout(newConfig.orientation)
+                binding.root.postDelayed({
+                    previewRouteCache[selectedRouteOption]?.let { route ->
+                        displayRouteInfo(route)
+                    }
+                }, 200)
+            } else {
+                updateMediaLayout(newConfig.orientation)
+            }
             updateRoadSpeedLimitVisibility()
             if (::hudOverlayManager.isInitialized) {
                 hudOverlayManager.restoreMediaOverlayPosition(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
-            }
-            if (isShowingPreview) {
-                applyPreviewOverlayOrientationLayout()
-                previewRouteCache[selectedRouteOption]?.let { route ->
-                    displayRouteInfo(route)
-                }
             }
             binding.root.postDelayed({
                 alignSpeedGroupWithCameraSign()
@@ -660,6 +663,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     private fun updateMediaLayout(orientation: Int) {
+        if (isShowingPreview) return
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
         val ratioKey = if (orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) "MEDIA_SPLIT_RATIO_PORTRAIT_F" else "MEDIA_SPLIT_RATIO_LANDSCAPE_F"
         val configuredRatio = if (sharedPref.contains(ratioKey)) {
@@ -1898,9 +1902,8 @@ class KakaoMapActivity : AppCompatActivity(),
         
         binding.tvPreviewDestName.text = destName
         binding.tvPreviewAddress.text = doc.address_name.ifEmpty { doc.road_address_name }
-        binding.llPreviewOverlay.visibility = android.view.View.VISIBLE
-
-        applyPreviewOverlayOrientationLayout()
+        
+        applyPreviewSplitLayout()
 
         if (hasStartedRouteGuidance || isGuidanceActive) {
             try {
@@ -1940,10 +1943,9 @@ class KakaoMapActivity : AppCompatActivity(),
             marker.icon = createMarkerBitmap()
             binding.naviView.mapComponent?.mapView?.addMarker(marker)
 
-            val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
             val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator
                 .targetTo(floatPoint)
-                .anchorTo(com.kakaomobility.knsdk.common.util.FloatPoint(if (isLandscape) 0.35f else 0.5f, 0.5f))
+                .anchorTo(com.kakaomobility.knsdk.common.util.FloatPoint(0.5f, 0.5f))
                 .tiltTo(0f)
                 .bearingTo(0f)
             binding.naviView.mapComponent?.mapView?.moveCamera(cameraUpdate, false, false)
@@ -2107,14 +2109,8 @@ class KakaoMapActivity : AppCompatActivity(),
             binding.naviView.mapComponent?.mapView?.removeRoutesAll()
             binding.naviView.mapComponent?.mapView?.setRoute(route)
 
-            val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
             val density = resources.displayMetrics.density
-            val paddingRect = if (isLandscape) {
-                // In landscape, route selection card sits on the right (400dp), pad 430dp on right to center route in left map area
-                android.graphics.RectF(50f * density, 50f * density, 430f * density, 50f * density)
-            } else {
-                android.graphics.RectF(40f * density, 50f * density, 40f * density, 250f * density)
-            }
+            val paddingRect = android.graphics.RectF(40f * density, 40f * density, 40f * density, 40f * density)
 
             val region = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCoordinateRegion().initWithRoute(listOf(route))
             val cameraUpdate = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCameraUpdate.Creator
@@ -2224,7 +2220,7 @@ class KakaoMapActivity : AppCompatActivity(),
         isShowingPreview = false
         
         stopPreviewTimer()
-        binding.llPreviewOverlay.visibility = android.view.View.GONE
+        binding.flPreviewPanel.visibility = android.view.View.GONE
         binding.naviView.mapComponent?.mapView?.removeRoutesAll()
         binding.naviView.mapComponent?.mapView?.removeMarkersAll()
         
@@ -2234,6 +2230,9 @@ class KakaoMapActivity : AppCompatActivity(),
             }
             savedCameraMode = null
         }
+
+        // 주행 모드 미디어 분할 레이아웃 복원
+        updateMediaLayout(resources.configuration.orientation)
 
         val shouldShowCancel = hasStartedRouteGuidance && isGuidanceActive
         hudOverlayManager.binding.btnGpsCancelRoute?.visibility = if (shouldShowCancel) android.view.View.VISIBLE else android.view.View.GONE
@@ -2248,27 +2247,53 @@ class KakaoMapActivity : AppCompatActivity(),
         }, 300)
     }
 
-    private fun applyPreviewOverlayOrientationLayout() {
-        val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-        val density = resources.displayMetrics.density
+    private fun applyPreviewSplitLayout(orientation: Int = resources.configuration.orientation) {
+        val isLandscape = orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        
+        // 미리보기 중에는 기존 미디어 분할 핸들 및 미디어 컨테이너 숨김
+        splitHandleManager?.setHandleVisible(false)
+        binding.flSplitHandle.visibility = android.view.View.GONE
+        binding.flMediaContainer.visibility = android.view.View.GONE
+        
+        binding.flPreviewPanel.visibility = android.view.View.VISIBLE
 
-        val params = binding.llPreviewOverlay.layoutParams as? android.widget.FrameLayout.LayoutParams ?: return
+        val mainContainer = binding.llSplitContainer
+        val mapLayout = binding.mapOverlayContainer
+        val previewPanel = binding.flPreviewPanel
+
+        mainContainer.weightSum = 10f
+
         if (isLandscape) {
-            // 가로 모드: 경로선택 카드를 우측에 배치 (너비 400dp)
-            params.width = (400 * density).toInt()
-            params.height = android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
-            params.gravity = android.view.Gravity.END or android.view.Gravity.CENTER_VERTICAL
-            params.setMargins(0, (16 * density).toInt(), (16 * density).toInt(), (16 * density).toInt())
-            binding.llPreviewOverlay.setBackgroundResource(R.drawable.bg_route_preview_card_land)
+            mainContainer.orientation = android.widget.LinearLayout.HORIZONTAL
+            
+            // 가로 모드: 지도 60% : 경로 상세 패널 40%
+            val mapParams = mapLayout.layoutParams as android.widget.LinearLayout.LayoutParams
+            mapParams.width = 0
+            mapParams.height = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+            mapParams.weight = 6.0f
+            mapLayout.layoutParams = mapParams
+
+            val previewParams = previewPanel.layoutParams as android.widget.LinearLayout.LayoutParams
+            previewParams.width = 0
+            previewParams.height = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+            previewParams.weight = 4.0f
+            previewPanel.layoutParams = previewParams
         } else {
-            // 세로 모드: 하단에 배치
-            params.width = android.widget.FrameLayout.LayoutParams.MATCH_PARENT
-            params.height = android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
-            params.gravity = android.view.Gravity.BOTTOM
-            params.setMargins(0, 0, 0, 0)
-            binding.llPreviewOverlay.setBackgroundResource(R.drawable.bg_route_preview_card)
+            mainContainer.orientation = android.widget.LinearLayout.VERTICAL
+            
+            // 세로 모드: 지도 55% : 경로 상세 패널 45%
+            val mapParams = mapLayout.layoutParams as android.widget.LinearLayout.LayoutParams
+            mapParams.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+            mapParams.height = 0
+            mapParams.weight = 5.5f
+            mapLayout.layoutParams = mapParams
+
+            val previewParams = previewPanel.layoutParams as android.widget.LinearLayout.LayoutParams
+            previewParams.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+            previewParams.height = 0
+            previewParams.weight = 4.5f
+            previewPanel.layoutParams = previewParams
         }
-        binding.llPreviewOverlay.layoutParams = params
     }
 
     private fun createMarkerBitmap(): android.graphics.Bitmap {

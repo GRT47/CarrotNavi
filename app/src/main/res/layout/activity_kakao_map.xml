@@ -23,233 +23,6 @@
             
         <include layout="@layout/layout_hud_overlays" />
         
-        <!-- 목적지 확인 오버레이 -->
-        <LinearLayout
-            android:id="@+id/llPreviewOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="bottom"
-            android:background="@drawable/bg_route_preview_card"
-            android:padding="16dp"
-            android:visibility="gone"
-            android:elevation="12dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <!-- 목적지 명칭 & 주소 -->
-            <TextView
-                android:id="@+id/tvPreviewDestName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:layout_marginBottom="2dp"/>
-
-            <TextView
-                android:id="@+id/tvPreviewAddress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="#8E8E93"
-                android:textSize="13sp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:layout_marginBottom="10dp"/>
-
-            <!-- 4가지 경로 옵션 탭 (추천경로, 무료우선, 유료우선, 최단경로) -->
-            <LinearLayout
-                android:id="@+id/llRouteOptionTabs"
-                android:layout_width="match_parent"
-                android:layout_height="38dp"
-                android:orientation="horizontal"
-                android:weightSum="4"
-                android:layout_marginBottom="10dp">
-
-                <TextView
-                    android:id="@+id/btnOptionRecommend"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="추천경로"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:background="@drawable/bg_route_option_selected"
-                    android:layout_marginEnd="4dp"
-                    android:clickable="true"
-                    android:focusable="true"/>
-
-                <TextView
-                    android:id="@+id/btnOptionFree"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="무료우선"
-                    android:textSize="13sp"
-                    android:textColor="#AEAEB2"
-                    android:background="@drawable/bg_route_option_normal"
-                    android:layout_marginEnd="4dp"
-                    android:clickable="true"
-                    android:focusable="true"/>
-
-                <TextView
-                    android:id="@+id/btnOptionPaid"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="유료우선"
-                    android:textSize="13sp"
-                    android:textColor="#AEAEB2"
-                    android:background="@drawable/bg_route_option_normal"
-                    android:layout_marginEnd="4dp"
-                    android:clickable="true"
-                    android:focusable="true"/>
-
-                <TextView
-                    android:id="@+id/btnOptionShortest"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="최단경로"
-                    android:textSize="13sp"
-                    android:textColor="#AEAEB2"
-                    android:background="@drawable/bg_route_option_normal"
-                    android:clickable="true"
-                    android:focusable="true"/>
-            </LinearLayout>
-
-            <!-- 경로 요약 정보 카드 (시간, 도착예정, 거리, 요금) -->
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_route_info_box"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="10dp"
-                android:layout_marginBottom="12dp">
-
-                <LinearLayout
-                    android:id="@+id/llRouteInfoContent"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="4dp">
-
-                        <TextView
-                            android:id="@+id/tvRouteEta"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="#FFFFFF"
-                            android:textSize="20sp"
-                            android:textStyle="bold"
-                            android:text="--분"/>
-
-                        <TextView
-                            android:id="@+id/tvRouteArrivalTime"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="#00E5FF"
-                            android:textSize="13sp"
-                            android:layout_marginStart="8dp"
-                            android:text="도착 예정 --:--"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:id="@+id/tvRouteDistance"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="#E5E5EA"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:text="-- km"/>
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="1dp"
-                            android:layout_weight="1"/>
-
-                        <TextView
-                            android:id="@+id/tvRouteToll"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="#FF9F0A"
-                            android:textSize="13sp"
-                            android:text="통행료 --원"/>
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/llRouteLoading"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:visibility="gone">
-
-                    <ProgressBar
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:indeterminateTint="#FEE500"
-                        android:layout_marginEnd="8dp"/>
-
-                    <TextView
-                        android:id="@+id/tvRouteLoadingText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="#E5E5EA"
-                        android:textSize="14sp"
-                        android:text="경로를 탐색하고 있습니다..."/>
-                </LinearLayout>
-            </FrameLayout>
-
-            <!-- 하단 버튼 행 (취소, 안내 시작) -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnPreviewCancel"
-                    android:layout_width="0dp"
-                    android:layout_height="46dp"
-                    android:layout_weight="1"
-                    android:text="취소"
-                    android:textColor="#FFFFFF"
-                    android:textSize="15sp"
-                    android:backgroundTint="#444446"
-                    android:layout_marginEnd="8dp"/>
-
-                <Button
-                    android:id="@+id/btnPreviewStart"
-                    android:layout_width="0dp"
-                    android:layout_height="46dp"
-                    android:layout_weight="1.3"
-                    android:text="안내 시작 (5)"
-                    android:backgroundTint="#FEE500"
-                    android:textColor="#000000"
-                    android:textSize="15sp"
-                    android:textStyle="bold"/>
-            </LinearLayout>
-        </LinearLayout>
-
         <!-- 로딩 오버레이 -->
         <LinearLayout
             android:id="@+id/llLoadingOverlay"
@@ -276,6 +49,267 @@
                 android:textSize="18sp"
                 android:layout_marginTop="16dp" />
         </LinearLayout>
+    </FrameLayout>
+
+    <!-- 목적지 미리보기 전용 분할화면 패널 -->
+    <FrameLayout
+        android:id="@+id/flPreviewPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#1B1B1F"
+        android:visibility="gone"
+        android:elevation="6dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/llPreviewContent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- 목적지 명칭 & 주소 헤더 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="14dp">
+
+                    <TextView
+                        android:id="@+id/tvPreviewDestName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:layout_marginBottom="4dp"/>
+
+                    <TextView
+                        android:id="@+id/tvPreviewAddress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#8E8E93"
+                        android:textSize="13sp"
+                        android:maxLines="1"
+                        android:ellipsize="end"/>
+                </LinearLayout>
+
+                <!-- 4가지 경로 옵션 탭 (추천경로, 무료우선, 유료우선, 최단경로) -->
+                <LinearLayout
+                    android:id="@+id/llRouteOptionTabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:orientation="horizontal"
+                    android:weightSum="4"
+                    android:layout_marginBottom="14dp">
+
+                    <TextView
+                        android:id="@+id/btnOptionRecommend"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="추천경로"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#000000"
+                        android:background="@drawable/bg_route_option_selected"
+                        android:layout_marginEnd="4dp"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                    <TextView
+                        android:id="@+id/btnOptionFree"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="무료우선"
+                        android:textSize="13sp"
+                        android:textColor="#AEAEB2"
+                        android:background="@drawable/bg_route_option_normal"
+                        android:layout_marginEnd="4dp"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                    <TextView
+                        android:id="@+id/btnOptionPaid"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="유료우선"
+                        android:textSize="13sp"
+                        android:textColor="#AEAEB2"
+                        android:background="@drawable/bg_route_option_normal"
+                        android:layout_marginEnd="4dp"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                    <TextView
+                        android:id="@+id/btnOptionShortest"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="최단경로"
+                        android:textSize="13sp"
+                        android:textColor="#AEAEB2"
+                        android:background="@drawable/bg_route_option_normal"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+
+                <!-- 경로 요약 정보 카드 (시간, 도착예정, 거리, 요금) -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_route_info_box"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="14dp"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:id="@+id/llRouteInfoContent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+
+                            <TextView
+                                android:id="@+id/tvRouteEta"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#FFFFFF"
+                                android:textSize="26sp"
+                                android:textStyle="bold"
+                                android:text="--분"/>
+
+                            <TextView
+                                android:id="@+id/tvRouteArrivalTime"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#00E5FF"
+                                android:textSize="14sp"
+                                android:layout_marginStart="10dp"
+                                android:text="도착 예정 --:--"/>
+                        </LinearLayout>
+
+                        <!-- 구분선 -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#3A3A3E"
+                            android:layout_marginBottom="10dp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/tvRouteDistance"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#E5E5EA"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:text="-- km"/>
+
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="1dp"
+                                android:layout_weight="1"/>
+
+                            <TextView
+                                android:id="@+id/tvRouteToll"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#FF9F0A"
+                                android:textSize="14sp"
+                                android:text="통행료 --원"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/llRouteLoading"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:paddingVertical="18dp"
+                        android:visibility="gone">
+
+                        <ProgressBar
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:indeterminateTint="#FEE500"
+                            android:layout_marginEnd="10dp"/>
+
+                        <TextView
+                            android:id="@+id/tvRouteLoadingText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#E5E5EA"
+                            android:textSize="14sp"
+                            android:text="경로를 탐색하고 있습니다..."/>
+                    </LinearLayout>
+                </FrameLayout>
+
+                <!-- 여백 Spacer -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:minHeight="14dp"/>
+
+                <!-- 하단 버튼 행 (취소, 안내 시작) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnPreviewCancel"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:text="취소"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:backgroundTint="#3A3A3C"
+                        android:layout_marginEnd="10dp"/>
+
+                    <Button
+                        android:id="@+id/btnPreviewStart"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1.4"
+                        android:text="안내 시작 (5)"
+                        android:backgroundTint="#FEE500"
+                        android:textColor="#000000"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
     </FrameLayout>
 
     <FrameLayout
