@@ -52,6 +52,8 @@ import com.kakaomobility.knsdk.guidance.knguidance.*
 import com.kakaomobility.knsdk.ui.view.KNNaviView_StateDelegate
 import com.kakaomobility.knsdk.ui.view.KNNaviViewState
 import com.kakaomobility.knsdk.ui.component.MapViewCameraMode
+import com.kakaomobility.knsdk.ui.component.KNComponentMapView
+import com.kakaomobility.knsdk.ui.component.KNComponentMapViewDelegate
 import com.kakaomobility.knsdk.guidance.knguidance.locationguide.KNGuide_Location
 import com.kakaomobility.knsdk.guidance.knguidance.routeguide.KNGuide_Route
 import com.kakaomobility.knsdk.guidance.knguidance.safetyguide.KNGuide_Safety
@@ -430,9 +432,20 @@ class KakaoMapActivity : AppCompatActivity(),
 
         naviView = binding.naviView
         naviView.stateDelegate = this@KakaoMapActivity
+        binding.naviView.addOnAttachStateChangeListener(object : android.view.View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: android.view.View) {
+                binding.naviView.post {
+                    if (isShowingPreview) {
+                        wrapMapComponentDelegate()
+                    }
+                }
+            }
+            override fun onViewDetachedFromWindow(v: android.view.View) {}
+        })
         binding.naviView.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             if (isShowingPreview) {
                 setNaviViewDrivingUiVisible(false)
+                wrapMapComponentDelegate()
             }
         }
         
@@ -2103,11 +2116,155 @@ class KakaoMapActivity : AppCompatActivity(),
         }
     }
 
+    private fun getPreviewMarkers(): List<com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker> {
+        val markers = mutableListOf<com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker>()
+        val density = resources.displayMetrics.density
+        previewStartFloatPoint?.let { sp ->
+            markers.add(com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(sp).apply {
+                icon = createMarkerBadgeBitmap("출발", "#1E88E5", "#1565C0")
+                pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
+            })
+        }
+        previewDestFloatPoint?.let { dp ->
+            markers.add(com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(dp).apply {
+                icon = createMarkerBadgeBitmap("도착", "#E53935", "#C62828")
+                pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
+            })
+        }
+        return markers
+    }
+
+    private fun refitPreviewRoute() {
+        if (!isShowingPreview) return
+        val route = previewRouteCache[selectedRouteOption] ?: previewRouteCache.values.firstOrNull()
+        val markers = getPreviewMarkers()
+        try {
+            binding.naviView.mapComponent?.mapView?.removeMarkersAll()
+            for (m in markers) {
+                binding.naviView.mapComponent?.mapView?.addMarker(m)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        fitMapToRoute(route, markers)
+    }
+
+    private var originalMapDelegate: KNComponentMapViewDelegate? = null
+
+    private inner class PreviewMapDelegateWrapper(
+        private val target: KNComponentMapViewDelegate
+    ) : KNComponentMapViewDelegate {
+
+        override fun mapViewDidDoubleTap() {
+            if (isShowingPreview) {
+                android.util.Log.d("CarrotNavi", "PreviewMapDelegateWrapper: double-tap intercepted in preview mode. Refitting route overview.")
+                refitPreviewRoute()
+                return
+            }
+            target.mapViewDidDoubleTap()
+        }
+
+        override fun mapViewWillMoveToMap() {
+            if (isShowingPreview) {
+                // 미리보기 중 지도 터치/이동 시 KNSDK가 주행 모드 터치 UI(DriveTouch/SafetyTouch)로 전환하지 않도록 방어
+                return
+            }
+            target.mapViewWillMoveToMap()
+        }
+
+        override fun mapViewDidSingleTap() {
+            if (isShowingPreview) {
+                return
+            }
+            target.mapViewDidSingleTap()
+        }
+
+        override fun mapViewPanningStarted() {
+            if (isShowingPreview) {
+                return
+            }
+            target.mapViewPanningStarted()
+        }
+
+        override fun mapViewZoomingStarted() {
+            if (isShowingPreview) {
+                return
+            }
+            target.mapViewZoomingStarted()
+        }
+
+        override fun mapViewChangeRoute(aRoute: KNRoute?) {
+            if (isShowingPreview) {
+                return
+            }
+            target.mapViewChangeRoute(aRoute)
+        }
+
+        override fun mapViewViaPointTouched(aPoi: KNPOI) {
+            if (isShowingPreview) {
+                return
+            }
+            target.mapViewViaPointTouched(aPoi)
+        }
+
+        override fun mapViewYugoPointTouched(aRoadEvent: com.kakaomobility.knsdk.guidance.knguidance.routeguide.objects.KNRoadEvent) {
+            if (isShowingPreview) {
+                return
+            }
+            target.mapViewYugoPointTouched(aRoadEvent)
+        }
+
+        override fun mapViewAroundPoiTouched(
+            aCoord: com.kakaomobility.knsdk.common.util.IntPoint,
+            aPoiAroundDataList: List<com.kakaomobility.knsdk.api.objects.KNPoiAroundData>,
+            aCode: com.kakaomobility.knsdk.ui.manager.KNCategoryPoiCode
+        ) {
+            if (isShowingPreview) {
+                return
+            }
+            target.mapViewAroundPoiTouched(aCoord, aPoiAroundDataList, aCode)
+        }
+
+        override fun mapViewLongPress(aPos: com.kakaomobility.knsdk.common.util.FloatPoint?) {
+            if (isShowingPreview) {
+                return
+            }
+            target.mapViewLongPress(aPos)
+        }
+    }
+
+    private fun wrapMapComponentDelegate() {
+        try {
+            val mapComp = binding.naviView.mapComponent as? KNComponentMapView ?: return
+            val currentDelegate = mapComp.delegate
+            if (currentDelegate != null && currentDelegate !is PreviewMapDelegateWrapper) {
+                originalMapDelegate = currentDelegate
+                mapComp.delegate = PreviewMapDelegateWrapper(currentDelegate)
+                android.util.Log.d("CarrotNavi", "wrapMapComponentDelegate: successfully wrapped delegate")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("CarrotNavi", "wrapMapComponentDelegate error: ${e.message}", e)
+        }
+    }
+
+    private fun restoreMapComponentDelegate() {
+        try {
+            val mapComp = binding.naviView.mapComponent as? KNComponentMapView ?: return
+            originalMapDelegate?.let {
+                mapComp.delegate = it
+                android.util.Log.d("CarrotNavi", "restoreMapComponentDelegate: restored original delegate")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("CarrotNavi", "restoreMapComponentDelegate error: ${e.message}", e)
+        }
+    }
+
     private fun showPreviewOverlay(doc: KakaoDocument, destName: String) {
         isShowingPreview = true
         previewDoc = doc
         previewRouteCache.clear()
         previewTrip = null
+        wrapMapComponentDelegate()
         
         binding.tvPreviewDestName.text = destName
         binding.tvPreviewAddress.text = doc.address_name.ifEmpty { doc.road_address_name }
@@ -2117,11 +2274,13 @@ class KakaoMapActivity : AppCompatActivity(),
         binding.root.postDelayed({
             if (isShowingPreview) {
                 setNaviViewDrivingUiVisible(false)
+                wrapMapComponentDelegate()
             }
         }, 150)
         binding.root.postDelayed({
             if (isShowingPreview) {
                 setNaviViewDrivingUiVisible(false)
+                wrapMapComponentDelegate()
             }
         }, 500)
 
@@ -2154,28 +2313,9 @@ class KakaoMapActivity : AppCompatActivity(),
             previewStartFloatPoint = startPoint
             previewDestFloatPoint = destPoint
 
-            val initialMarkers = mutableListOf<com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker>()
-
-            if (startPoint != null) {
-                val startMarker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(startPoint).apply {
-                    val bmp = createMarkerBadgeBitmap("출발", "#1E88E5", "#1565C0")
-                    icon = bmp
-                    val density = resources.displayMetrics.density
-                    pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
-                }
-                binding.naviView.mapComponent?.mapView?.addMarker(startMarker)
-                initialMarkers.add(startMarker)
-            }
-
-            if (destPoint != null) {
-                val destMarker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(destPoint).apply {
-                    val bmp = createMarkerBadgeBitmap("도착", "#E53935", "#C62828")
-                    icon = bmp
-                    val density = resources.displayMetrics.density
-                    pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
-                }
-                binding.naviView.mapComponent?.mapView?.addMarker(destMarker)
-                initialMarkers.add(destMarker)
+            val initialMarkers = getPreviewMarkers()
+            for (m in initialMarkers) {
+                binding.naviView.mapComponent?.mapView?.addMarker(m)
             }
 
             if (initialMarkers.isNotEmpty() || (previewStartFloatPoint != null && previewDestFloatPoint != null)) {
@@ -2344,6 +2484,7 @@ class KakaoMapActivity : AppCompatActivity(),
 
         // Draw route on map
         try {
+            wrapMapComponentDelegate()
             binding.naviView.mapComponent?.mapView?.removeRoutesAll()
             binding.naviView.mapComponent?.mapView?.removeMarkersAll()
 
@@ -2357,28 +2498,9 @@ class KakaoMapActivity : AppCompatActivity(),
             binding.naviView.mapComponent?.mapView?.setRoute(route)
             binding.naviView.mapComponent?.mapView?.userLocation?.isVisible = false
 
-            val currentMarkers = mutableListOf<com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker>()
-
-            previewStartFloatPoint?.let { sp ->
-                val startMarker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(sp).apply {
-                    val bmp = createMarkerBadgeBitmap("출발", "#1E88E5", "#1565C0")
-                    icon = bmp
-                    val density = resources.displayMetrics.density
-                    pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
-                }
-                binding.naviView.mapComponent?.mapView?.addMarker(startMarker)
-                currentMarkers.add(startMarker)
-            }
-
-            previewDestFloatPoint?.let { dp ->
-                val destMarker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(dp).apply {
-                    val bmp = createMarkerBadgeBitmap("도착", "#E53935", "#C62828")
-                    icon = bmp
-                    val density = resources.displayMetrics.density
-                    pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(17f * density).toInt())
-                }
-                binding.naviView.mapComponent?.mapView?.addMarker(destMarker)
-                currentMarkers.add(destMarker)
+            val currentMarkers = getPreviewMarkers()
+            for (m in currentMarkers) {
+                binding.naviView.mapComponent?.mapView?.addMarker(m)
             }
 
             fitMapToRoute(route, currentMarkers)
@@ -2502,6 +2624,7 @@ class KakaoMapActivity : AppCompatActivity(),
 
     private fun hidePreviewOverlay() {
         isShowingPreview = false
+        restoreMapComponentDelegate()
         
         stopPreviewTimer()
         binding.flPreviewPanel.visibility = android.view.View.GONE
@@ -2693,6 +2816,18 @@ class KakaoMapActivity : AppCompatActivity(),
 
     override fun naviViewScreenState(viewState: KNNaviViewState) {
         android.util.Log.d("CarrotNavi", "naviViewScreenState: $viewState")
+        if (isShowingPreview) {
+            if (viewState == KNNaviViewState.DriveNormal || viewState == KNNaviViewState.SafetyNormal) {
+                android.util.Log.w("CarrotNavi", "Unintended viewState $viewState during preview! Restoring route overview...")
+                binding.root.post {
+                    if (isShowingPreview) {
+                        setNaviViewDrivingUiVisible(false)
+                        refitPreviewRoute()
+                    }
+                }
+            }
+            return
+        }
         if (viewState == KNNaviViewState.NONE) {
             // 카카오내비가 안전운행 모드(NONE)로 진입하면 즉시 액티비티를 종료하여
             // 기존에 떠있는 T맵 안전운행 모드로 돌아갑니다.
