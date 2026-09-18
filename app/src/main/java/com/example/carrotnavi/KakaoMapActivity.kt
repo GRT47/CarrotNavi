@@ -663,7 +663,7 @@ class KakaoMapActivity : AppCompatActivity(),
                 binding.root.postDelayed({
                     previewRouteCache[selectedRouteOption]?.let { route ->
                         displayRouteInfo(route)
-                    }
+                    } ?: refitPreviewRoute()
                 }, 200)
             } else {
                 updateMediaLayout(newConfig.orientation)
@@ -2089,13 +2089,29 @@ class KakaoMapActivity : AppCompatActivity(),
 
             val spanX = (maxX - minX).coerceAtLeast(100f)
             val spanY = (maxY - minY).coerceAtLeast(100f)
+            val maxSpan = maxOf(spanX, spanY)
 
-            // 세로 모드: 하단 패널(45%) 및 KNSDK 내부 오프셋을 상쇄하기 위해 남쪽(minY) 여백을 적절히 주어
-            // 출발지(청주)와 도착지(서울)가 상/하 균형 있게 화면 중앙부에 편안한 여백으로 표시되도록 함.
-            val marginXLeft = spanX * 0.15f
-            val marginXRight = if (isLandscape) spanX * 0.40f else spanX * 0.15f
-            val marginTop = if (isLandscape) spanY * 0.15f else spanY * 0.10f
-            val marginBottom = if (isLandscape) spanY * 0.15f else spanY * 0.85f
+            // KNSDK 내비 지도는 주행 시야 확보를 위해 카메라 중심(앵커)이 화면 물리적 중심보다 아래쪽에 배치되어 있습니다.
+            // 따라서 상/하 대칭으로 경로를 중앙에 맞추려면 남쪽(minY) 여백을 북쪽(maxY)보다 넉넉하게 주어야 합니다.
+            // - 세로 모드: 하단 패널(45%) + 뷰포트 오프셋 -> marginTop 10%, marginBottom 85%
+            // - 가로 모드: 좌측 지도(60%), 우측 패널(40%)로 분할되어 있으므로 좌우는 대칭(20%),
+            //             상하는 뷰포트 하단 편향 상쇄 -> marginTop 12%, marginBottom 60%
+            val marginXLeft: Float
+            val marginXRight: Float
+            val marginTop: Float
+            val marginBottom: Float
+
+            if (isLandscape) {
+                marginXLeft = (spanX * 0.20f).coerceAtLeast(maxSpan * 0.12f)
+                marginXRight = (spanX * 0.20f).coerceAtLeast(maxSpan * 0.12f)
+                marginTop = (spanY * 0.12f).coerceAtLeast(maxSpan * 0.10f)
+                marginBottom = (spanY * 0.60f).coerceAtLeast(maxSpan * 0.32f)
+            } else {
+                marginXLeft = (spanX * 0.15f).coerceAtLeast(maxSpan * 0.10f)
+                marginXRight = (spanX * 0.15f).coerceAtLeast(maxSpan * 0.10f)
+                marginTop = (spanY * 0.10f).coerceAtLeast(maxSpan * 0.08f)
+                marginBottom = (spanY * 0.85f).coerceAtLeast(maxSpan * 0.40f)
+            }
 
             val region = com.kakaomobility.knsdk.map.knmaprenderer.objects.KNMapCoordinateRegion()
                 .initWithMinMax(
