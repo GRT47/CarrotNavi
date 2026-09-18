@@ -63,6 +63,15 @@ class SplitHandleManager(
         }
     }
 
+    var isPreviewMode: Boolean = false
+        set(value) {
+            field = value
+            applyHandleVisibility()
+            if (value) {
+                collapseHandle()
+            }
+        }
+
     private var isHandleHiddenByOverlay = false
 
     fun setHandleVisible(visible: Boolean) {
@@ -71,7 +80,19 @@ class SplitHandleManager(
     }
 
     private fun applyHandleVisibility() {
-        splitHandle.visibility = if (isHandleHiddenByOverlay) View.GONE else View.VISIBLE
+        val hide = isHandleHiddenByOverlay || isPreviewMode
+        splitHandle.visibility = if (hide) View.GONE else View.VISIBLE
+        indicatorView.visibility = if (hide) View.GONE else View.VISIBLE
+    }
+
+    private fun collapseHandle() {
+        val handleParams = splitHandle.layoutParams as? LinearLayout.LayoutParams
+        if (handleParams != null) {
+            handleParams.width = 0
+            handleParams.height = 0
+            handleParams.weight = 0f
+            splitHandle.layoutParams = handleParams
+        }
     }
 
     /**
@@ -79,6 +100,10 @@ class SplitHandleManager(
      */
     fun updateHandleLayout(orientation: Int) {
         applyHandleVisibility()
+        if (isPreviewMode) {
+            collapseHandle()
+            return
+        }
         val density = activity.resources.displayMetrics.density
         val handleThickness = (20 * density).toInt()
 
@@ -113,6 +138,7 @@ class SplitHandleManager(
 
     private fun setupTouchListener() {
         splitHandle.setOnTouchListener { view, event ->
+            if (isPreviewMode) return@setOnTouchListener false
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     downRawX = event.rawX

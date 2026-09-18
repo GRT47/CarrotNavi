@@ -319,6 +319,7 @@
         android:background="#151515"
         android:clickable="true"
         android:focusable="true"
+        android:visibility="gone"
         android:elevation="4dp">
 
         <View

@@ -458,8 +458,10 @@ class KakaoMapActivity : AppCompatActivity(),
         val hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this@KakaoMapActivity, hudBinding, this@KakaoMapActivity)
         hudOverlayManager.onMediaOverlayVisibilityChanged = { isVisible ->
-            splitHandleManager?.setHandleVisible(!isVisible)
-            updateMediaLayout(resources.configuration.orientation)
+            if (!isShowingPreview) {
+                splitHandleManager?.setHandleVisible(!isVisible)
+                updateMediaLayout(resources.configuration.orientation)
+            }
         }
         if (hudOverlayManager.isMediaOverlayActive) {
             splitHandleManager?.setHandleVisible(false)
@@ -552,6 +554,13 @@ class KakaoMapActivity : AppCompatActivity(),
         
         val destPlaceName = intent.getStringExtra("dest_place_name")
         if (destPlaceName != null) {
+            if (!intent.getBooleanExtra("auto_start_navi", false)) {
+                isShowingPreview = true
+                splitHandleManager?.isPreviewMode = true
+                binding.flSplitHandle.visibility = android.view.View.GONE
+                binding.vSplitHandleIndicator.visibility = android.view.View.GONE
+                binding.flMediaContainer.visibility = android.view.View.GONE
+            }
             binding.llLoadingOverlay.visibility = android.view.View.VISIBLE
             val destRoadAddressName = intent.getStringExtra("dest_road_address_name") ?: ""
             val destAddressName = intent.getStringExtra("dest_address_name") ?: ""
@@ -2277,6 +2286,10 @@ class KakaoMapActivity : AppCompatActivity(),
 
     private fun showPreviewOverlay(doc: KakaoDocument, destName: String) {
         isShowingPreview = true
+        splitHandleManager?.isPreviewMode = true
+        binding.flSplitHandle.visibility = android.view.View.GONE
+        binding.vSplitHandleIndicator.visibility = android.view.View.GONE
+        binding.flMediaContainer.visibility = android.view.View.GONE
         previewDoc = doc
         previewRouteCache.clear()
         previewTrip = null
@@ -2640,6 +2653,8 @@ class KakaoMapActivity : AppCompatActivity(),
 
     private fun hidePreviewOverlay() {
         isShowingPreview = false
+        splitHandleManager?.isPreviewMode = false
+        binding.vSplitHandleIndicator.visibility = android.view.View.VISIBLE
         restoreMapComponentDelegate()
         
         stopPreviewTimer()
@@ -2679,10 +2694,27 @@ class KakaoMapActivity : AppCompatActivity(),
     private fun applyPreviewSplitLayout(orientation: Int = resources.configuration.orientation) {
         val isLandscape = orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
         
-        // 미리보기 중에는 기존 미디어 분할 핸들 및 미디어 컨테이너 숨김
+        // 미리보기 중에는 기존 미디어 분할 핸들 및 미디어 컨테이너 숨김 및 축소
+        splitHandleManager?.isPreviewMode = true
         splitHandleManager?.setHandleVisible(false)
         binding.flSplitHandle.visibility = android.view.View.GONE
+        binding.vSplitHandleIndicator.visibility = android.view.View.GONE
+        val handleParams = binding.flSplitHandle.layoutParams as? android.widget.LinearLayout.LayoutParams
+        if (handleParams != null) {
+            handleParams.width = 0
+            handleParams.height = 0
+            handleParams.weight = 0f
+            binding.flSplitHandle.layoutParams = handleParams
+        }
+
         binding.flMediaContainer.visibility = android.view.View.GONE
+        val mediaParams = binding.flMediaContainer.layoutParams as? android.widget.LinearLayout.LayoutParams
+        if (mediaParams != null) {
+            mediaParams.width = 0
+            mediaParams.height = 0
+            mediaParams.weight = 0f
+            binding.flMediaContainer.layoutParams = mediaParams
+        }
         
         binding.flPreviewPanel.visibility = android.view.View.VISIBLE
         setNaviViewDrivingUiVisible(false)
