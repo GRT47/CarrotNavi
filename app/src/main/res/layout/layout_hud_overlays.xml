@@ -111,18 +111,18 @@
             <LinearLayout
                 android:id="@+id/llGpsBadge"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="40dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="@drawable/bg_hud_gps_badge"
-                android:paddingStart="7dp"
-                android:paddingEnd="8dp">
+                android:paddingStart="10dp"
+                android:paddingEnd="12dp">
                 <ImageView
                     android:id="@+id/ivGpsIcon"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
                     android:src="@drawable/ic_satellite"
-                    android:layout_marginEnd="4dp"
+                    android:layout_marginEnd="6dp"
                     android:contentDescription="GPS Status Icon" />
                 <TextView
                     android:id="@+id/tvGpsStatus"
@@ -130,7 +130,7 @@
                     android:layout_height="wrap_content"
                     android:text="GPS 상태"
                     android:textColor="#FFFFFF"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -145,20 +145,20 @@
 
                 <View
                     android:layout_width="1dp"
-                    android:layout_height="16dp"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
                     android:background="#44FFFFFF" />
 
                 <!-- 도착시간/남은시간 터치 토글 뱃지 -->
                 <LinearLayout
                     android:id="@+id/btnToggleEtaTime"
                     android:layout_width="wrap_content"
-                    android:layout_height="28dp"
+                    android:layout_height="36dp"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
                     android:background="@drawable/bg_eta_time_clickable"
                     android:clickable="true"
                     android:focusable="true">
@@ -169,9 +169,9 @@
                         android:layout_height="wrap_content"
                         android:text="도착"
                         android:textColor="#FFD54F"
-                        android:textSize="11sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
-                        android:layout_marginEnd="4dp" />
+                        android:layout_marginEnd="5dp" />
 
                     <TextView
                         android:id="@+id/tvEtaTime"
@@ -179,7 +179,7 @@
                         android:layout_height="wrap_content"
                         android:text="--:--"
                         android:textColor="#FFFFFF"
-                        android:textSize="13sp"
+                        android:textSize="15sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -188,10 +188,10 @@
                     android:id="@+id/tvRemainDist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="10dp"
                     android:text="-- km"
                     android:textColor="#00E5FF"
-                    android:textSize="13sp"
+                    android:textSize="15sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -202,37 +202,38 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:layout_marginStart="6dp"
                 android:visibility="gone">
 
                 <!-- 구역 1(GPS 상태)과 구역 2(원터치 목적지) 사이 구분선 -->
                 <View
                     android:id="@+id/vGpsQuickDivider"
                     android:layout_width="1dp"
-                    android:layout_height="16dp"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginEnd="5dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
                     android:background="#44FFFFFF" />
 
                 <!-- 원터치 목적지 3개 버튼을 묶어주는 툴바 컨테이너 -->
                 <LinearLayout
                     android:id="@+id/llQuickDestToolbar"
                     android:layout_width="wrap_content"
-                    android:layout_height="32dp"
+                    android:layout_height="40dp"
                     android:background="@drawable/bg_hud_quick_group"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingStart="2dp"
-                    android:paddingEnd="2dp">
+                    android:paddingStart="3dp"
+                    android:paddingEnd="3dp">
 
                     <LinearLayout
                         android:id="@+id/btnQuickHome"
                         android:layout_width="wrap_content"
-                        android:layout_height="26dp"
+                        android:layout_height="34dp"
                         android:background="@drawable/bg_hud_quick_btn"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="6dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:clickable="true"
                         android:focusable="true">
 
@@ -241,7 +242,7 @@
                             android:layout_height="wrap_content"
                             android:text="🏠 집"
                             android:textColor="#FFFFFF"
-                            android:textSize="11sp"
+                            android:textSize="13sp"
                             android:textStyle="bold"
                             android:shadowColor="#000000"
                             android:shadowDx="1"
@@ -252,13 +253,13 @@
                     <LinearLayout
                         android:id="@+id/btnQuickOffice"
                         android:layout_width="wrap_content"
-                        android:layout_height="26dp"
-                        android:layout_marginStart="2dp"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="3dp"
                         android:background="@drawable/bg_hud_quick_btn"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="6dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:clickable="true"
                         android:focusable="true">
 
@@ -267,7 +268,7 @@
                             android:layout_height="wrap_content"
                             android:text="🏢 사무실"
                             android:textColor="#FFFFFF"
-                            android:textSize="11sp"
+                            android:textSize="13sp"
                             android:textStyle="bold"
                             android:shadowColor="#000000"
                             android:shadowDx="1"
@@ -278,13 +279,13 @@
                     <LinearLayout
                         android:id="@+id/btnQuickFavorites"
                         android:layout_width="wrap_content"
-                        android:layout_height="26dp"
-                        android:layout_marginStart="2dp"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="3dp"
                         android:background="@drawable/bg_hud_quick_btn"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="6dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:clickable="true"
                         android:focusable="true">
 
@@ -293,7 +294,7 @@
                             android:layout_height="wrap_content"
                             android:text="⭐ 즐겨찾기"
                             android:textColor="#FFFFFF"
-                            android:textSize="11sp"
+                            android:textSize="13sp"
                             android:textStyle="bold"
                             android:shadowColor="#000000"
                             android:shadowDx="1"
@@ -307,9 +308,9 @@
             <View
                 android:id="@+id/vGpsDivider"
                 android:layout_width="1dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
+                android:layout_height="22dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:background="#44FFFFFF"
                 android:visibility="gone" />
 
@@ -317,16 +318,16 @@
             <TextView
                 android:id="@+id/tvGpsAddress"
                 android:layout_width="0dp"
-                android:layout_height="32dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center_vertical|start"
                 android:background="@drawable/bg_hud_address_chip"
                 android:drawableStart="@drawable/ic_location_pin_small"
-                android:drawablePadding="4dp"
-                android:paddingStart="6dp"
-                android:paddingEnd="8dp"
+                android:drawablePadding="6dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="12dp"
                 android:textColor="#FFFFFF"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 android:singleLine="true"
                 android:ellipsize="end"
@@ -336,30 +337,30 @@
             <LinearLayout
                 android:id="@+id/btnGpsCancelRoute"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="40dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_btn_cancel_route"
                 android:orientation="horizontal"
                 android:gravity="center"
-                android:paddingStart="10dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="14dp"
                 android:visibility="gone"
                 android:clickable="true"
                 android:focusable="true">
 
                 <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
                     android:src="@drawable/ic_round_close_24"
                     app:tint="#FFFFFF"
-                    android:layout_marginEnd="4dp" />
+                    android:layout_marginEnd="6dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="경로취소"
                     android:textColor="#FFFFFF"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
