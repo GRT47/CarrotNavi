@@ -1145,7 +1145,7 @@ class MapActivity : AppCompatActivity() {
         speedGroup.layoutParams = params
     }
 
-    private fun alignGpsOverlayWithEndButton() {
+    fun alignGpsOverlayWithEndButton() {
         if (!::hudOverlayManager.isInitialized || !::hudBinding.isInitialized) return
         val statusGroup = hudBinding.llStatusGroup ?: return
         val mapContainer = findViewById<android.view.View>(R.id.mapOverlayContainer) ?: return
@@ -1188,18 +1188,24 @@ class MapActivity : AppCompatActivity() {
                     arrayOf(relX, btnWidth, relY, btnHeight)
                 }
 
+                val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+                val heightOffsetDp = sp.getInt("TMAP_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+                val heightOffsetPx = (heightOffsetDp * resources.displayMetrics.density).toInt()
+                val finalHeight = (targetHeight + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
+                val finalTop = (targetTop - heightOffsetPx).coerceAtLeast(0)
+
                 statusGroup.translationX = 0f
                 statusGroup.translationY = 0f
                 statusGroup.scaleX = 1f
                 statusGroup.scaleY = 1f
 
                 val params = statusGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
-                    ?: android.widget.FrameLayout.LayoutParams(targetWidth, targetHeight)
+                    ?: android.widget.FrameLayout.LayoutParams(targetWidth, finalHeight)
                 params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
                 params.leftMargin = targetLeft
-                params.topMargin = targetTop
+                params.topMargin = finalTop
                 params.width = targetWidth
-                params.height = targetHeight
+                params.height = finalHeight
                 statusGroup.layoutParams = params
 
                 hudBinding.llGpsInfo?.let { gpsInfo ->

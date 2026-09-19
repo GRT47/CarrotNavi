@@ -388,6 +388,34 @@ class HudOverlayManager(
                 sp.edit().putInt("BLOCK_SPEED_FAKE_DROP", value.toInt()).apply()
             }
 
+            // 하단 바 높이 조절 슬라이더 바인딩 (티맵 / 카카오)
+            val sliderTmapBottomBarHeight = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderTmapBottomBarHeight)
+            val tvTmapBottomBarHeightValue = dialogView.findViewById<android.widget.TextView>(R.id.tvTmapBottomBarHeightValue)
+            val sliderKakaoBottomBarHeight = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderKakaoBottomBarHeight)
+            val tvKakaoBottomBarHeightValue = dialogView.findViewById<android.widget.TextView>(R.id.tvKakaoBottomBarHeightValue)
+
+            fun formatBottomBarOffset(v: Int): String = if (v > 0) "+$v dp" else "$v dp"
+
+            val tmapOffset = sp.getInt("TMAP_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+            sliderTmapBottomBarHeight?.value = tmapOffset.toFloat().coerceIn(-20f, 60f)
+            tvTmapBottomBarHeightValue?.text = formatBottomBarOffset(tmapOffset)
+            sliderTmapBottomBarHeight?.addOnChangeListener { _, value, _ ->
+                val v = value.toInt()
+                tvTmapBottomBarHeightValue?.text = formatBottomBarOffset(v)
+                sp.edit().putInt("TMAP_BOTTOM_BAR_HEIGHT_OFFSET", v).apply()
+                (activity as? MapActivity)?.alignGpsOverlayWithEndButton()
+            }
+
+            val kakaoOffset = sp.getInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+            sliderKakaoBottomBarHeight?.value = kakaoOffset.toFloat().coerceIn(-20f, 60f)
+            tvKakaoBottomBarHeightValue?.text = formatBottomBarOffset(kakaoOffset)
+            sliderKakaoBottomBarHeight?.addOnChangeListener { _, value, _ ->
+                val v = value.toInt()
+                tvKakaoBottomBarHeightValue?.text = formatBottomBarOffset(v)
+                sp.edit().putInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", v).apply()
+                (activity as? KakaoMapActivity)?.alignGpsOverlayWithBottomBar()
+            }
+
             val btnMediaPermission = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnMediaPermission)
 
             btnMediaPermission?.setOnClickListener {

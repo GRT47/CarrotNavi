@@ -465,6 +465,111 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- 하단 바 높이 설정 섹션 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#1E1E1E"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="하단 정보 바 높이 설정"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="화면 하단 테두리에 밀착된 상태에서 높이를 조절합니다."
+                        android:textColor="#888888"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="16dp"/>
+
+                    <!-- 티맵 안전운행 하단 바 높이 조절 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="티맵 안전운행 바 높이 조절"
+                        android:textColor="#DDDDDD"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="6dp"/>
+                        
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+                        
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/sliderTmapBottomBarHeight"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:stepSize="1.0"
+                            android:valueFrom="-20.0"
+                            android:valueTo="60.0"
+                            android:value="0.0"/>
+                            
+                        <TextView
+                            android:id="@+id/tvTmapBottomBarHeightValue"
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:text="0 dp"
+                            android:textColor="#FFFFFF"
+                            android:gravity="end"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <!-- 카카오내비 경로안내 하단 바 높이 조절 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="카카오내비 경로안내 바 높이 조절"
+                        android:textColor="#DDDDDD"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="6dp"/>
+                        
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/sliderKakaoBottomBarHeight"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:stepSize="1.0"
+                            android:valueFrom="-20.0"
+                            android:valueTo="60.0"
+                            android:value="0.0"/>
+                            
+                        <TextView
+                            android:id="@+id/tvKakaoBottomBarHeightValue"
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:text="0 dp"
+                            android:textColor="#FFFFFF"
+                            android:gravity="end"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- 시스템 섹션 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

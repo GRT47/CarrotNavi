@@ -1087,7 +1087,7 @@ class KakaoMapActivity : AppCompatActivity(),
         }
     }
 
-    private fun alignGpsOverlayWithBottomBar() {
+    fun alignGpsOverlayWithBottomBar() {
         if (!::hudOverlayManager.isInitialized || !::binding.isInitialized) return
         val statusGroup = hudOverlayManager.binding.llStatusGroup ?: return
         if (isShowingPreview) {
@@ -1111,18 +1111,24 @@ class KakaoMapActivity : AppCompatActivity(),
             val barHeight = bottomBar.height
 
             if (barWidth > 0 && barHeight > 0) {
+                val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+                val heightOffsetDp = sp.getInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+                val heightOffsetPx = (heightOffsetDp * resources.displayMetrics.density).toInt()
+                val finalHeight = (barHeight + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
+                val finalTop = (relY - heightOffsetPx).coerceAtLeast(0)
+
                 statusGroup.translationX = 0f
                 statusGroup.translationY = 0f
                 statusGroup.scaleX = 1f
                 statusGroup.scaleY = 1f
 
                 val params = statusGroup.layoutParams as? android.widget.FrameLayout.LayoutParams
-                    ?: android.widget.FrameLayout.LayoutParams(barWidth, barHeight)
+                    ?: android.widget.FrameLayout.LayoutParams(barWidth, finalHeight)
                 params.gravity = android.view.Gravity.TOP or android.view.Gravity.START
                 params.leftMargin = relX
-                params.topMargin = relY
+                params.topMargin = finalTop
                 params.width = barWidth
-                params.height = barHeight
+                params.height = finalHeight
                 statusGroup.layoutParams = params
 
                 hudOverlayManager.binding.llGpsInfo?.let { gpsInfo ->
