@@ -1116,17 +1116,28 @@ class KakaoMapActivity : AppCompatActivity(),
                 val heightOffsetDp = sp.getInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", 0)
                 val heightOffsetPx = (heightOffsetDp * resources.displayMetrics.density).toInt()
 
-                val finalHeight = if (isLandscape) {
-                    // 가로 모드: 티맵 하단 바 크기(기본 63dp + 15dp = 78dp)와 정확히 동일한 크기로 영구 적용
-                    val tmapLandscapeHeightDp = sp.getInt("TMAP_LANDSCAPE_FINAL_HEIGHT_DP", 78)
-                    val tmapLandscapeHeightPx = (tmapLandscapeHeightDp * resources.displayMetrics.density).toInt()
-                    (tmapLandscapeHeightPx + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
+                // 카카오 하단 바는 가로/세로 모두 티맵의 하단 바 크기(기본 67dp)를 1:1로 정확하게 따라감
+                val tmapHeightDp = if (isLandscape) {
+                    sp.getInt("TMAP_LANDSCAPE_FINAL_HEIGHT_DP", 67)
                 } else {
-                    (barHeight + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
+                    sp.getInt("TMAP_PORTRAIT_FINAL_HEIGHT_DP", 67)
                 }
+                val tmapHeightPx = (tmapHeightDp * resources.displayMetrics.density).toInt()
+                val finalHeight = (tmapHeightPx + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
 
-                val bottomEdge = relY + barHeight
+                val bottomEdge = if (relY > 0 && barHeight > 0) (relY + barHeight) else mapContainer.height
                 val finalTop = (bottomEdge - finalHeight).coerceAtLeast(0)
+
+                // 카카오 SDK 기본 하단 바(bottomBar)의 높이도 티맵 크기(finalHeight)와 일치시켜 삐져나옴/어긋남 방지
+                try {
+                    val barParams = bottomBar.layoutParams
+                    if (barParams != null && barParams.height != finalHeight) {
+                        barParams.height = finalHeight
+                        bottomBar.layoutParams = barParams
+                    }
+                } catch (e: Exception) {
+                    // ignore
+                }
 
                 statusGroup.translationX = 0f
                 statusGroup.translationY = 0f

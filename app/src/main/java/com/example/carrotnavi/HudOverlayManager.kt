@@ -412,7 +412,8 @@ class HudOverlayManager(
             sliderKakaoBottomBarHeight?.addOnChangeListener { _, value, _ ->
                 val v = value.toInt()
                 tvKakaoBottomBarHeightValue?.text = formatBottomBarOffset(v)
-                sp.edit().putInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", v).apply()
+                sp.edit().putInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", v)
+                    .putBoolean("KAKAO_OFFSET_CUSTOMIZED_BY_USER", true).apply()
                 (activity as? KakaoMapActivity)?.alignGpsOverlayWithBottomBar()
             }
 

@@ -1199,11 +1199,12 @@ class MapActivity : AppCompatActivity() {
                 val finalHeight = (targetHeight + totalExtraPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
                 val finalTop = (targetTop - totalExtraPx).coerceAtLeast(0)
 
-                // 가로 모드일 때 티맵 최종 높이를 SharedPreferences에 저장하여 카카오내비와 1:1 동기화
-                if (isLandscape && hasValidBar) {
+                // 티맵 최종 높이를 SharedPreferences에 저장하여 카카오내비가 항상 티맵 크기를 1:1로 따라가도록 동기화
+                if (hasValidBar) {
                     val density = resources.displayMetrics.density
-                    val finalHeightDp = if (density > 0) (finalHeight / density).toInt() else 78
-                    sp.edit().putInt("TMAP_LANDSCAPE_FINAL_HEIGHT_DP", finalHeightDp).apply()
+                    val finalHeightDp = if (density > 0) (finalHeight / density).toInt() else 67
+                    val key = if (isLandscape) "TMAP_LANDSCAPE_FINAL_HEIGHT_DP" else "TMAP_PORTRAIT_FINAL_HEIGHT_DP"
+                    sp.edit().putInt(key, finalHeightDp).apply()
                 }
 
                 statusGroup.translationX = 0f
