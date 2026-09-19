@@ -1111,11 +1111,22 @@ class KakaoMapActivity : AppCompatActivity(),
             val barHeight = bottomBar.height
 
             if (barWidth > 0 && barHeight > 0) {
+                val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
                 val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
                 val heightOffsetDp = sp.getInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", 0)
                 val heightOffsetPx = (heightOffsetDp * resources.displayMetrics.density).toInt()
-                val finalHeight = (barHeight + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
-                val finalTop = (relY - heightOffsetPx).coerceAtLeast(0)
+
+                val finalHeight = if (isLandscape) {
+                    // 가로 모드: 티맵 하단 바 크기(기본 63dp + 15dp = 78dp)와 정확히 동일한 크기로 영구 적용
+                    val tmapLandscapeHeightDp = sp.getInt("TMAP_LANDSCAPE_FINAL_HEIGHT_DP", 78)
+                    val tmapLandscapeHeightPx = (tmapLandscapeHeightDp * resources.displayMetrics.density).toInt()
+                    (tmapLandscapeHeightPx + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
+                } else {
+                    (barHeight + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
+                }
+
+                val bottomEdge = relY + barHeight
+                val finalTop = (bottomEdge - finalHeight).coerceAtLeast(0)
 
                 statusGroup.translationX = 0f
                 statusGroup.translationY = 0f
@@ -1170,10 +1181,10 @@ class KakaoMapActivity : AppCompatActivity(),
                         )
                     val gap = (16 * resources.displayMetrics.density).toInt()
                     val containerHeight = mapContainer.height
-                    val bottomMargin = if (containerHeight > relY && relY > 0) {
-                        (containerHeight - relY) + gap
+                    val bottomMargin = if (containerHeight > finalTop && finalTop > 0) {
+                        (containerHeight - finalTop) + gap
                     } else {
-                        barHeight + gap
+                        finalHeight + gap
                     }
                     if (gridParams.bottomMargin != bottomMargin) {
                         gridParams.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
