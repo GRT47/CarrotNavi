@@ -617,22 +617,29 @@ class MapActivity : AppCompatActivity() {
             }
         }
 
-        // TMAP 안심주행 하단 바 영역(navigation_eta: 주행종료, 현위치 주소, 메뉴 버튼 등) 터치 제한
-        val etaView = if (etaViewId != 0) findViewById<View?>(etaViewId) else null
-        if (etaView != null && etaView.isShown) {
+        // 하단 바 영역(llStatusGroup) 터치 제한 (원터치 목적지 버튼 등 허용 영역 제외 후 소비)
+        if (::hudBinding.isInitialized && hudBinding.llStatusGroup?.visibility == View.VISIBLE) {
             val rect = android.graphics.Rect()
-            etaView.getGlobalVisibleRect(rect)
+            hudBinding.llStatusGroup?.getGlobalVisibleRect(rect)
             if (rect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
-                // 하단 바 영역의 터치 이벤트는 가로채서 무시 (지도 및 다른 영역은 정상 터치됨)
                 return true
             }
         } else {
-            val endBtn = if (endBtnId != 0) findViewById<View?>(endBtnId) else null
-            if (endBtn != null && endBtn.isShown) {
+            val etaView = if (etaViewId != 0) findViewById<View?>(etaViewId) else null
+            if (etaView != null && etaView.isShown) {
                 val rect = android.graphics.Rect()
-                endBtn.getGlobalVisibleRect(rect)
+                etaView.getGlobalVisibleRect(rect)
                 if (rect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
                     return true
+                }
+            } else {
+                val endBtn = if (endBtnId != 0) findViewById<View?>(endBtnId) else null
+                if (endBtn != null && endBtn.isShown) {
+                    val rect = android.graphics.Rect()
+                    endBtn.getGlobalVisibleRect(rect)
+                    if (rect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                        return true
+                    }
                 }
             }
         }
@@ -1189,20 +1196,28 @@ class MapActivity : AppCompatActivity() {
                 }
 
                 val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-                val landscapeExtraPx = if (isLandscape) (15 * resources.displayMetrics.density).toInt() else 0
 
                 val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
                 val heightOffsetDp = sp.getInt("TMAP_BOTTOM_BAR_HEIGHT_OFFSET", 0)
-                val heightOffsetPx = (heightOffsetDp * resources.displayMetrics.density).toInt()
 
-                val totalExtraPx = landscapeExtraPx + heightOffsetPx
-                val finalHeight = (targetHeight + totalExtraPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
-                val finalTop = (targetTop - totalExtraPx).coerceAtLeast(0)
+                // 캡슐 높이 40dp 기준 상하 여백을 최소화(각 3dp)하여 바 높이를 46dp로 설정
+                val baseBarHeightDp = 46
+                val finalHeightDp = (baseBarHeightDp + heightOffsetDp).coerceAtLeast(42)
+                val finalHeight = (finalHeightDp * resources.displayMetrics.density).toInt()
+
+                val targetBottom = targetTop + targetHeight
+                val finalTop = (targetBottom - finalHeight).coerceAtLeast(0)
+
+                // 티맵 기본 하단 바가 뒤로 삐져나오지 않도록 투명화
+                try {
+                    etaView?.alpha = 0f
+                    barView?.alpha = 0f
+                } catch (e: Exception) {
+                    // ignore
+                }
 
                 // 티맵 최종 높이를 SharedPreferences에 저장하여 카카오내비가 항상 티맵 크기를 1:1로 따라가도록 동기화
                 if (hasValidBar) {
-                    val density = resources.displayMetrics.density
-                    val finalHeightDp = if (density > 0) (finalHeight / density).toInt() else 67
                     val key = if (isLandscape) "TMAP_LANDSCAPE_FINAL_HEIGHT_DP" else "TMAP_PORTRAIT_FINAL_HEIGHT_DP"
                     sp.edit().putInt(key, finalHeightDp).apply()
                 }
