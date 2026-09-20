@@ -451,6 +451,11 @@ class KakaoMapActivity : AppCompatActivity(),
             }
         }
 
+        val splitContainer = binding.root.findViewById<SplitMediaContainer>(R.id.flMediaContainer)
+        splitContainer?.onSwipeVertical = {
+            toggleSplitContentType()
+        }
+
         naviView = binding.naviView
         naviView.stateDelegate = this@KakaoMapActivity
         binding.naviView.addOnAttachStateChangeListener(object : android.view.View.OnAttachStateChangeListener {
@@ -849,6 +854,45 @@ class KakaoMapActivity : AppCompatActivity(),
             currentRoadLimitSpeed = limitSpeed
             updateRoadSpeedLimitVisibility()
         })
+    }
+
+    private fun toggleSplitContentType() {
+        val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        val currentType = sp.getString("SPLIT_CONTENT_TYPE", "media")
+        val newType = if (currentType == "openpilot") "media" else "openpilot"
+        sp.edit().putString("SPLIT_CONTENT_TYPE", newType).apply()
+
+        animateSplitContentTransition(newType)
+
+        val label = if (newType == "media") "미디어 플레이어" else "오픈파일럿 주행정보"
+        Toast.makeText(this, label, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun animateSplitContentTransition(newType: String) {
+        val isOpenpilot = (newType == "openpilot")
+        val mediaView = binding.root.findViewById<android.view.View>(R.id.mediaPlayerContainer)
+        val opView = binding.root.findViewById<android.view.View>(R.id.openpilotDashboardContainer)
+
+        val outgoingView = if (isOpenpilot) mediaView else opView
+        val incomingView = if (isOpenpilot) opView else mediaView
+
+        if (isOpenpilot) {
+            OpenpilotStateRepository.state.value?.let { updateOpenpilotDashboardUI(it) }
+        }
+
+        if (outgoingView != null && incomingView != null && outgoingView.visibility == android.view.View.VISIBLE) {
+            outgoingView.animate().alpha(0f).setDuration(120).withEndAction {
+                outgoingView.visibility = android.view.View.GONE
+                outgoingView.alpha = 1f
+
+                incomingView.alpha = 0f
+                incomingView.visibility = android.view.View.VISIBLE
+                incomingView.animate().alpha(1f).setDuration(150).start()
+            }.start()
+        } else {
+            mediaView?.visibility = if (isOpenpilot) android.view.View.GONE else android.view.View.VISIBLE
+            opView?.visibility = if (isOpenpilot) android.view.View.VISIBLE else android.view.View.GONE
+        }
     }
 
     private fun updateSplitContentView() {

@@ -330,7 +330,7 @@
             android:background="@drawable/bg_split_handle_indicator" />
     </FrameLayout>
 
-    <FrameLayout
+    <com.example.carrotnavi.SplitMediaContainer
         android:id="@+id/flMediaContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -338,5 +338,5 @@
         android:visibility="visible">
         <include layout="@layout/layout_media_player" />
         <include layout="@layout/layout_openpilot_dashboard" />
-    </FrameLayout>
+    </com.example.carrotnavi.SplitMediaContainer>
 </LinearLayout>
