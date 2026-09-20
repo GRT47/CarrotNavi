@@ -462,8 +462,6 @@ class KakaoMapActivity : AppCompatActivity(),
         }
         splitContainer?.onContentTypeChanged = { newType ->
             sharedPref.edit().putString("SPLIT_CONTENT_TYPE", newType).apply()
-            val label = if (newType == "media") "미디어 플레이어" else "오픈파일럿 주행정보"
-            Toast.makeText(this, label, Toast.LENGTH_SHORT).show()
         }
 
         naviView = binding.naviView
