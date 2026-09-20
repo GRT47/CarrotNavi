@@ -964,7 +964,7 @@ class HudOverlayManager(
             gpsInfo.orientation = LinearLayout.VERTICAL
             gpsInfo.gravity = android.view.Gravity.CENTER_VERTICAL
             val padH = (10 * density).toInt()
-            val padV = (4 * density).toInt()
+            val padV = (2 * density).toInt()
             gpsInfo.setPadding(padH, padV, padH, padV)
 
             val topParams = topRow.layoutParams as? LinearLayout.LayoutParams

@@ -106,7 +106,7 @@
     
 
     <LinearLayout android:id="@+id/llStatusGroup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="80dp" android:layout_marginEnd="16dp" android:layout_gravity="top|end" android:elevation="6dp">
-        <LinearLayout android:id="@+id/llGpsInfo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingHorizontal="10dp" android:paddingVertical="4dp" android:gravity="center_vertical" android:background="@drawable/bg_text_pill">
+        <LinearLayout android:id="@+id/llGpsInfo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingHorizontal="10dp" android:paddingVertical="2dp" android:gravity="center_vertical" android:background="@drawable/bg_text_pill">
 
             <!-- [Row 1] GPS 상태 및 툴바/안내 영역 -->
             <LinearLayout
