@@ -253,6 +253,25 @@ class HudOverlayManager(
                 activeDialogView = null
             }
 
+            val tabSettings = dialogView.findViewById<com.google.android.material.tabs.TabLayout>(R.id.tabSettings)
+            val llTabDriving = dialogView.findViewById<android.view.View>(R.id.llTabDriving)
+            val llTabMedia = dialogView.findViewById<android.view.View>(R.id.llTabMedia)
+            val llTabSystem = dialogView.findViewById<android.view.View>(R.id.llTabSystem)
+
+            fun switchTab(position: Int) {
+                llTabDriving?.visibility = if (position == 0) android.view.View.VISIBLE else android.view.View.GONE
+                llTabMedia?.visibility = if (position == 1) android.view.View.VISIBLE else android.view.View.GONE
+                llTabSystem?.visibility = if (position == 2) android.view.View.VISIBLE else android.view.View.GONE
+            }
+
+            tabSettings?.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                    switchTab(tab?.position ?: 0)
+                }
+                override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
+                override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
+            })
+
             val sp = activity.getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
 
             val cbDistanceFormatKm = dialogView.findViewById<android.widget.Switch>(R.id.cbDistanceFormatKm)
@@ -550,6 +569,7 @@ class HudOverlayManager(
             if (bottomSheet != null) {
                 val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
                 behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+                behavior.skipCollapsed = true
             }
         }
 
