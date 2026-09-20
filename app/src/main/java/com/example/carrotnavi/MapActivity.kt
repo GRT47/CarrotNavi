@@ -1574,6 +1574,8 @@ class MapActivity : AppCompatActivity() {
         val tvEngageBadge = opView.findViewById<android.widget.TextView>(R.id.tvOpDashEngageBadge)
         val tvCruiseSet = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCruiseSet)
         val tvCruiseCtrl = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCruiseCtrl)
+        val viewCarRearVisualizer = opView.findViewById<CarRearVisualizerView>(R.id.viewCarRearVisualizer)
+        viewCarRearVisualizer?.setVehicleLights(state.leftBlinker, state.rightBlinker, state.brakeLights)
 
         if (state.leftBlinker) {
             tvLeftBlinker?.setBackgroundResource(R.drawable.bg_op_blinker_active)
