@@ -48,6 +48,9 @@ class CarRearVisualizerView @JvmOverloads constructor(
     private val colorLaneBlinker = Color.parseColor("#FFB800") // Amber Yellow
     private val colorLaneBlinkerGlow = Color.parseColor("#66FFB800")
 
+    // 방향지시등 점멸 주기 상수 (분당 약 88회, 680ms 주기: 340ms 점등 / 340ms 소등)
+    private val blinkerCyclePeriodMs = 680L
+
     private val colorTire = Color.parseColor("#18181B")
     private val colorCarBodyDark = Color.parseColor("#1C1F26")
     private val colorCarBodyLight = Color.parseColor("#282D37")
@@ -78,10 +81,11 @@ class CarRearVisualizerView @JvmOverloads constructor(
         this.brakeLights = brakeLights
         this.speedKph = speedKph
 
-        if (speedKph > 0 && lastFrameTime == 0L) {
+        val shouldAnimate = (speedKph > 0) || leftBlinker || rightBlinker
+        if (shouldAnimate && lastFrameTime == 0L) {
             lastFrameTime = android.os.SystemClock.uptimeMillis()
             postInvalidateOnAnimation()
-        } else if (speedKph == 0 && lastFrameTime != 0L) {
+        } else if (!shouldAnimate && lastFrameTime != 0L) {
             lastFrameTime = 0L
             postInvalidateOnAnimation()
         } else if (lightsChanged || speedChanged) {
@@ -99,7 +103,7 @@ class CarRearVisualizerView @JvmOverloads constructor(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (speedKph > 0) {
+        if (speedKph > 0 || leftBlinker || rightBlinker) {
             lastFrameTime = android.os.SystemClock.uptimeMillis()
             postInvalidateOnAnimation()
         }
@@ -112,7 +116,7 @@ class CarRearVisualizerView @JvmOverloads constructor(
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {
         super.onVisibilityChanged(changedView, visibility)
-        if (visibility == VISIBLE && speedKph > 0) {
+        if (visibility == VISIBLE && (speedKph > 0 || leftBlinker || rightBlinker)) {
             lastFrameTime = android.os.SystemClock.uptimeMillis()
             postInvalidateOnAnimation()
         } else if (visibility != VISIBLE) {
@@ -134,9 +138,21 @@ class CarRearVisualizerView @JvmOverloads constructor(
         val topY = bottomY - carH
         val halfW = carW / 2f
 
-        // 차량 이동 시 차선 흐름 애니메이션 프레임 전진
-        if (speedKph > 0) {
-            val now = android.os.SystemClock.uptimeMillis()
+        val now = android.os.SystemClock.uptimeMillis()
+
+        // 1. 방향지시등 실시간 점멸(Blink) 계산 (680ms 주기)
+        val isAnyBlinkerActive = leftBlinker || rightBlinker
+        val isBlinkPhaseOn = if (isAnyBlinkerActive) {
+            (now % blinkerCyclePeriodMs) < (blinkerCyclePeriodMs / 2)
+        } else {
+            false
+        }
+        val effectiveLeftBlinker = leftBlinker && isBlinkPhaseOn
+        val effectiveRightBlinker = rightBlinker && isBlinkPhaseOn
+
+        // 2. 애니메이션 스케줄링 (주행 중이거나 깜빡이 동작 중일 때 지속 프레임 갱신)
+        val shouldAnimate = (speedKph > 0) || isAnyBlinkerActive
+        if (shouldAnimate) {
             val dt = if (lastFrameTime > 0L) {
                 ((now - lastFrameTime) / 1000f).coerceIn(0.001f, 0.08f)
             } else {
@@ -144,16 +160,18 @@ class CarRearVisualizerView @JvmOverloads constructor(
             }
             lastFrameTime = now
 
-            // 주행 속도에 비례하여 차선이 뒤로 빠르게 흐름 (10km/h: 0.8Hz, 60km/h: 1.4Hz, 100km/h: 1.9Hz)
-            val speedFactor = 0.7f + (speedKph.coerceIn(1, 140) / 100f) * 1.2f
-            lanePhase = (lanePhase + dt * speedFactor) % 1.0f
+            if (speedKph > 0) {
+                // 주행 속도에 비례하여 차선이 뒤로 빠르게 흐름 (10km/h: 0.8Hz, 60km/h: 1.4Hz, 100km/h: 1.9Hz)
+                val speedFactor = 0.7f + (speedKph.coerceIn(1, 140) / 100f) * 1.2f
+                lanePhase = (lanePhase + dt * speedFactor) % 1.0f
+            }
             postInvalidateOnAnimation()
         } else {
             lastFrameTime = 0L
         }
 
-        // 1. 노면 및 차선 원근감 애니메이션
-        drawRoad(canvas, cx, bottomY, halfW, w, h)
+        // 1. 노면 및 차선 원근감 애니메이션 (점멸 효과 반영)
+        drawRoad(canvas, cx, bottomY, halfW, w, h, effectiveLeftBlinker, effectiveRightBlinker)
 
         // 2. 바닥 그림자
         paint.reset()
@@ -189,13 +207,22 @@ class CarRearVisualizerView @JvmOverloads constructor(
         drawChmsl(canvas, cx, topY + carH * 0.06f, carW * 0.22f, carH * 0.045f)
 
         // 8. 테일램프 및 방향지시등 / 제동등 (Full-width LED Bar + End Clusters)
-        drawTailLights(canvas, cx, topY + carH * 0.58f, halfW, carH)
+        drawTailLights(canvas, cx, topY + carH * 0.58f, halfW, carH, effectiveLeftBlinker, effectiveRightBlinker)
 
         // 9. 번호판 및 하단 디퓨저 라인
         drawRearDetails(canvas, cx, topY, bottomY, halfW, carH)
     }
 
-    private fun drawRoad(canvas: Canvas, cx: Float, bottomY: Float, halfW: Float, w: Float, h: Float) {
+    private fun drawRoad(
+        canvas: Canvas,
+        cx: Float,
+        bottomY: Float,
+        halfW: Float,
+        w: Float,
+        h: Float,
+        effectiveLeftBlinker: Boolean,
+        effectiveRightBlinker: Boolean
+    ) {
         val horizonY = h * 0.10f
         val topHalfW = halfW * 0.72f
         val bottomHalfW = halfW * 1.38f
@@ -229,10 +256,10 @@ class CarRearVisualizerView @JvmOverloads constructor(
 
         // 3. 실시간 주행 흐름 차선 대시 애니메이션 (Lane Dashes Animation)
         val dashCount = 5
-        val baseLeftColor = if (leftBlinker) colorLaneBlinker else colorLaneNormal
-        val baseLeftGlow = if (leftBlinker) colorLaneBlinkerGlow else colorLaneGlow
-        val baseRightColor = if (rightBlinker) colorLaneBlinker else colorLaneNormal
-        val baseRightGlow = if (rightBlinker) colorLaneBlinkerGlow else colorLaneGlow
+        val baseLeftColor = if (effectiveLeftBlinker) colorLaneBlinker else colorLaneNormal
+        val baseLeftGlow = if (effectiveLeftBlinker) colorLaneBlinkerGlow else colorLaneGlow
+        val baseRightColor = if (effectiveRightBlinker) colorLaneBlinker else colorLaneNormal
+        val baseRightGlow = if (effectiveRightBlinker) colorLaneBlinkerGlow else colorLaneGlow
 
         // 정지 상태일 때는 고정된 위치에 차분한 톤, 주행 중일 때는 선명한 네온 발광
         val isMoving = (speedKph > 0)
@@ -391,7 +418,15 @@ class CarRearVisualizerView @JvmOverloads constructor(
         }
     }
 
-    private fun drawTailLights(canvas: Canvas, cx: Float, y: Float, halfW: Float, carH: Float) {
+    private fun drawTailLights(
+        canvas: Canvas,
+        cx: Float,
+        y: Float,
+        halfW: Float,
+        carH: Float,
+        effectiveLeftBlinker: Boolean,
+        effectiveRightBlinker: Boolean
+    ) {
         val lightBarHalfW = halfW * 0.88f
         val clusterW = halfW * 0.26f
         val barH = carH * 0.06f
@@ -424,7 +459,7 @@ class CarRearVisualizerView @JvmOverloads constructor(
             top = y - barH * 0.4f,
             right = leftClusterRight,
             bottom = y + barH * 1.4f,
-            isBlinkerActive = leftBlinker,
+            isBlinkerActive = effectiveLeftBlinker,
             isBrakeActive = brakeLights,
             isLeftSide = true
         )
@@ -438,7 +473,7 @@ class CarRearVisualizerView @JvmOverloads constructor(
             top = y - barH * 0.4f,
             right = rightClusterRight,
             bottom = y + barH * 1.4f,
-            isBlinkerActive = rightBlinker,
+            isBlinkerActive = effectiveRightBlinker,
             isBrakeActive = brakeLights,
             isLeftSide = false
         )
