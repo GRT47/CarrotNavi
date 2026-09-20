@@ -1114,20 +1114,16 @@ class KakaoMapActivity : AppCompatActivity(),
                 val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
                 val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
                 val heightOffsetDp = if (isLandscape) {
-                    sp.getInt("KAKAO_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+                    sp.getInt("BOTTOM_BAR_LANDSCAPE_HEIGHT_OFFSET", sp.getInt("TMAP_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET", 0))
                 } else {
-                    sp.getInt("KAKAO_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+                    sp.getInt("BOTTOM_BAR_PORTRAIT_HEIGHT_OFFSET", sp.getInt("TMAP_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET", 0))
                 }
-                val heightOffsetPx = (heightOffsetDp * resources.displayMetrics.density).toInt()
 
-                // 카카오 하단 바는 가로/세로 모두 티맵의 하단 바 크기(가로 40dp, 세로 78dp)를 1:1로 정확하게 따라감
-                val tmapHeightDp = if (isLandscape) {
-                    sp.getInt("TMAP_LANDSCAPE_FINAL_HEIGHT_DP", 40)
-                } else {
-                    sp.getInt("TMAP_PORTRAIT_FINAL_HEIGHT_DP", 78)
-                }
-                val tmapHeightPx = (tmapHeightDp * resources.displayMetrics.density).toInt()
-                val finalHeight = (tmapHeightPx + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
+                // 카카오 하단 바는 가로/세로 모두 티맵의 기준 높이(가로 40dp, 세로 78dp) 및 통합 오프셋으로 1:1 일치
+                val baseBarHeightDp = if (isLandscape) 40 else 78
+                val minHeightDp = if (isLandscape) 36 else 74
+                val finalHeightDp = (baseBarHeightDp + heightOffsetDp).coerceAtLeast(minHeightDp)
+                val finalHeight = (finalHeightDp * resources.displayMetrics.density).toInt()
 
                 val bottomEdge = if (relY > 0 && barHeight > 0) (relY + barHeight) else mapContainer.height
                 val finalTop = (bottomEdge - finalHeight).coerceAtLeast(0)

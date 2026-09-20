@@ -523,7 +523,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- 2-3. 하단 상태바 높이 오프셋 -->
+                <!-- 2-3. 하단 상태바 높이 오프셋 (티맵/카카오 통합, 가로/세로 분리) -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -552,15 +552,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="현재 회전 방향에 맞춰 각각 저장됩니다."
+                            android:text="티맵 및 카카오내비 통합 적용 (가로 / 세로 개별 저장)"
                             android:textColor="#71717A"
                             android:textSize="12sp"
                             android:layout_marginBottom="12dp"/>
 
+                        <!-- 세로 모드 높이 오프셋 -->
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="티맵 안전운행 바 높이 오프셋"
+                            android:text="세로 모드 높이 오프셋 (기본 78dp)"
                             android:textColor="#A1A1AA"
                             android:textSize="13sp"
                             android:layout_marginBottom="4dp"/>
@@ -573,7 +574,7 @@
                             android:layout_marginBottom="12dp">
 
                             <com.google.android.material.slider.Slider
-                                android:id="@+id/sliderTmapBottomBarHeight"
+                                android:id="@+id/sliderPortraitBottomBarHeight"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
@@ -583,7 +584,7 @@
                                 android:value="0.0"/>
 
                             <TextView
-                                android:id="@+id/tvTmapBottomBarHeightValue"
+                                android:id="@+id/tvPortraitBottomBarHeightValue"
                                 android:layout_width="60dp"
                                 android:layout_height="wrap_content"
                                 android:text="0 dp"
@@ -592,10 +593,11 @@
                                 android:textStyle="bold"/>
                         </LinearLayout>
 
+                        <!-- 가로 모드 높이 오프셋 -->
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="카카오내비 경로안내 바 높이 오프셋"
+                            android:text="가로 모드 높이 오프셋 (기본 40dp)"
                             android:textColor="#A1A1AA"
                             android:textSize="13sp"
                             android:layout_marginBottom="4dp"/>
@@ -607,7 +609,7 @@
                             android:gravity="center_vertical">
 
                             <com.google.android.material.slider.Slider
-                                android:id="@+id/sliderKakaoBottomBarHeight"
+                                android:id="@+id/sliderLandscapeBottomBarHeight"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
@@ -617,7 +619,7 @@
                                 android:value="0.0"/>
 
                             <TextView
-                                android:id="@+id/tvKakaoBottomBarHeightValue"
+                                android:id="@+id/tvLandscapeBottomBarHeightValue"
                                 android:layout_width="60dp"
                                 android:layout_height="wrap_content"
                                 android:text="0 dp"

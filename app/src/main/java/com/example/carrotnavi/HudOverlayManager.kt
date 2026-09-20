@@ -401,37 +401,48 @@ class HudOverlayManager(
                 sp.edit().putInt("BLOCK_SPEED_FAKE_DROP", value.toInt()).apply()
             }
 
-            // 하단 바 높이 조절 슬라이더 바인딩 (티맵 / 카카오)
-            val sliderTmapBottomBarHeight = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderTmapBottomBarHeight)
-            val tvTmapBottomBarHeightValue = dialogView.findViewById<android.widget.TextView>(R.id.tvTmapBottomBarHeightValue)
-            val sliderKakaoBottomBarHeight = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderKakaoBottomBarHeight)
-            val tvKakaoBottomBarHeightValue = dialogView.findViewById<android.widget.TextView>(R.id.tvKakaoBottomBarHeightValue)
+            // 하단 바 높이 조절 슬라이더 바인딩 (세로 / 가로 모드 통합)
+            val sliderPortraitBottomBarHeight = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderPortraitBottomBarHeight)
+            val tvPortraitBottomBarHeightValue = dialogView.findViewById<android.widget.TextView>(R.id.tvPortraitBottomBarHeightValue)
+            val sliderLandscapeBottomBarHeight = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderLandscapeBottomBarHeight)
+            val tvLandscapeBottomBarHeightValue = dialogView.findViewById<android.widget.TextView>(R.id.tvLandscapeBottomBarHeightValue)
 
             fun formatBottomBarOffset(v: Int): String = if (v > 0) "+$v dp" else "$v dp"
 
-            val isLandscape = activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            val tmapKey = if (isLandscape) "TMAP_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET" else "TMAP_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET"
-            val kakaoKey = if (isLandscape) "KAKAO_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET" else "KAKAO_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET"
-
-            val tmapOffset = sp.getInt(tmapKey, 0)
-            sliderTmapBottomBarHeight?.value = tmapOffset.toFloat().coerceIn(-20f, 60f)
-            tvTmapBottomBarHeightValue?.text = formatBottomBarOffset(tmapOffset)
-            sliderTmapBottomBarHeight?.addOnChangeListener { _, value, _ ->
+            val portraitOffset = sp.getInt("BOTTOM_BAR_PORTRAIT_HEIGHT_OFFSET", sp.getInt("TMAP_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET", 0))
+            sliderPortraitBottomBarHeight?.value = portraitOffset.toFloat().coerceIn(-20f, 60f)
+            tvPortraitBottomBarHeightValue?.text = formatBottomBarOffset(portraitOffset)
+            sliderPortraitBottomBarHeight?.addOnChangeListener { _, value, _ ->
                 val v = value.toInt()
-                tvTmapBottomBarHeightValue?.text = formatBottomBarOffset(v)
-                sp.edit().putInt(tmapKey, v).apply()
-                (activity as? MapActivity)?.alignGpsOverlayWithEndButton()
+                tvPortraitBottomBarHeightValue?.text = formatBottomBarOffset(v)
+                sp.edit()
+                    .putInt("BOTTOM_BAR_PORTRAIT_HEIGHT_OFFSET", v)
+                    .putInt("TMAP_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET", v)
+                    .putInt("KAKAO_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+                    .apply()
+                val isLandscape = activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                if (!isLandscape) {
+                    (activity as? MapActivity)?.alignGpsOverlayWithEndButton()
+                    (activity as? KakaoMapActivity)?.alignGpsOverlayWithBottomBar()
+                }
             }
 
-            val kakaoOffset = sp.getInt(kakaoKey, 0)
-            sliderKakaoBottomBarHeight?.value = kakaoOffset.toFloat().coerceIn(-20f, 60f)
-            tvKakaoBottomBarHeightValue?.text = formatBottomBarOffset(kakaoOffset)
-            sliderKakaoBottomBarHeight?.addOnChangeListener { _, value, _ ->
+            val landscapeOffset = sp.getInt("BOTTOM_BAR_LANDSCAPE_HEIGHT_OFFSET", sp.getInt("TMAP_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET", 0))
+            sliderLandscapeBottomBarHeight?.value = landscapeOffset.toFloat().coerceIn(-20f, 60f)
+            tvLandscapeBottomBarHeightValue?.text = formatBottomBarOffset(landscapeOffset)
+            sliderLandscapeBottomBarHeight?.addOnChangeListener { _, value, _ ->
                 val v = value.toInt()
-                tvKakaoBottomBarHeightValue?.text = formatBottomBarOffset(v)
-                sp.edit().putInt(kakaoKey, v)
-                    .putBoolean("KAKAO_OFFSET_CUSTOMIZED_BY_USER", true).apply()
-                (activity as? KakaoMapActivity)?.alignGpsOverlayWithBottomBar()
+                tvLandscapeBottomBarHeightValue?.text = formatBottomBarOffset(v)
+                sp.edit()
+                    .putInt("BOTTOM_BAR_LANDSCAPE_HEIGHT_OFFSET", v)
+                    .putInt("TMAP_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET", v)
+                    .putInt("KAKAO_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+                    .apply()
+                val isLandscape = activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                if (isLandscape) {
+                    (activity as? MapActivity)?.alignGpsOverlayWithEndButton()
+                    (activity as? KakaoMapActivity)?.alignGpsOverlayWithBottomBar()
+                }
             }
 
             val btnMediaPermission = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnMediaPermission)
