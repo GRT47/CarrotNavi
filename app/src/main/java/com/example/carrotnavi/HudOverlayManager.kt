@@ -304,6 +304,9 @@ class HudOverlayManager(
             val rbBgEqCircle = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEqCircle)
             val cbShowAlbumArtWithEq = dialogView.findViewById<android.widget.CheckBox>(R.id.cbShowAlbumArtWithEq)
             
+            val cardMediaSplitRatio = dialogView.findViewById<android.view.View>(R.id.cardMediaSplitRatio)
+            cardMediaSplitRatio?.visibility = if (!isMediaOverlayActive) android.view.View.VISIBLE else android.view.View.GONE
+
             val sliderMediaRatio = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderMediaRatio)
             val tvMediaRatioValue = dialogView.findViewById<android.widget.TextView>(R.id.tvMediaRatioValue)
 
@@ -1613,6 +1616,8 @@ class HudOverlayManager(
 
     fun notifyMediaOverlayVisibility(isVisible: Boolean) {
         onMediaOverlayVisibilityChanged?.invoke(isVisible)
+        activeDialogView?.findViewById<android.view.View>(R.id.cardMediaSplitRatio)?.visibility =
+            if (!isVisible) View.VISIBLE else View.GONE
     }
 
     fun setMediaOverlayVisible(visible: Boolean, savePref: Boolean = true) {
