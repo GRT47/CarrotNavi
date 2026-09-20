@@ -74,7 +74,8 @@ class MainActivity : AppCompatActivity() {
         // 앱 버전 표시
         val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
         if (!sp.getBoolean("KAKAO_OFFSET_CUSTOMIZED_BY_USER", false)) {
-            sp.edit().putInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", 0).apply()
+            sp.edit().putInt("KAKAO_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+                .putInt("KAKAO_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET", 0).apply()
         }
         val deviceId = sp.getString("DEVICE_ID", "알 수 없음")
         binding.tvAppVersion.text = "버전 ${BuildConfig.VERSION_NAME} / 기기ID: $deviceId"

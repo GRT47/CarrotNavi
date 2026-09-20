@@ -396,23 +396,27 @@ class HudOverlayManager(
 
             fun formatBottomBarOffset(v: Int): String = if (v > 0) "+$v dp" else "$v dp"
 
-            val tmapOffset = sp.getInt("TMAP_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+            val isLandscape = activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+            val tmapKey = if (isLandscape) "TMAP_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET" else "TMAP_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET"
+            val kakaoKey = if (isLandscape) "KAKAO_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET" else "KAKAO_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET"
+
+            val tmapOffset = sp.getInt(tmapKey, 0)
             sliderTmapBottomBarHeight?.value = tmapOffset.toFloat().coerceIn(-20f, 60f)
             tvTmapBottomBarHeightValue?.text = formatBottomBarOffset(tmapOffset)
             sliderTmapBottomBarHeight?.addOnChangeListener { _, value, _ ->
                 val v = value.toInt()
                 tvTmapBottomBarHeightValue?.text = formatBottomBarOffset(v)
-                sp.edit().putInt("TMAP_BOTTOM_BAR_HEIGHT_OFFSET", v).apply()
+                sp.edit().putInt(tmapKey, v).apply()
                 (activity as? MapActivity)?.alignGpsOverlayWithEndButton()
             }
 
-            val kakaoOffset = sp.getInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+            val kakaoOffset = sp.getInt(kakaoKey, 0)
             sliderKakaoBottomBarHeight?.value = kakaoOffset.toFloat().coerceIn(-20f, 60f)
             tvKakaoBottomBarHeightValue?.text = formatBottomBarOffset(kakaoOffset)
             sliderKakaoBottomBarHeight?.addOnChangeListener { _, value, _ ->
                 val v = value.toInt()
                 tvKakaoBottomBarHeightValue?.text = formatBottomBarOffset(v)
-                sp.edit().putInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", v)
+                sp.edit().putInt(kakaoKey, v)
                     .putBoolean("KAKAO_OFFSET_CUSTOMIZED_BY_USER", true).apply()
                 (activity as? KakaoMapActivity)?.alignGpsOverlayWithBottomBar()
             }
@@ -923,7 +927,8 @@ class HudOverlayManager(
             gpsInfo.orientation = LinearLayout.HORIZONTAL
             gpsInfo.gravity = android.view.Gravity.CENTER_VERTICAL
             val padH = (12 * density).toInt()
-            gpsInfo.setPadding(padH, 0, padH, 0)
+            val padV = (2 * density).toInt()
+            gpsInfo.setPadding(padH, padV, padH, padV)
 
             val topParams = topRow.layoutParams as? LinearLayout.LayoutParams
                 ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)

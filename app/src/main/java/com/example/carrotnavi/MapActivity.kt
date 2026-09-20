@@ -1199,14 +1199,14 @@ class MapActivity : AppCompatActivity() {
 
                 val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
                 val heightOffsetDp = if (isLandscape) {
-                    sp.getInt("TMAP_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+                    sp.getInt("TMAP_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET", 0)
                 } else {
                     sp.getInt("TMAP_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET", 0)
                 }
 
-                // 가로 모드는 1줄(46dp), 세로 모드는 2줄(78dp)로 상하단 여백 최소화
-                val baseBarHeightDp = if (isLandscape) 46 else 78
-                val minHeightDp = if (isLandscape) 42 else 74
+                // 가로 모드는 1줄(40dp), 세로 모드는 2줄(78dp)로 상하단 여백 최소화 (상하 각 2dp)
+                val baseBarHeightDp = if (isLandscape) 40 else 78
+                val minHeightDp = if (isLandscape) 36 else 74
                 val finalHeightDp = (baseBarHeightDp + heightOffsetDp).coerceAtLeast(minHeightDp)
                 val finalHeight = (finalHeightDp * resources.displayMetrics.density).toInt()
 

@@ -1114,15 +1114,15 @@ class KakaoMapActivity : AppCompatActivity(),
                 val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
                 val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
                 val heightOffsetDp = if (isLandscape) {
-                    sp.getInt("KAKAO_BOTTOM_BAR_HEIGHT_OFFSET", 0)
+                    sp.getInt("KAKAO_LANDSCAPE_BOTTOM_BAR_HEIGHT_OFFSET", 0)
                 } else {
                     sp.getInt("KAKAO_PORTRAIT_BOTTOM_BAR_HEIGHT_OFFSET", 0)
                 }
                 val heightOffsetPx = (heightOffsetDp * resources.displayMetrics.density).toInt()
 
-                // 카카오 하단 바는 가로/세로 모두 티맵의 하단 바 크기(기본 46dp)를 1:1로 정확하게 따라감
+                // 카카오 하단 바는 가로/세로 모두 티맵의 하단 바 크기(가로 40dp, 세로 78dp)를 1:1로 정확하게 따라감
                 val tmapHeightDp = if (isLandscape) {
-                    sp.getInt("TMAP_LANDSCAPE_FINAL_HEIGHT_DP", 46)
+                    sp.getInt("TMAP_LANDSCAPE_FINAL_HEIGHT_DP", 40)
                 } else {
                     sp.getInt("TMAP_PORTRAIT_FINAL_HEIGHT_DP", 78)
                 }
