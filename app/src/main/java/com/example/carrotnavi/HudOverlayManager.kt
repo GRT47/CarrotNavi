@@ -909,6 +909,101 @@ class HudOverlayManager(
         }
     }
 
+    fun applyBottomBarOrientation(isLandscape: Boolean, hasAddr: Boolean) {
+        val density = activity.resources.displayMetrics.density
+        val gpsInfo = binding.llGpsInfo ?: return
+        val topRow = binding.llGpsTopRow ?: return
+        val bottomRow = binding.llGpsBottomRow ?: return
+        val divider = binding.vGpsDivider ?: return
+        val addressTv = binding.tvGpsAddress ?: return
+        val cancelBtn = binding.btnGpsCancelRoute
+
+        if (isLandscape) {
+            // [가로 모드] 1줄 배치 (GPS 상태 | 집,사무실,즐겨찾기 | 구분선 | 주소 | 경로취소)
+            gpsInfo.orientation = LinearLayout.HORIZONTAL
+            gpsInfo.gravity = android.view.Gravity.CENTER_VERTICAL
+            val padH = (12 * density).toInt()
+            gpsInfo.setPadding(padH, 0, padH, 0)
+
+            val topParams = topRow.layoutParams as? LinearLayout.LayoutParams
+                ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            topParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+            topParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            topRow.layoutParams = topParams
+
+            divider.visibility = if (hasAddr) View.VISIBLE else View.GONE
+
+            val bottomParams = bottomRow.layoutParams as? LinearLayout.LayoutParams
+                ?: LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            bottomParams.width = 0
+            bottomParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            bottomParams.weight = 1f
+            bottomParams.topMargin = 0
+            bottomRow.layoutParams = bottomParams
+
+            val addrParams = addressTv.layoutParams as? LinearLayout.LayoutParams
+                ?: LinearLayout.LayoutParams(0, (34 * density).toInt(), 1f)
+            addrParams.width = 0
+            addrParams.weight = 1f
+            addressTv.layoutParams = addrParams
+
+            cancelBtn?.let { btn ->
+                if (btn.parent != bottomRow) {
+                    (btn.parent as? ViewGroup)?.removeView(btn)
+                    bottomRow.addView(btn)
+                }
+                val btnParams = btn.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (34 * density).toInt())
+                btnParams.marginStart = (6 * density).toInt()
+                btnParams.gravity = android.view.Gravity.CENTER_VERTICAL
+                btn.layoutParams = btnParams
+            }
+        } else {
+            // [세로 모드] 2줄 배치 (Row 1: GPS 상태 | 집,사무실,즐겨찾기, Row 2: 현위치 주소)
+            gpsInfo.orientation = LinearLayout.VERTICAL
+            gpsInfo.gravity = android.view.Gravity.CENTER_VERTICAL
+            val padH = (10 * density).toInt()
+            val padV = (4 * density).toInt()
+            gpsInfo.setPadding(padH, padV, padH, padV)
+
+            val topParams = topRow.layoutParams as? LinearLayout.LayoutParams
+                ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            topParams.width = LinearLayout.LayoutParams.MATCH_PARENT
+            topParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            topRow.layoutParams = topParams
+
+            // 세로 모드에서는 줄바꿈되므로 세로 구분선 숨김
+            divider.visibility = View.GONE
+
+            val bottomParams = bottomRow.layoutParams as? LinearLayout.LayoutParams
+                ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            bottomParams.width = LinearLayout.LayoutParams.MATCH_PARENT
+            bottomParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            bottomParams.weight = 0f
+            bottomParams.topMargin = (4 * density).toInt()
+            bottomRow.layoutParams = bottomParams
+
+            val addrParams = addressTv.layoutParams as? LinearLayout.LayoutParams
+                ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (34 * density).toInt())
+            addrParams.width = LinearLayout.LayoutParams.MATCH_PARENT
+            addrParams.weight = 0f
+            addressTv.layoutParams = addrParams
+
+            cancelBtn?.let { btn ->
+                if (btn.parent != topRow) {
+                    (btn.parent as? ViewGroup)?.removeView(btn)
+                    topRow.addView(btn)
+                }
+                val btnParams = btn.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (34 * density).toInt())
+                btnParams.marginStart = (6 * density).toInt()
+                btnParams.gravity = android.view.Gravity.CENTER_VERTICAL
+                btn.layoutParams = btnParams
+            }
+            binding.btnQuickFavorites.post { syncQuickDestButtonWidths() }
+        }
+    }
+
     private fun updateEditModeForegrounds() {
         if (isEditMode) {
             binding.llBottomLeftOverlays.foreground = HatchedDrawable(binding.llBottomLeftOverlays)

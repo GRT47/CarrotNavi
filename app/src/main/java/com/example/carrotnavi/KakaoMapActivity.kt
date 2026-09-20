@@ -1120,7 +1120,7 @@ class KakaoMapActivity : AppCompatActivity(),
                 val tmapHeightDp = if (isLandscape) {
                     sp.getInt("TMAP_LANDSCAPE_FINAL_HEIGHT_DP", 46)
                 } else {
-                    sp.getInt("TMAP_PORTRAIT_FINAL_HEIGHT_DP", 46)
+                    sp.getInt("TMAP_PORTRAIT_FINAL_HEIGHT_DP", 88)
                 }
                 val tmapHeightPx = (tmapHeightDp * resources.displayMetrics.density).toInt()
                 val finalHeight = (tmapHeightPx + heightOffsetPx).coerceAtLeast((24 * resources.displayMetrics.density).toInt())
@@ -1165,12 +1165,9 @@ class KakaoMapActivity : AppCompatActivity(),
                     gpsInfo.layoutParams = infoParams
                     gpsInfo.setBackgroundResource(R.drawable.bg_gps_end_btn)
 
-                    gpsInfo.gravity = android.view.Gravity.CENTER_VERTICAL
-                    val padH = (16 * resources.displayMetrics.density).toInt()
-                    gpsInfo.setPadding(padH, 0, padH, 0)
                     val hasAddr = lastKnownAddress.isNotEmpty()
+                    hudOverlayManager.applyBottomBarOrientation(isLandscape, hasAddr)
                     hudOverlayManager.binding.tvGpsAddress?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
-                    hudOverlayManager.binding.vGpsDivider?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
                     val shouldShowCancel = hasStartedRouteGuidance && isGuidanceActive && !isShowingPreview
                     hudOverlayManager.binding.btnGpsCancelRoute?.visibility = if (shouldShowCancel) android.view.View.VISIBLE else android.view.View.GONE
                     hudOverlayManager.binding.llQuickDestGroup?.visibility = android.view.View.GONE
@@ -1313,17 +1310,19 @@ class KakaoMapActivity : AppCompatActivity(),
 
     private fun updateGpsAddressUi(address: String) {
         if (!::hudOverlayManager.isInitialized) return
+        val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
         val bottomBar = (if (bottomBarId != 0) findViewById<android.view.View?>(bottomBarId) else null)
             ?: findKakaoViewById("component_bottom")
             ?: findKakaoViewById("bottom_drive_constraint_layout")
         val hasValidBar = bottomBar != null && (bottomBar.width > 0 || bottomBar.isShown)
+        val hasAddr = hasValidBar && address.isNotEmpty()
         hudOverlayManager.binding.tvGpsAddress?.let { tv ->
             tv.text = address
             tv.isSelected = true
-            tv.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+            tv.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
         }
         hudOverlayManager.binding.vGpsDivider?.let { divider ->
-            divider.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+            divider.visibility = if (isLandscape && hasAddr) android.view.View.VISIBLE else android.view.View.GONE
         }
     }
 

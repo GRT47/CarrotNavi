@@ -1200,9 +1200,10 @@ class MapActivity : AppCompatActivity() {
                 val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
                 val heightOffsetDp = sp.getInt("TMAP_BOTTOM_BAR_HEIGHT_OFFSET", 0)
 
-                // 캡슐 높이 40dp 기준 상하 여백을 최소화(각 3dp)하여 바 높이를 46dp로 설정
-                val baseBarHeightDp = 46
-                val finalHeightDp = (baseBarHeightDp + heightOffsetDp).coerceAtLeast(42)
+                // 가로 모드는 1줄(46dp), 세로 모드는 2줄(88dp)로 구성
+                val baseBarHeightDp = if (isLandscape) 46 else 88
+                val minHeightDp = if (isLandscape) 42 else 76
+                val finalHeightDp = (baseBarHeightDp + heightOffsetDp).coerceAtLeast(minHeightDp)
                 val finalHeight = (finalHeightDp * resources.displayMetrics.density).toInt()
 
                 val targetBottom = targetTop + targetHeight
@@ -1248,13 +1249,9 @@ class MapActivity : AppCompatActivity() {
                     gpsInfo.setBackgroundResource(R.drawable.bg_gps_end_btn)
 
                     if (hasValidBar) {
-                        // 가로/세로 공통: 좌측에 GPS 상태, 중앙에 현재 주소 표시, 우측에 원터치 목적지 버튼
-                        gpsInfo.gravity = android.view.Gravity.CENTER_VERTICAL
-                        val padH = (12 * resources.displayMetrics.density).toInt()
-                        gpsInfo.setPadding(padH, 0, padH, 0)
                         val hasAddr = lastKnownAddress.isNotEmpty()
+                        hudOverlayManager.applyBottomBarOrientation(isLandscape, hasAddr)
                         hudBinding.tvGpsAddress?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.INVISIBLE
-                        hudBinding.vGpsDivider?.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
                         hudBinding.llQuickDestGroup?.visibility = if (hudOverlayManager.isOverlayVisible) android.view.View.VISIBLE else android.view.View.GONE
                     } else {
                         // 예외 fallback: 주행종료 버튼 크기이므로 GPS 상태만 중앙 정렬
@@ -1337,15 +1334,17 @@ class MapActivity : AppCompatActivity() {
 
     private fun updateGpsAddressUi(address: String) {
         if (!::hudBinding.isInitialized) return
+        val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
         val etaView = if (etaViewId != 0) findViewById<android.view.View?>(etaViewId) else null
         val hasValidBar = etaView != null && (etaView.width > 0 || etaView.isShown)
+        val hasAddr = hasValidBar && address.isNotEmpty()
         hudBinding.tvGpsAddress?.let { tv ->
             tv.text = address
             tv.isSelected = true
-            tv.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.INVISIBLE
+            tv.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.INVISIBLE
         }
         hudBinding.vGpsDivider?.let { divider ->
-            divider.visibility = if (hasValidBar && address.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+            divider.visibility = if (isLandscape && hasAddr) android.view.View.VISIBLE else android.view.View.GONE
         }
     }
 
