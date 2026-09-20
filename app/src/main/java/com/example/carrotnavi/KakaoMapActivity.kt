@@ -962,14 +962,6 @@ class KakaoMapActivity : AppCompatActivity(),
                 tvXStateDesc?.text = "상태 확인 중"
             }
         }
-
-        // 5. Carrot AI 제어 판단 로그
-        val tvCarrotLog = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCarrotLog)
-        if (state.logCarrot.isNotEmpty()) {
-            tvCarrotLog?.text = state.logCarrot
-        } else {
-            tvCarrotLog?.text = "주행 데이터 수신 대기 중..."
-        }
     }
 
     private fun startUdpSenderService() {

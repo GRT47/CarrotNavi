@@ -238,16 +238,15 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="@drawable/bg_op_card"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="7dp"
-                android:layout_marginBottom="8dp">
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="10dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="E2E 모델"
                     android:textColor="#9CA3AF"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <View
@@ -261,11 +260,11 @@
                     android:layout_height="wrap_content"
                     android:text="정속 주행"
                     android:textColor="#34D399"
-                    android:textSize="11sp"
+                    android:textSize="11.5sp"
                     android:textStyle="bold"
                     android:background="@drawable/bg_op_pill"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="3dp" />
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp" />
 
                 <TextView
                     android:id="@+id/tvOpDashXStateDesc"
@@ -273,52 +272,8 @@
                     android:layout_height="wrap_content"
                     android:text="정상 순항 중"
                     android:textColor="#9CA3AF"
-                    android:textSize="11sp"
-                    android:layout_marginStart="6dp" />
-            </LinearLayout>
-
-            <!-- 3. 실시간 Carrot AI 제어 판단 터미널 로그 카드 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/bg_op_terminal"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="8dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="4dp">
-
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="6dp"
-                        android:background="@drawable/shape_circle_green" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="CARROT AI 제어 판단 로그"
-                        android:textColor="#38BDF8"
-                        android:textSize="10.5sp"
-                        android:textStyle="bold"
-                        android:layout_marginStart="5dp" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tvOpDashCarrotLog"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="주행 데이터 수신 대기 중..."
-                    android:textColor="#A7F3D0"
-                    android:textSize="11sp"
-                    android:fontFamily="monospace"
-                    android:lineSpacingExtra="2dp"
-                    android:maxLines="2"
-                    android:ellipsize="end" />
+                    android:textSize="11.5sp"
+                    android:layout_marginStart="8dp" />
             </LinearLayout>
 
         </LinearLayout>
