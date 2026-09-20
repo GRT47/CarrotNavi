@@ -899,40 +899,13 @@ class KakaoMapActivity : AppCompatActivity(),
         val verStr = if (state.carrot2.isNotEmpty()) state.carrot2 else "-"
         tvDeviceInfo?.text = "IP: $ipStr · Ver: $verStr"
 
-        // 2. 방향지시등, 브레이크등, 속도 및 크루즈
-        val tvLeftBlinker = opView.findViewById<android.widget.TextView>(R.id.tvOpDashLeftBlinker)
-        val tvRightBlinker = opView.findViewById<android.widget.TextView>(R.id.tvOpDashRightBlinker)
-        val tvBrakeLight = opView.findViewById<android.widget.TextView>(R.id.tvOpDashBrakeLight)
+        // 2. 차량 비주얼라이저, 속도 및 크루즈
         val tvSpeed = opView.findViewById<android.widget.TextView>(R.id.tvOpDashSpeed)
         val tvEngageBadge = opView.findViewById<android.widget.TextView>(R.id.tvOpDashEngageBadge)
         val tvCruiseSet = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCruiseSet)
         val tvCruiseCtrl = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCruiseCtrl)
         val viewCarRearVisualizer = opView.findViewById<CarRearVisualizerView>(R.id.viewCarRearVisualizer)
         viewCarRearVisualizer?.setVehicleLights(state.leftBlinker, state.rightBlinker, state.brakeLights)
-
-        if (state.leftBlinker) {
-            tvLeftBlinker?.setBackgroundResource(R.drawable.bg_op_blinker_active)
-            tvLeftBlinker?.setTextColor(android.graphics.Color.parseColor("#10B981"))
-        } else {
-            tvLeftBlinker?.setBackgroundResource(R.drawable.bg_op_pill)
-            tvLeftBlinker?.setTextColor(android.graphics.Color.parseColor("#3F3F46"))
-        }
-
-        if (state.rightBlinker) {
-            tvRightBlinker?.setBackgroundResource(R.drawable.bg_op_blinker_active)
-            tvRightBlinker?.setTextColor(android.graphics.Color.parseColor("#10B981"))
-        } else {
-            tvRightBlinker?.setBackgroundResource(R.drawable.bg_op_pill)
-            tvRightBlinker?.setTextColor(android.graphics.Color.parseColor("#3F3F46"))
-        }
-
-        if (state.brakeLights) {
-            tvBrakeLight?.setBackgroundResource(R.drawable.bg_op_brake_active)
-            tvBrakeLight?.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
-        } else {
-            tvBrakeLight?.setBackgroundResource(R.drawable.bg_op_pill)
-            tvBrakeLight?.setTextColor(android.graphics.Color.parseColor("#3F3F46"))
-        }
 
         tvSpeed?.text = "${state.vEgoKph}"
         if (state.active) {
@@ -959,17 +932,17 @@ class KakaoMapActivity : AppCompatActivity(),
         when (state.trafficState) {
             1 -> {
                 vLightRed?.setBackgroundResource(R.drawable.shape_circle_red)
-                tvTrafficText?.text = "적색 신호 (정지)"
+                tvTrafficText?.text = "적색 신호"
                 tvTrafficText?.setTextColor(android.graphics.Color.parseColor("#EF4444"))
             }
             2 -> {
                 vLightGreen?.setBackgroundResource(R.drawable.shape_circle_green)
-                tvTrafficText?.text = "녹색 신호 (진행)"
+                tvTrafficText?.text = "녹색 신호"
                 tvTrafficText?.setTextColor(android.graphics.Color.parseColor("#10B981"))
             }
             3 -> {
                 vLightYellow?.setBackgroundResource(R.drawable.shape_circle_yellow)
-                tvTrafficText?.text = "황색 신호 (주의)"
+                tvTrafficText?.text = "황색 신호"
                 tvTrafficText?.setTextColor(android.graphics.Color.parseColor("#F59E0B"))
             }
             else -> {
