@@ -337,5 +337,6 @@
         android:layout_weight="1"
         android:visibility="visible">
         <include layout="@layout/layout_media_player" />
+        <include layout="@layout/layout_openpilot_dashboard" />
     </FrameLayout>
 </LinearLayout>

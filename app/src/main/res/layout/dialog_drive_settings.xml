@@ -506,6 +506,70 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- 2-1-B. 분할 화면 표시 콘텐츠 선택 -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardSplitContentType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="#1C1C22"
+                    app:strokeColor="#2C2C38"
+                    app:strokeWidth="1dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="분할 화면 표시 콘텐츠"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#FFFFFF"
+                            android:layout_marginBottom="4dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="분할 화면 영역에 표시할 정보를 선택합니다."
+                            android:textColor="#71717A"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <RadioGroup
+                            android:id="@+id/rgSplitContentType"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/rbSplitContentMedia"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="🎵 미디어 플레이어"
+                                android:textColor="#E4E4E7"
+                                android:textSize="13sp"
+                                android:checked="true"/>
+
+                            <RadioButton
+                                android:id="@+id/rbSplitContentOpenpilot"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="🚗 오픈파일럿 주행정보"
+                                android:textColor="#E4E4E7"
+                                android:textSize="13sp"/>
+                        </RadioGroup>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- 2-2. 화면 분할 비율 -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardMediaSplitRatio"

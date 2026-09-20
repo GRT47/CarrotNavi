@@ -47,6 +47,50 @@
                     app:tint="#AAAAAA"/>
             </LinearLayout>
 
+            <!-- 분할 화면 콘텐츠 선택 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="분할 화면 표시 콘텐츠"
+                android:textColor="#CCCCCC"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <RadioGroup
+                android:id="@+id/rgSplitContentType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <RadioButton
+                    android:id="@+id/rbSplitContentMedia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🎵 미디어"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:checked="true"/>
+
+                <RadioButton
+                    android:id="@+id/rbSplitContentOpenpilot"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🚗 오픈파일럿"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"/>
+            </RadioGroup>
+
+            <!-- 구분선 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#333333"
+                android:layout_marginBottom="16dp"/>
+
             <!-- 화면 분할 비율 섹션 -->
             <TextView
                 android:layout_width="wrap_content"

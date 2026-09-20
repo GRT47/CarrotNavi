@@ -547,8 +547,34 @@ class UdpSenderService : Service() {
                         val trafficState = json.optInt("trafficState", 0)
                         val xState = json.optInt("xState", 0)
                         val active = json.optBoolean("active", false)
+                        val vEgoKph = json.optInt("v_ego_kph", 0)
+                        val vCruiseKph = json.optInt("v_cruise_kph", 0)
+                        val carcruiseSpeed = json.optDouble("carcruiseSpeed", 0.0)
+                        val logCarrot = json.optString("log_carrot", "")
+                        val isOnroad = json.optBoolean("IsOnroad", false)
+                        val tbtDist = json.optDouble("tbt_dist", 0.0)
+                        val sdiDist = json.optDouble("sdi_dist", 0.0)
+                        val leftBlinker = if (json.has("left_blinker")) json.optBoolean("left_blinker", false) else json.optBoolean("leftBlinker", false)
+                        val rightBlinker = if (json.has("right_blinker")) json.optBoolean("right_blinker", false) else json.optBoolean("rightBlinker", false)
+                        val brakeLights = if (json.has("brake_lights")) json.optBoolean("brake_lights", false) else json.optBoolean("brakeLights", false)
                         
-                        OpenpilotStateRepository.updateState(carrot2, ip, trafficState, xState, active)
+                        OpenpilotStateRepository.updateState(
+                            carrot2 = carrot2,
+                            ip = ip,
+                            trafficState = trafficState,
+                            xState = xState,
+                            active = active,
+                            vEgoKph = vEgoKph,
+                            vCruiseKph = vCruiseKph,
+                            carcruiseSpeed = carcruiseSpeed,
+                            logCarrot = logCarrot,
+                            isOnroad = isOnroad,
+                            tbtDist = tbtDist,
+                            sdiDist = sdiDist,
+                            leftBlinker = leftBlinker,
+                            rightBlinker = rightBlinker,
+                            brakeLights = brakeLights
+                        )
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }

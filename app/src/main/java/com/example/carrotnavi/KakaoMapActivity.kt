@@ -293,6 +293,10 @@ class KakaoMapActivity : AppCompatActivity(),
             runOnUiThread {
                 updateMediaLayout(resources.configuration.orientation)
             }
+        } else if (key == "SPLIT_CONTENT_TYPE") {
+            runOnUiThread {
+                updateSplitContentView()
+            }
         } else if (key == "MEDIA_BG_STYLE" || key == "SHOW_ALBUM_ART_WITH_EQ") {
             runOnUiThread {
                 updateMediaUIFromService()
@@ -480,6 +484,9 @@ class KakaoMapActivity : AppCompatActivity(),
                 updateMediaLayout(resources.configuration.orientation)
             }
         }
+        hudOverlayManager.onSplitContentTypeChanged = {
+            updateSplitContentView()
+        }
         if (hudOverlayManager.isMediaOverlayActive) {
             splitHandleManager?.setHandleVisible(false)
             updateMediaLayout(resources.configuration.orientation)
@@ -490,11 +497,14 @@ class KakaoMapActivity : AppCompatActivity(),
             startActivity(searchIntent)
         }
 
-        // 앨범아트 클릭 시 미디어 화면 분할 설정 메뉴 표시
+        // 앨범아트 또는 오픈파일럿 대시보드 클릭 시 화면 분할 설정 메뉴 표시
         binding.root.findViewById<android.view.View>(R.id.cvAlbumArtContainer)?.setOnClickListener {
             hudOverlayManager.showMediaSettingsDialog()
         }
         binding.root.findViewById<android.view.View>(R.id.ivAlbumArtThumbnail)?.setOnClickListener {
+            hudOverlayManager.showMediaSettingsDialog()
+        }
+        binding.root.findViewById<android.view.View>(R.id.cardOpDashSpeed)?.setOnClickListener {
             hudOverlayManager.showMediaSettingsDialog()
         }
 
@@ -619,6 +629,7 @@ class KakaoMapActivity : AppCompatActivity(),
 
     private fun setupUI() {
         updateMediaLayout(resources.configuration.orientation)
+        updateSplitContentView()
         
         // request current media info manually
         val ivAlbumArt = binding.root.findViewById<android.widget.ImageView>(R.id.ivAlbumArt)
@@ -838,10 +849,7 @@ class KakaoMapActivity : AppCompatActivity(),
 
     private fun setupObservers() {
         OpenpilotStateRepository.state.observe(this, Observer { state ->
-            
-            if (state.ip != "-" && state.ip.isNotEmpty()) {
-            } else {
-            }
+            updateOpenpilotDashboardUI(state)
         })
 
         // 백그라운드 서비스(UdpSenderService)에서 갱신하는 최신 티맵 도로 제한속도 옵저빙
@@ -849,6 +857,164 @@ class KakaoMapActivity : AppCompatActivity(),
             currentRoadLimitSpeed = limitSpeed
             updateRoadSpeedLimitVisibility()
         })
+    }
+
+    private fun updateSplitContentView() {
+        val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        val contentType = sp.getString("SPLIT_CONTENT_TYPE", "media")
+        val isOpenpilot = (contentType == "openpilot")
+
+        val mediaView = binding.root.findViewById<android.view.View>(R.id.mediaPlayerContainer)
+        val opView = binding.root.findViewById<android.view.View>(R.id.openpilotDashboardContainer)
+
+        mediaView?.visibility = if (isOpenpilot) android.view.View.GONE else android.view.View.VISIBLE
+        opView?.visibility = if (isOpenpilot) android.view.View.VISIBLE else android.view.View.GONE
+
+        if (isOpenpilot) {
+            OpenpilotStateRepository.state.value?.let { updateOpenpilotDashboardUI(it) }
+        }
+    }
+
+    private fun updateOpenpilotDashboardUI(state: OpenpilotState) {
+        val opView = binding.root.findViewById<android.view.View>(R.id.openpilotDashboardContainer) ?: return
+        if (opView.visibility != android.view.View.VISIBLE) return
+
+        // 1. 헤더 연결 상태
+        val vConnDot = opView.findViewById<android.view.View>(R.id.vOpDashConnDot)
+        val tvConnText = opView.findViewById<android.widget.TextView>(R.id.tvOpDashConnText)
+        val tvDeviceInfo = opView.findViewById<android.widget.TextView>(R.id.tvOpDashDeviceInfo)
+
+        val isConnected = state.ip.isNotEmpty() && state.ip != "-"
+        if (isConnected) {
+            vConnDot?.setBackgroundResource(R.drawable.shape_circle_green)
+            tvConnText?.text = "OP 연결됨"
+            tvConnText?.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
+        } else {
+            vConnDot?.setBackgroundResource(R.drawable.shape_circle_gray)
+            tvConnText?.text = "OP 연결 대기"
+            tvConnText?.setTextColor(android.graphics.Color.parseColor("#9CA3AF"))
+        }
+
+        val ipStr = if (state.ip.isNotEmpty()) state.ip else "-"
+        val verStr = if (state.carrot2.isNotEmpty()) state.carrot2 else "-"
+        tvDeviceInfo?.text = "IP: $ipStr · Ver: $verStr"
+
+        // 2. 방향지시등, 브레이크등, 속도 및 크루즈
+        val tvLeftBlinker = opView.findViewById<android.widget.TextView>(R.id.tvOpDashLeftBlinker)
+        val tvRightBlinker = opView.findViewById<android.widget.TextView>(R.id.tvOpDashRightBlinker)
+        val tvBrakeLight = opView.findViewById<android.widget.TextView>(R.id.tvOpDashBrakeLight)
+        val tvSpeed = opView.findViewById<android.widget.TextView>(R.id.tvOpDashSpeed)
+        val tvEngageBadge = opView.findViewById<android.widget.TextView>(R.id.tvOpDashEngageBadge)
+        val tvCruiseSet = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCruiseSet)
+        val tvCruiseCtrl = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCruiseCtrl)
+
+        if (state.leftBlinker) {
+            tvLeftBlinker?.setBackgroundResource(R.drawable.bg_op_blinker_active)
+            tvLeftBlinker?.setTextColor(android.graphics.Color.parseColor("#10B981"))
+        } else {
+            tvLeftBlinker?.setBackgroundResource(R.drawable.bg_op_pill)
+            tvLeftBlinker?.setTextColor(android.graphics.Color.parseColor("#3F3F46"))
+        }
+
+        if (state.rightBlinker) {
+            tvRightBlinker?.setBackgroundResource(R.drawable.bg_op_blinker_active)
+            tvRightBlinker?.setTextColor(android.graphics.Color.parseColor("#10B981"))
+        } else {
+            tvRightBlinker?.setBackgroundResource(R.drawable.bg_op_pill)
+            tvRightBlinker?.setTextColor(android.graphics.Color.parseColor("#3F3F46"))
+        }
+
+        if (state.brakeLights) {
+            tvBrakeLight?.setBackgroundResource(R.drawable.bg_op_brake_active)
+            tvBrakeLight?.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
+        } else {
+            tvBrakeLight?.setBackgroundResource(R.drawable.bg_op_pill)
+            tvBrakeLight?.setTextColor(android.graphics.Color.parseColor("#3F3F46"))
+        }
+
+        tvSpeed?.text = "${state.vEgoKph}"
+        if (state.active) {
+            tvEngageBadge?.text = "ENGAGED"
+            tvEngageBadge?.setTextColor(android.graphics.Color.parseColor("#00E5FF"))
+        } else {
+            tvEngageBadge?.text = "DISENGAGED"
+            tvEngageBadge?.setTextColor(android.graphics.Color.parseColor("#71717A"))
+        }
+
+        tvCruiseSet?.text = if (state.vCruiseKph > 0) "${state.vCruiseKph} km/h" else "-- km/h"
+        tvCruiseCtrl?.text = if (state.carcruiseSpeed > 0) "${state.carcruiseSpeed.toInt()} km/h" else "-- km/h"
+
+        // 3. 신호등 상태
+        val vLightRed = opView.findViewById<android.view.View>(R.id.vOpDashLightRed)
+        val vLightYellow = opView.findViewById<android.view.View>(R.id.vOpDashLightYellow)
+        val vLightGreen = opView.findViewById<android.view.View>(R.id.vOpDashLightGreen)
+        val tvTrafficText = opView.findViewById<android.widget.TextView>(R.id.tvOpDashTrafficText)
+
+        vLightRed?.setBackgroundResource(R.drawable.shape_circle_dark)
+        vLightYellow?.setBackgroundResource(R.drawable.shape_circle_dark)
+        vLightGreen?.setBackgroundResource(R.drawable.shape_circle_dark)
+
+        when (state.trafficState) {
+            1 -> {
+                vLightRed?.setBackgroundResource(R.drawable.shape_circle_red)
+                tvTrafficText?.text = "적색 신호 (정지)"
+                tvTrafficText?.setTextColor(android.graphics.Color.parseColor("#EF4444"))
+            }
+            2 -> {
+                vLightGreen?.setBackgroundResource(R.drawable.shape_circle_green)
+                tvTrafficText?.text = "녹색 신호 (진행)"
+                tvTrafficText?.setTextColor(android.graphics.Color.parseColor("#10B981"))
+            }
+            3 -> {
+                vLightYellow?.setBackgroundResource(R.drawable.shape_circle_yellow)
+                tvTrafficText?.text = "황색 신호 (주의)"
+                tvTrafficText?.setTextColor(android.graphics.Color.parseColor("#F59E0B"))
+            }
+            else -> {
+                tvTrafficText?.text = "신호 대기"
+                tvTrafficText?.setTextColor(android.graphics.Color.parseColor("#9CA3AF"))
+            }
+        }
+
+        // 4. E2E 모델 xState
+        val tvXStateBadge = opView.findViewById<android.widget.TextView>(R.id.tvOpDashXStateBadge)
+        val tvXStateDesc = opView.findViewById<android.widget.TextView>(R.id.tvOpDashXStateDesc)
+
+        when (state.xState) {
+            0 -> {
+                tvXStateBadge?.text = "정속 주행"
+                tvXStateBadge?.setTextColor(android.graphics.Color.parseColor("#34D399"))
+                tvXStateDesc?.text = "정상 순항 중"
+            }
+            1 -> {
+                tvXStateBadge?.text = "감속 제어"
+                tvXStateBadge?.setTextColor(android.graphics.Color.parseColor("#FBBF24"))
+                tvXStateDesc?.text = "전방 감속 제어"
+            }
+            2 -> {
+                tvXStateBadge?.text = "정지 유지"
+                tvXStateBadge?.setTextColor(android.graphics.Color.parseColor("#F87171"))
+                tvXStateDesc?.text = "차량 정지 (HOLD)"
+            }
+            3 -> {
+                tvXStateBadge?.text = "완만 정지"
+                tvXStateBadge?.setTextColor(android.graphics.Color.parseColor("#FB923C"))
+                tvXStateDesc?.text = "목표 위치 정지 중"
+            }
+            else -> {
+                tvXStateBadge?.text = "주행 준비"
+                tvXStateBadge?.setTextColor(android.graphics.Color.parseColor("#9CA3AF"))
+                tvXStateDesc?.text = "상태 확인 중"
+            }
+        }
+
+        // 5. Carrot AI 제어 판단 로그
+        val tvCarrotLog = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCarrotLog)
+        if (state.logCarrot.isNotEmpty()) {
+            tvCarrotLog?.text = state.logCarrot
+        } else {
+            tvCarrotLog?.text = "주행 데이터 수신 대기 중..."
+        }
     }
 
     private fun startUdpSenderService() {

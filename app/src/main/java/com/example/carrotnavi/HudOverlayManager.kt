@@ -44,6 +44,7 @@ class HudOverlayManager(
     var onQuickDestinationSelected: ((KakaoDocument) -> Unit)? = null
     var onOverlayVisibilityChanged: (() -> Unit)? = null
     var onMediaOverlayVisibilityChanged: ((Boolean) -> Unit)? = null
+    var onSplitContentTypeChanged: ((String) -> Unit)? = null
 
     val isMediaOverlayActive: Boolean
         get() = binding.cvMediaOverlayCard.visibility == View.VISIBLE
@@ -85,6 +86,18 @@ class HudOverlayManager(
             "OVERLAY_VISIBLE", "DEBUG_OVERLAY_VISIBLE" -> {
                 isOverlayVisible = sp.getBoolean("OVERLAY_VISIBLE", true)
                 updateOverlayVisibility()
+            }
+            "SPLIT_CONTENT_TYPE" -> {
+                activeDialogView?.let { view ->
+                    val splitType = sp.getString("SPLIT_CONTENT_TYPE", "media")
+                    val rbMedia = view.findViewById<android.widget.RadioButton>(R.id.rbSplitContentMedia)
+                    val rbOp = view.findViewById<android.widget.RadioButton>(R.id.rbSplitContentOpenpilot)
+                    if (splitType == "openpilot") {
+                        if (rbOp?.isChecked != true) rbOp?.isChecked = true
+                    } else {
+                        if (rbMedia?.isChecked != true) rbMedia?.isChecked = true
+                    }
+                }
             }
             "BLOCK_SPEED_ENABLED", "BLOCK_SPEED_OFFSET", "BLOCK_SPEED_FAKE_DROP", "BLOCK_SPEED_BOOST_MODE", "USE_KM_DISTANCE_FORMAT", "REQ_BACKGROUND", "AUDIO_DUCKING_MODE", "VOICE_VOLUME" -> {
                 activeDialogView?.let { view ->
@@ -318,6 +331,26 @@ class HudOverlayManager(
 
             val cardMediaSplitRatio = dialogView.findViewById<android.view.View>(R.id.cardMediaSplitRatio)
             cardMediaSplitRatio?.visibility = if (!isMediaOverlayActive) android.view.View.VISIBLE else android.view.View.GONE
+
+            val cardSplitContentType = dialogView.findViewById<android.view.View>(R.id.cardSplitContentType)
+            cardSplitContentType?.visibility = if (!isMediaOverlayActive) android.view.View.VISIBLE else android.view.View.GONE
+
+            val rgSplitContentType = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgSplitContentType)
+            val rbSplitContentMedia = dialogView.findViewById<android.widget.RadioButton>(R.id.rbSplitContentMedia)
+            val rbSplitContentOpenpilot = dialogView.findViewById<android.widget.RadioButton>(R.id.rbSplitContentOpenpilot)
+
+            val initialSplitType = sp.getString("SPLIT_CONTENT_TYPE", "media")
+            if (initialSplitType == "openpilot") {
+                rbSplitContentOpenpilot?.isChecked = true
+            } else {
+                rbSplitContentMedia?.isChecked = true
+            }
+
+            rgSplitContentType?.setOnCheckedChangeListener { _, checkedId ->
+                val newType = if (checkedId == R.id.rbSplitContentOpenpilot) "openpilot" else "media"
+                sp.edit().putString("SPLIT_CONTENT_TYPE", newType).apply()
+                onSplitContentTypeChanged?.invoke(newType)
+            }
 
             val sliderMediaRatio = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderMediaRatio)
             val tvMediaRatioValue = dialogView.findViewById<android.widget.TextView>(R.id.tvMediaRatioValue)
@@ -1330,6 +1363,24 @@ class HudOverlayManager(
         val rbBgEqCircle = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEqCircle)
         val cbShowAlbumArtWithEq = dialogView.findViewById<android.widget.CheckBox>(R.id.cbShowAlbumArtWithEq)
 
+        // 분할 화면 콘텐츠 선택 설정
+        val rgSplitContentType = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgSplitContentType)
+        val rbSplitContentMedia = dialogView.findViewById<android.widget.RadioButton>(R.id.rbSplitContentMedia)
+        val rbSplitContentOpenpilot = dialogView.findViewById<android.widget.RadioButton>(R.id.rbSplitContentOpenpilot)
+
+        val initialSplitType = sp.getString("SPLIT_CONTENT_TYPE", "media")
+        if (initialSplitType == "openpilot") {
+            rbSplitContentOpenpilot?.isChecked = true
+        } else {
+            rbSplitContentMedia?.isChecked = true
+        }
+
+        rgSplitContentType?.setOnCheckedChangeListener { _, checkedId ->
+            val newType = if (checkedId == R.id.rbSplitContentOpenpilot) "openpilot" else "media"
+            sp.edit().putString("SPLIT_CONTENT_TYPE", newType).apply()
+            onSplitContentTypeChanged?.invoke(newType)
+        }
+
         // 초기 배경 스타일 설정
         val currentStyle = sp.getString("MEDIA_BG_STYLE", "album")
         when (currentStyle) {
@@ -1622,6 +1673,8 @@ class HudOverlayManager(
         onMediaOverlayVisibilityChanged?.invoke(isVisible)
         activeDialogView?.let { view ->
             view.findViewById<android.view.View>(R.id.cardMediaSplitRatio)?.visibility =
+                if (!isVisible) View.VISIBLE else View.GONE
+            view.findViewById<android.view.View>(R.id.cardSplitContentType)?.visibility =
                 if (!isVisible) View.VISIBLE else View.GONE
             val sw = view.findViewById<android.widget.Switch>(R.id.swMediaOverlayEnable)
             if (sw != null && sw.isChecked != isVisible) {
