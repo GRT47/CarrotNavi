@@ -21,13 +21,33 @@ class CarRearVisualizerView @JvmOverloads constructor(
     private var leftBlinker: Boolean = false
     private var rightBlinker: Boolean = false
     private var brakeLights: Boolean = false
+    private var speedKph: Int = 0
+
+    // 애니메이션 제어 변수
+    private var lanePhase: Float = 0f
+    private var lastFrameTime: Long = 0L
 
     // Paints
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val path = Path()
+    private val roadPath = Path()
+    private val lanePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+    }
+    private val laneGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+    }
 
     // Color Palette
     private val colorRoadLine = Color.parseColor("#1E2538")
+    private val colorRoadTrack = Color.parseColor("#202B3C")
+    private val colorLaneNormal = Color.parseColor("#38BDF8") // Neon Sky Cyan
+    private val colorLaneGlow = Color.parseColor("#4400E5FF")
+    private val colorLaneBlinker = Color.parseColor("#FFB800") // Amber Yellow
+    private val colorLaneBlinkerGlow = Color.parseColor("#66FFB800")
+
     private val colorTire = Color.parseColor("#18181B")
     private val colorCarBodyDark = Color.parseColor("#1C1F26")
     private val colorCarBodyLight = Color.parseColor("#282D37")
@@ -50,12 +70,53 @@ class CarRearVisualizerView @JvmOverloads constructor(
         setLayerType(LAYER_TYPE_SOFTWARE, null)
     }
 
-    fun setVehicleLights(leftBlinker: Boolean, rightBlinker: Boolean, brakeLights: Boolean) {
-        if (this.leftBlinker != leftBlinker || this.rightBlinker != rightBlinker || this.brakeLights != brakeLights) {
-            this.leftBlinker = leftBlinker
-            this.rightBlinker = rightBlinker
-            this.brakeLights = brakeLights
+    fun setVehicleState(leftBlinker: Boolean, rightBlinker: Boolean, brakeLights: Boolean, speedKph: Int = 0) {
+        val lightsChanged = (this.leftBlinker != leftBlinker || this.rightBlinker != rightBlinker || this.brakeLights != brakeLights)
+        val speedChanged = (this.speedKph != speedKph)
+        this.leftBlinker = leftBlinker
+        this.rightBlinker = rightBlinker
+        this.brakeLights = brakeLights
+        this.speedKph = speedKph
+
+        if (speedKph > 0 && lastFrameTime == 0L) {
+            lastFrameTime = android.os.SystemClock.uptimeMillis()
             postInvalidateOnAnimation()
+        } else if (speedKph == 0 && lastFrameTime != 0L) {
+            lastFrameTime = 0L
+            postInvalidateOnAnimation()
+        } else if (lightsChanged || speedChanged) {
+            postInvalidateOnAnimation()
+        }
+    }
+
+    fun setVehicleLights(leftBlinker: Boolean, rightBlinker: Boolean, brakeLights: Boolean) {
+        setVehicleState(leftBlinker, rightBlinker, brakeLights, this.speedKph)
+    }
+
+    fun setVehicleSpeed(speedKph: Int) {
+        setVehicleState(this.leftBlinker, this.rightBlinker, this.brakeLights, speedKph)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        if (speedKph > 0) {
+            lastFrameTime = android.os.SystemClock.uptimeMillis()
+            postInvalidateOnAnimation()
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        lastFrameTime = 0L
+    }
+
+    override fun onVisibilityChanged(changedView: View, visibility: Int) {
+        super.onVisibilityChanged(changedView, visibility)
+        if (visibility == VISIBLE && speedKph > 0) {
+            lastFrameTime = android.os.SystemClock.uptimeMillis()
+            postInvalidateOnAnimation()
+        } else if (visibility != VISIBLE) {
+            lastFrameTime = 0L
         }
     }
 
@@ -73,8 +134,26 @@ class CarRearVisualizerView @JvmOverloads constructor(
         val topY = bottomY - carH
         val halfW = carW / 2f
 
-        // 1. 노면 및 차선 원근감 가이드라인
-        drawRoad(canvas, cx, bottomY, w, h)
+        // 차량 이동 시 차선 흐름 애니메이션 프레임 전진
+        if (speedKph > 0) {
+            val now = android.os.SystemClock.uptimeMillis()
+            val dt = if (lastFrameTime > 0L) {
+                ((now - lastFrameTime) / 1000f).coerceIn(0.001f, 0.08f)
+            } else {
+                0.016f
+            }
+            lastFrameTime = now
+
+            // 주행 속도에 비례하여 차선이 뒤로 빠르게 흐름 (10km/h: 0.8Hz, 60km/h: 1.4Hz, 100km/h: 1.9Hz)
+            val speedFactor = 0.7f + (speedKph.coerceIn(1, 140) / 100f) * 1.2f
+            lanePhase = (lanePhase + dt * speedFactor) % 1.0f
+            postInvalidateOnAnimation()
+        } else {
+            lastFrameTime = 0L
+        }
+
+        // 1. 노면 및 차선 원근감 애니메이션
+        drawRoad(canvas, cx, bottomY, halfW, w, h)
 
         // 2. 바닥 그림자
         paint.reset()
@@ -116,16 +195,101 @@ class CarRearVisualizerView @JvmOverloads constructor(
         drawRearDetails(canvas, cx, topY, bottomY, halfW, carH)
     }
 
-    private fun drawRoad(canvas: Canvas, cx: Float, bottomY: Float, w: Float, h: Float) {
+    private fun drawRoad(canvas: Canvas, cx: Float, bottomY: Float, halfW: Float, w: Float, h: Float) {
+        val horizonY = h * 0.10f
+        val topHalfW = halfW * 0.72f
+        val bottomHalfW = halfW * 1.38f
+
+        // 1. 노면 기본 베이스 (원근 사다리꼴 은은한 그라디언트)
+        roadPath.reset()
+        roadPath.moveTo(cx - topHalfW * 1.05f, horizonY)
+        roadPath.lineTo(cx + topHalfW * 1.05f, horizonY)
+        roadPath.lineTo(cx + bottomHalfW * 1.05f, h)
+        roadPath.lineTo(cx - bottomHalfW * 1.05f, h)
+        roadPath.close()
+
         paint.reset()
         paint.isAntiAlias = true
-        paint.color = colorRoadLine
-        paint.strokeWidth = 2.5f
-        paint.style = Paint.Style.STROKE
+        paint.style = Paint.Style.FILL
+        paint.shader = LinearGradient(
+            cx, horizonY, cx, h,
+            intArrayOf(Color.parseColor("#050A101C"), Color.parseColor("#280D1524")),
+            null,
+            Shader.TileMode.CLAMP
+        )
+        canvas.drawPath(roadPath, paint)
+        paint.shader = null
 
-        // 좌/우 차선 원근 라인
-        canvas.drawLine(cx - w * 0.22f, bottomY - h * 0.35f, cx - w * 0.44f, h, paint)
-        canvas.drawLine(cx + w * 0.22f, bottomY - h * 0.35f, cx + w * 0.44f, h, paint)
+        // 2. 차선 기본 안내선 (Faint Track Lines)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 1.6f
+        paint.color = colorRoadTrack
+        canvas.drawLine(cx - topHalfW, horizonY, cx - bottomHalfW, h, paint)
+        canvas.drawLine(cx + topHalfW, horizonY, cx + bottomHalfW, h, paint)
+
+        // 3. 실시간 주행 흐름 차선 대시 애니메이션 (Lane Dashes Animation)
+        val dashCount = 5
+        val baseLeftColor = if (leftBlinker) colorLaneBlinker else colorLaneNormal
+        val baseLeftGlow = if (leftBlinker) colorLaneBlinkerGlow else colorLaneGlow
+        val baseRightColor = if (rightBlinker) colorLaneBlinker else colorLaneNormal
+        val baseRightGlow = if (rightBlinker) colorLaneBlinkerGlow else colorLaneGlow
+
+        // 정지 상태일 때는 고정된 위치에 차분한 톤, 주행 중일 때는 선명한 네온 발광
+        val isMoving = (speedKph > 0)
+        val alphaMultiplier = if (isMoving) 1.0f else 0.55f
+
+        for (i in 0 until dashCount) {
+            val u1 = (i + lanePhase) / dashCount % 1.0f
+            val u2 = Math.min(1.0f, u1 + 0.11f)
+            if (u2 <= u1) continue
+
+            // 원근감 Y 및 폭 계산 (u^1.35로 먼 곳은 촘촘하고 가까운 곳은 넓게)
+            val p1 = Math.pow(u1.toDouble(), 1.35).toFloat()
+            val p2 = Math.pow(u2.toDouble(), 1.35).toFloat()
+
+            val y1 = horizonY + (h - horizonY) * p1
+            val y2 = horizonY + (h - horizonY) * p2
+
+            val w1 = topHalfW + (bottomHalfW - topHalfW) * u1
+            val w2 = topHalfW + (bottomHalfW - topHalfW) * u2
+
+            val strokeW = (1.8f + 2.5f * u1) * resources.displayMetrics.density / 2.75f
+            val dashAlpha = ((Math.sin(u1.toDouble() * Math.PI) * 255 * alphaMultiplier).toInt()).coerceIn(0, 255)
+
+            if (dashAlpha > 10) {
+                // 좌측 차선 세그먼트
+                val lx1 = cx - w1
+                val lx2 = cx - w2
+
+                // 글로우 레이어
+                laneGlowPaint.color = baseLeftGlow
+                laneGlowPaint.strokeWidth = strokeW * 2.2f
+                laneGlowPaint.alpha = (dashAlpha * 0.45f).toInt()
+                canvas.drawLine(lx1, y1, lx2, y2, laneGlowPaint)
+
+                // 메인 라인 레이어
+                lanePaint.color = baseLeftColor
+                lanePaint.strokeWidth = strokeW
+                lanePaint.alpha = dashAlpha
+                canvas.drawLine(lx1, y1, lx2, y2, lanePaint)
+
+                // 우측 차선 세그먼트
+                val rx1 = cx + w1
+                val rx2 = cx + w2
+
+                // 글로우 레이어
+                laneGlowPaint.color = baseRightGlow
+                laneGlowPaint.strokeWidth = strokeW * 2.2f
+                laneGlowPaint.alpha = (dashAlpha * 0.45f).toInt()
+                canvas.drawLine(rx1, y1, rx2, y2, laneGlowPaint)
+
+                // 메인 라인 레이어
+                lanePaint.color = baseRightColor
+                lanePaint.strokeWidth = strokeW
+                lanePaint.alpha = dashAlpha
+                canvas.drawLine(rx1, y1, rx2, y2, lanePaint)
+            }
+        }
     }
 
     private fun drawCarBody(canvas: Canvas, cx: Float, topY: Float, bottomY: Float, halfW: Float, carH: Float) {

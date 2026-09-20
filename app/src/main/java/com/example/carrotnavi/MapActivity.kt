@@ -1575,7 +1575,7 @@ class MapActivity : AppCompatActivity() {
         val tvCruiseSet = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCruiseSet)
         val tvCruiseCtrl = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCruiseCtrl)
         val viewCarRearVisualizer = opView.findViewById<CarRearVisualizerView>(R.id.viewCarRearVisualizer)
-        viewCarRearVisualizer?.setVehicleLights(state.leftBlinker, state.rightBlinker, state.brakeLights)
+        viewCarRearVisualizer?.setVehicleState(state.leftBlinker, state.rightBlinker, state.brakeLights, state.vEgoKph)
 
         tvSpeed?.text = "${state.vEgoKph}"
         if (state.active) {
