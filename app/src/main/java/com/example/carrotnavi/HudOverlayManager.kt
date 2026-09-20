@@ -946,6 +946,7 @@ class HudOverlayManager(
             addrParams.width = 0
             addrParams.weight = 1f
             addressTv.layoutParams = addrParams
+            addressTv.gravity = android.view.Gravity.CENTER
 
             cancelBtn?.let { btn ->
                 if (btn.parent != bottomRow) {
@@ -988,6 +989,7 @@ class HudOverlayManager(
             addrParams.width = LinearLayout.LayoutParams.MATCH_PARENT
             addrParams.weight = 0f
             addressTv.layoutParams = addrParams
+            addressTv.gravity = android.view.Gravity.CENTER
 
             cancelBtn?.let { btn ->
                 if (btn.parent != topRow) {
@@ -1002,6 +1004,23 @@ class HudOverlayManager(
             }
             binding.btnQuickFavorites.post { syncQuickDestButtonWidths() }
         }
+    }
+
+    fun formatAddressWithPin(context: Context, address: String): CharSequence {
+        if (address.isEmpty()) return ""
+        val drawable = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_location_pin_small)?.mutate()
+            ?: return address
+        val size = (15 * context.resources.displayMetrics.density).toInt()
+        drawable.setBounds(0, 0, size, size)
+        val align = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            android.text.style.ImageSpan.ALIGN_CENTER
+        } else {
+            android.text.style.DynamicDrawableSpan.ALIGN_BOTTOM
+        }
+        val span = android.text.style.ImageSpan(drawable, align)
+        val ssb = android.text.SpannableStringBuilder("  $address")
+        ssb.setSpan(span, 0, 1, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        return ssb
     }
 
     private fun updateEditModeForegrounds() {

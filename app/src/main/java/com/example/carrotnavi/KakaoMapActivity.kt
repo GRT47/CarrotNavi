@@ -1317,7 +1317,8 @@ class KakaoMapActivity : AppCompatActivity(),
         val hasValidBar = bottomBar != null && (bottomBar.width > 0 || bottomBar.isShown)
         val hasAddr = hasValidBar && address.isNotEmpty()
         hudOverlayManager.binding.tvGpsAddress?.let { tv ->
-            tv.text = address
+            tv.text = hudOverlayManager.formatAddressWithPin(this, address)
+            tv.gravity = android.view.Gravity.CENTER
             tv.isSelected = true
             tv.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
         }

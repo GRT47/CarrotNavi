@@ -1339,7 +1339,8 @@ class MapActivity : AppCompatActivity() {
         val hasValidBar = etaView != null && (etaView.width > 0 || etaView.isShown)
         val hasAddr = hasValidBar && address.isNotEmpty()
         hudBinding.tvGpsAddress?.let { tv ->
-            tv.text = address
+            tv.text = hudOverlayManager.formatAddressWithPin(this, address)
+            tv.gravity = android.view.Gravity.CENTER
             tv.isSelected = true
             tv.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.INVISIBLE
         }
