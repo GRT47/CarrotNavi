@@ -67,9 +67,9 @@ class CarRearVisualizerView @JvmOverloads constructor(
         if (w <= 0f || h <= 0f) return
 
         val cx = w / 2f
-        val carW = Math.min(w * 0.76f, h * 2.2f)
-        val carH = carW * 0.44f
-        val bottomY = h * 0.82f
+        val carW = Math.min(w * 0.65f, h * 1.95f)
+        val carH = carW * 0.42f
+        val bottomY = h * 0.90f
         val topY = bottomY - carH
         val halfW = carW / 2f
 
