@@ -70,6 +70,29 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        var backPressedTime = 0L
+        var exitToast: android.widget.Toast? = null
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (System.currentTimeMillis() - backPressedTime < 2000) {
+                    exitToast?.cancel()
+                    stopService(android.content.Intent(this@MainActivity, UdpSenderService::class.java))
+                    stopService(android.content.Intent(this@MainActivity, WebServerService::class.java))
+                    finishAffinity()
+                    System.exit(0)
+                } else {
+                    backPressedTime = System.currentTimeMillis()
+                    exitToast?.cancel()
+                    exitToast = android.widget.Toast.makeText(
+                        this@MainActivity,
+                        "앱을 종료하시겠습니까? '뒤로' 버튼을 한번 더 누르면 종료됩니다.",
+                        android.widget.Toast.LENGTH_SHORT
+                    )
+                    exitToast?.show()
+                }
+            }
+        })
         
         // 앱 버전 표시
         val sp = getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)

@@ -316,9 +316,26 @@ class KakaoMapActivity : AppCompatActivity(),
         
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         
+        var backPressedTime = 0L
+        var exitToast: android.widget.Toast? = null
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                // Do nothing
+                if (System.currentTimeMillis() - backPressedTime < 2000) {
+                    exitToast?.cancel()
+                    stopService(android.content.Intent(this@KakaoMapActivity, UdpSenderService::class.java))
+                    stopService(android.content.Intent(this@KakaoMapActivity, WebServerService::class.java))
+                    finishAffinity()
+                    System.exit(0)
+                } else {
+                    backPressedTime = System.currentTimeMillis()
+                    exitToast?.cancel()
+                    exitToast = android.widget.Toast.makeText(
+                        this@KakaoMapActivity,
+                        "앱을 종료하시겠습니까? '뒤로' 버튼을 한번 더 누르면 종료됩니다.",
+                        android.widget.Toast.LENGTH_SHORT
+                    )
+                    exitToast?.show()
+                }
             }
         })
 
