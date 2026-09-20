@@ -330,10 +330,10 @@ class HudOverlayManager(
             }
 
             val cardMediaSplitRatio = dialogView.findViewById<android.view.View>(R.id.cardMediaSplitRatio)
-            cardMediaSplitRatio?.visibility = if (!isMediaOverlayActive) android.view.View.VISIBLE else android.view.View.GONE
+            cardMediaSplitRatio?.visibility = android.view.View.VISIBLE
 
             val cardSplitContentType = dialogView.findViewById<android.view.View>(R.id.cardSplitContentType)
-            cardSplitContentType?.visibility = if (!isMediaOverlayActive) android.view.View.VISIBLE else android.view.View.GONE
+            cardSplitContentType?.visibility = android.view.View.VISIBLE
 
             val rgSplitContentType = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgSplitContentType)
             val rbSplitContentMedia = dialogView.findViewById<android.widget.RadioButton>(R.id.rbSplitContentMedia)
@@ -1672,10 +1672,8 @@ class HudOverlayManager(
     fun notifyMediaOverlayVisibility(isVisible: Boolean) {
         onMediaOverlayVisibilityChanged?.invoke(isVisible)
         activeDialogView?.let { view ->
-            view.findViewById<android.view.View>(R.id.cardMediaSplitRatio)?.visibility =
-                if (!isVisible) View.VISIBLE else View.GONE
-            view.findViewById<android.view.View>(R.id.cardSplitContentType)?.visibility =
-                if (!isVisible) View.VISIBLE else View.GONE
+            view.findViewById<android.view.View>(R.id.cardMediaSplitRatio)?.visibility = View.VISIBLE
+            view.findViewById<android.view.View>(R.id.cardSplitContentType)?.visibility = View.VISIBLE
             val sw = view.findViewById<android.widget.Switch>(R.id.swMediaOverlayEnable)
             if (sw != null && sw.isChecked != isVisible) {
                 sw.isChecked = isVisible

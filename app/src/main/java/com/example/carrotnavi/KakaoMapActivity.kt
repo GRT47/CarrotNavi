@@ -479,17 +479,10 @@ class KakaoMapActivity : AppCompatActivity(),
         val hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this@KakaoMapActivity, hudBinding, this@KakaoMapActivity)
         hudOverlayManager.onMediaOverlayVisibilityChanged = { isVisible ->
-            if (!isShowingPreview) {
-                splitHandleManager?.setHandleVisible(!isVisible)
-                updateMediaLayout(resources.configuration.orientation)
-            }
+            // 미디어 오버레이 활성화 여부와 관계없이 분할 화면 유지
         }
         hudOverlayManager.onSplitContentTypeChanged = {
             updateSplitContentView()
-        }
-        if (hudOverlayManager.isMediaOverlayActive) {
-            splitHandleManager?.setHandleVisible(false)
-            updateMediaLayout(resources.configuration.orientation)
         }
         
         hudOverlayManager.binding.btnSearchAddress.setOnClickListener {
@@ -732,10 +725,9 @@ class KakaoMapActivity : AppCompatActivity(),
             if (oldRatio >= 5f) 5f else oldRatio
         }
 
-        // 미디어 오버레이 활성화 시 분할모드 비활성화 및 주행화면 전체 표출 (5.0f)
-        val isMediaOverlayActive = ::hudOverlayManager.isInitialized && hudOverlayManager.isMediaOverlayActive
-        val ratio = if (isMediaOverlayActive) 5.0f else configuredRatio
-        splitHandleManager?.setHandleVisible(!isMediaOverlayActive)
+        // 미디어 오버레이 활성화 여부와 관계없이 분할모드 유지 (사용자 요청)
+        val ratio = configuredRatio
+        splitHandleManager?.setHandleVisible(ratio < 5.0f)
         
         val mainContainer = binding.root.findViewById<android.widget.LinearLayout>(R.id.llSplitContainer)
         val tmapLayout = binding.root.findViewById<android.widget.FrameLayout>(R.id.mapOverlayContainer)
