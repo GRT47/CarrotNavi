@@ -618,6 +618,28 @@ class HudOverlayManager(
             Log.d("HudOverlayManager", "btnQuickFavorites clicked")
             showFavoritesDialog()
         }
+
+        // 집, 사무실 버튼 폭을 즐겨찾기 버튼 폭과 동일하게 동기화
+        binding.btnQuickFavorites.addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ ->
+            val favWidth = right - left
+            if (favWidth > 0) {
+                var changed = false
+                if (binding.btnQuickHome.layoutParams.width != favWidth) {
+                    binding.btnQuickHome.layoutParams.width = favWidth
+                    changed = true
+                }
+                if (binding.btnQuickOffice.layoutParams.width != favWidth) {
+                    binding.btnQuickOffice.layoutParams.width = favWidth
+                    changed = true
+                }
+                if (changed) {
+                    binding.btnQuickHome.requestLayout()
+                    binding.btnQuickOffice.requestLayout()
+                    binding.llQuickDestToolbar.requestLayout()
+                }
+            }
+        }
+        binding.btnQuickFavorites.post { syncQuickDestButtonWidths() }
     }
 
     private fun showQuickDestManageDialog(targetType: String, item: BookmarkItem, onUpdated: () -> Unit) {
@@ -843,6 +865,9 @@ class HudOverlayManager(
         binding.llTopUiGroup?.visibility = visibility
         // 티맵 주행화면의 GPS 오버레이 내부에서만 표시, 카카오 경로안내 중에는 숨김
         binding.llQuickDestGroup?.visibility = if (isOverlayVisible && activity is MapActivity) View.VISIBLE else View.GONE
+        if (isOverlayVisible && activity is MapActivity) {
+            binding.btnQuickFavorites.post { syncQuickDestButtonWidths() }
+        }
         
         // 티맵 및 카카오 주행 화면에서는 하단 바를 가리기 위해 오버레이가 켜져 있으면 항상 표시
         binding.llStatusGroup?.visibility = if (isOverlayVisible) View.VISIBLE else View.GONE
@@ -862,6 +887,26 @@ class HudOverlayManager(
             }
         }
         onOverlayVisibilityChanged?.invoke()
+    }
+
+    private fun syncQuickDestButtonWidths() {
+        val favWidth = binding.btnQuickFavorites.width
+        if (favWidth > 0) {
+            var changed = false
+            if (binding.btnQuickHome.layoutParams.width != favWidth) {
+                binding.btnQuickHome.layoutParams.width = favWidth
+                changed = true
+            }
+            if (binding.btnQuickOffice.layoutParams.width != favWidth) {
+                binding.btnQuickOffice.layoutParams.width = favWidth
+                changed = true
+            }
+            if (changed) {
+                binding.btnQuickHome.requestLayout()
+                binding.btnQuickOffice.requestLayout()
+                binding.llQuickDestToolbar.requestLayout()
+            }
+        }
     }
 
     private fun updateEditModeForegrounds() {
