@@ -1,0 +1,985 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="#131316">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1B1B20"
+        app:elevation="2dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarSettings"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="상세 설정"
+            app:titleTextColor="#FFFFFF">
+
+            <ImageView
+                android:id="@+id/btnCloseSettings"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="8dp"
+                android:padding="12dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="#FFFFFF"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="닫기" />
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <!-- 카테고리 탭 (3개 분할) -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabSettings"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:background="#1B1B20"
+            app:tabMode="fixed"
+            app:tabGravity="fill"
+            app:tabIndicatorColor="#3B82F6"
+            app:tabIndicatorHeight="3dp"
+            app:tabSelectedTextColor="#FFFFFF"
+            app:tabTextColor="#9CA3AF"
+            app:tabRippleColor="#2563EB22">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🚗 주행 / 오디오" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎵 미디어 / 화면" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚙️ 시스템 / 정보" />
+        </com.google.android.material.tabs.TabLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:padding="14dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ============================================================= -->
+            <!-- [TAB 1] 🚗 주행 / 오디오 컨테이너 (가로 2열) -->
+            <!-- ============================================================= -->
+            <LinearLayout
+                android:id="@+id/llTabDriving"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:visibility="visible">
+
+                <!-- 좌측 컬럼: 주행 기본 설정 + 구간단속 보상가속 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+                    <!-- 1-1. 주행 기본 설정 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="주행 기본 설정"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="12dp"/>
+
+                            <Switch
+                                android:id="@+id/cbDistanceFormatKm"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="1000m 이상일 때 km 단위로 표시"
+                                android:textColor="#E4E4E7"
+                                android:textSize="14sp"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 1-2. 구간단속 보상가속 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="구간단속 보상가속"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="12dp"/>
+
+                            <Switch
+                                android:id="@+id/swBoostEnable"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="보상가속 기능 켜기"
+                                android:textColor="#E4E4E7"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="10dp"/>
+
+                            <LinearLayout
+                                android:id="@+id/llBoostSettingsContainer"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:paddingTop="6dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="보상가속 여유 속도"
+                                    android:textColor="#A1A1AA"
+                                    android:textSize="13sp"
+                                    android:layout_marginBottom="4dp"/>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <com.google.android.material.slider.Slider
+                                        android:id="@+id/sliderOffset"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:valueFrom="0"
+                                        android:valueTo="50"
+                                        android:stepSize="1"/>
+
+                                    <TextView
+                                        android:id="@+id/tvOffsetValue"
+                                        android:layout_width="60dp"
+                                        android:layout_height="wrap_content"
+                                        android:text="0 km/h"
+                                        android:textColor="#3B82F6"
+                                        android:gravity="end"
+                                        android:textStyle="bold"/>
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="보상가속 작동 방식"
+                                    android:textColor="#A1A1AA"
+                                    android:textSize="13sp"
+                                    android:layout_marginTop="12dp"
+                                    android:layout_marginBottom="4dp"/>
+
+                                <RadioGroup
+                                    android:id="@+id/rgBoostMode"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical">
+
+                                    <RadioButton
+                                        android:id="@+id/rbBoostProgressive"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="#E4E4E7"
+                                        android:textSize="13sp"
+                                        android:text="점진적 보상가속 (목표속도 도달 시 중단)"/>
+
+                                    <RadioButton
+                                        android:id="@+id/rbBoostFixed"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="#E4E4E7"
+                                        android:textSize="13sp"
+                                        android:text="고정 보상가속 (강제 유지)"/>
+                                </RadioGroup>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="목표 평균속도 하향값 (km/h)"
+                                    android:textColor="#A1A1AA"
+                                    android:textSize="13sp"
+                                    android:layout_marginTop="12dp"
+                                    android:layout_marginBottom="4dp"/>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <com.google.android.material.slider.Slider
+                                        android:id="@+id/sliderFakeDrop"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:valueFrom="0"
+                                        android:valueTo="20"
+                                        android:stepSize="1"/>
+
+                                    <TextView
+                                        android:id="@+id/tvFakeDropValue"
+                                        android:layout_width="60dp"
+                                        android:layout_height="wrap_content"
+                                        android:text="0"
+                                        android:textColor="#3B82F6"
+                                        android:gravity="end"
+                                        android:textStyle="bold"/>
+                                </LinearLayout>
+
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- 우측 컬럼: 오디오 및 음량 설정 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+                    <!-- 1-3. 오디오 및 음량 설정 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="오디오 및 음량"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="12dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="안내 시 다른 미디어 처리 방식"
+                                android:textColor="#A1A1AA"
+                                android:textSize="13sp"
+                                android:layout_marginBottom="6dp"/>
+
+                            <RadioGroup
+                                android:id="@+id/rgAudioDuckingMode"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:layout_marginBottom="14dp">
+
+                                <RadioButton
+                                    android:id="@+id/rbAudioDuckingNone"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="#E4E4E7"
+                                    android:textSize="13sp"
+                                    android:text="사용 안함 (기본)"/>
+
+                                <RadioButton
+                                    android:id="@+id/rbAudioDuckingVolume"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="#E4E4E7"
+                                    android:textSize="13sp"
+                                    android:text="볼륨 줄이기 (오디오 포커스)"/>
+
+                                <RadioButton
+                                    android:id="@+id/rbAudioDuckingPause"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="#E4E4E7"
+                                    android:textSize="13sp"
+                                    android:text="강제 일시정지 후 재생 (샤오미 등)"/>
+                            </RadioGroup>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="내비게이션 안내 음량"
+                                android:textColor="#A1A1AA"
+                                android:textSize="13sp"
+                                android:layout_marginBottom="4dp"/>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <com.google.android.material.slider.Slider
+                                    android:id="@+id/sliderVoiceVolume"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:valueFrom="0.0"
+                                    android:valueTo="1.0"
+                                    android:stepSize="0.1"
+                                    android:value="1.0"/>
+
+                                <TextView
+                                    android:id="@+id/tvVoiceVolumeValue"
+                                    android:layout_width="50dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="100%"
+                                    android:textColor="#3B82F6"
+                                    android:gravity="end"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ============================================================= -->
+            <!-- [TAB 2] 🎵 미디어 / 화면 컨테이너 (가로 2열) -->
+            <!-- ============================================================= -->
+            <LinearLayout
+                android:id="@+id/llTabMedia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:visibility="gone">
+
+                <!-- 좌측 컬럼: 미디어 팝업 오버레이 + 미디어 배경 스타일 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+                    <!-- 2-0. 미디어 팝업 오버레이 On/Off -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="미디어 팝업 오버레이"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="화면 위에 플로팅 미디어 위젯 카드를 표시합니다."
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="10dp"/>
+
+                            <Switch
+                                android:id="@+id/swMediaOverlayEnable"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="미디어 팝업 오버레이 켜기"
+                                android:textColor="#E4E4E7"
+                                android:textSize="14sp"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 2-1. 미디어 배경 스타일 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="미디어 뒷배경 스타일"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="10dp"/>
+
+                            <RadioGroup
+                                android:id="@+id/rgMediaBgStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:layout_marginBottom="12dp">
+
+                                <RadioButton
+                                    android:id="@+id/rbBgAlbumArt"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="앨범아트"
+                                    android:textSize="13sp"
+                                    android:textColor="#E4E4E7"/>
+
+                                <RadioButton
+                                    android:id="@+id/rbBgEq"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="EQ 시각화 (막대)"
+                                    android:textSize="13sp"
+                                    android:textColor="#E4E4E7"/>
+
+                                <RadioButton
+                                    android:id="@+id/rbBgEqWave"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="EQ 시각화 (물결)"
+                                    android:textSize="13sp"
+                                    android:textColor="#E4E4E7"/>
+
+                                <RadioButton
+                                    android:id="@+id/rbBgEqCircle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="EQ 시각화 (원형)"
+                                    android:textSize="13sp"
+                                    android:textColor="#E4E4E7"/>
+                            </RadioGroup>
+
+                            <CheckBox
+                                android:id="@+id/cbShowAlbumArtWithEq"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="EQ 사용 시 앨범아트도 흐리게 동시 표시"
+                                android:textColor="#A1A1AA"
+                                android:textSize="13sp"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- 우측 컬럼: 분할 비율 + 하단 바 높이 + 미디어 권한 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+                    <!-- 2-2. 화면 분할 비율 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardMediaSplitRatio"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="내비 지도 화면 분할 비율"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="지도와 미디어 패널의 크기 비율 (기본 3.5 : 1.5)"
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="10dp"/>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <com.google.android.material.slider.Slider
+                                    android:id="@+id/sliderMediaRatio"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:stepSize="0.5"
+                                    android:valueFrom="0.5"
+                                    android:valueTo="5.0"
+                                    android:value="3.5"/>
+
+                                <TextView
+                                    android:id="@+id/tvMediaRatioValue"
+                                    android:layout_width="60dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="3.5 : 1.5"
+                                    android:textColor="#3B82F6"
+                                    android:gravity="end"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 2-3. 하단 상태바 높이 오프셋 (티맵/카카오 통합, 가로/세로 분리) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="하단 정보 바 높이 미세 조절"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="티맵 및 카카오내비 통합 적용 (가로 / 세로 개별 저장)"
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="12dp"/>
+
+                            <!-- 세로 모드 높이 오프셋 -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="세로 모드 높이 오프셋 (기본 78dp)"
+                                android:textColor="#A1A1AA"
+                                android:textSize="13sp"
+                                android:layout_marginBottom="4dp"/>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="12dp">
+
+                                <com.google.android.material.slider.Slider
+                                    android:id="@+id/sliderPortraitBottomBarHeight"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:stepSize="1.0"
+                                    android:valueFrom="-20.0"
+                                    android:valueTo="60.0"
+                                    android:value="0.0"/>
+
+                                <TextView
+                                    android:id="@+id/tvPortraitBottomBarHeightValue"
+                                    android:layout_width="60dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="0 dp"
+                                    android:textColor="#3B82F6"
+                                    android:gravity="end"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <!-- 가로 모드 높이 오프셋 -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="가로 모드 높이 오프셋 (기본 40dp)"
+                                android:textColor="#A1A1AA"
+                                android:textSize="13sp"
+                                android:layout_marginBottom="4dp"/>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <com.google.android.material.slider.Slider
+                                    android:id="@+id/sliderLandscapeBottomBarHeight"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:stepSize="1.0"
+                                    android:valueFrom="-20.0"
+                                    android:valueTo="60.0"
+                                    android:value="0.0"/>
+
+                                <TextView
+                                    android:id="@+id/tvLandscapeBottomBarHeightValue"
+                                    android:layout_width="60dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="0 dp"
+                                    android:textColor="#3B82F6"
+                                    android:gravity="end"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 2-4. 미디어 연동 권한 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="음악 앱 연동 권한"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="재생 중인 음악의 곡명/아티스트/앨범아트를 수신하기 위해 필요합니다."
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="12dp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnMediaPermission"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:text="미디어 알림 접근 권한 열기"
+                                app:backgroundTint="#F59E0B"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="10dp"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ============================================================= -->
+            <!-- [TAB 3] ⚙️ 시스템 / 정보 컨테이너 (가로 2열) -->
+            <!-- ============================================================= -->
+            <LinearLayout
+                android:id="@+id/llTabSystem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:visibility="gone">
+
+                <!-- 좌측 컬럼: 통신 및 원격 연결 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+                    <!-- 3-1. 연결 상태 및 원격 서버 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="통신 및 원격 연결"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="12dp"/>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="12dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Openpilot 연결 상태:"
+                                    android:textColor="#A1A1AA"
+                                    android:textSize="14sp"/>
+
+                                <TextView
+                                    android:id="@+id/tvOpStatus"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="대기중"
+                                    android:textColor="#71717A"
+                                    android:textSize="14sp"
+                                    android:layout_marginStart="8dp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <Switch
+                                android:id="@+id/cbBackgroundLocation"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="백그라운드 위치 항상 허용"
+                                android:textColor="#E4E4E7"
+                                android:textSize="14sp"
+                                android:layout_marginBottom="12dp"/>
+
+                            <TextView
+                                android:id="@+id/tvWebServerInfo"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="원격 접속 서버 대기중..."
+                                android:textColor="#10B981"
+                                android:textSize="13sp"
+                                android:lineSpacingExtra="3dp"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- 우측 컬럼: 앱 관리 & 업데이트 + 버전 푸터 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+                    <!-- 3-2. 앱 관리 & 업데이트 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="앱 관리 및 업데이트"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="12dp"/>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="8dp">
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnCheckUpdate"
+                                    android:layout_width="0dp"
+                                    android:layout_height="48dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginEnd="6dp"
+                                    android:text="업데이트 (GitHub)"
+                                    app:backgroundTint="#2563EB"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    app:cornerRadius="10dp"/>
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnCheckUpdateServer"
+                                    android:layout_width="0dp"
+                                    android:layout_height="48dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="6dp"
+                                    android:text="업데이트 (SERVER)"
+                                    app:backgroundTint="#0891B2"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    app:cornerRadius="10dp"/>
+                            </LinearLayout>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnEditApiKey"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:text="API 키 설정 / 초기 화면으로 이동"
+                                app:backgroundTint="#27272A"
+                                app:strokeColor="#3F3F46"
+                                app:strokeWidth="1dp"
+                                android:textColor="#E4E4E7"
+                                android:textSize="14sp"
+                                app:cornerRadius="10dp"
+                                android:layout_marginBottom="8dp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnExitApp"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:text="앱 완전 종료"
+                                app:backgroundTint="#DC2626"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="10dp"/>
+
+                            <!-- 숨김 유지용 버튼 -->
+                            <Button
+                                android:id="@+id/btnDebugPage"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:visibility="gone"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 3-3. 버전 및 기기 정보 푸터 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:paddingVertical="8dp">
+
+                        <TextView
+                            android:id="@+id/tvAppVersion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="버전 정보 확인 중"
+                            android:textColor="#71717A"
+                            android:textSize="13sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
