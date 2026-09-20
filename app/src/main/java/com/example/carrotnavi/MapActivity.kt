@@ -409,12 +409,21 @@ class MapActivity : AppCompatActivity() {
             }
         }
 
+        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         val splitContainer = binding.root.findViewById<SplitMediaContainer>(R.id.flMediaContainer)
-        splitContainer?.onSwipeVertical = {
-            toggleSplitContentType()
+        val initialContentType = sharedPref.getString("SPLIT_CONTENT_TYPE", "openpilot") ?: "openpilot"
+        splitContainer?.initViews(initialContentType)
+        splitContainer?.onPrepareIncomingView = { incomingType ->
+            if (incomingType == "openpilot") {
+                OpenpilotStateRepository.state.value?.let { updateOpenpilotDashboardUI(it) }
+            }
+        }
+        splitContainer?.onContentTypeChanged = { newType ->
+            sharedPref.edit().putString("SPLIT_CONTENT_TYPE", newType).apply()
+            val label = if (newType == "media") "미디어 플레이어" else "오픈파일럿 주행정보"
+            Toast.makeText(this, label, Toast.LENGTH_SHORT).show()
         }
         
-        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         sharedPref.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
 
         // 현재 앱이 Tmap 모드임을 명시적으로 설정하여 JSON 로그 송신 오류 수정
@@ -1526,57 +1535,35 @@ class MapActivity : AppCompatActivity() {
     private var lastKnownAddress: String = ""
 
     private fun toggleSplitContentType() {
-        val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val currentType = sp.getString("SPLIT_CONTENT_TYPE", "media")
-        val newType = if (currentType == "openpilot") "media" else "openpilot"
-        sp.edit().putString("SPLIT_CONTENT_TYPE", newType).apply()
-
-        animateSplitContentTransition(newType)
-
-        val label = if (newType == "media") "미디어 플레이어" else "오픈파일럿 주행정보"
-        Toast.makeText(this, label, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun animateSplitContentTransition(newType: String) {
-        val isOpenpilot = (newType == "openpilot")
-        val mediaView = binding.root.findViewById<android.view.View>(R.id.mediaPlayerContainer)
-        val opView = binding.root.findViewById<android.view.View>(R.id.openpilotDashboardContainer)
-
-        val outgoingView = if (isOpenpilot) mediaView else opView
-        val incomingView = if (isOpenpilot) opView else mediaView
-
-        if (isOpenpilot) {
-            OpenpilotStateRepository.state.value?.let { updateOpenpilotDashboardUI(it) }
-        }
-
-        if (outgoingView != null && incomingView != null && outgoingView.visibility == android.view.View.VISIBLE) {
-            outgoingView.animate().alpha(0f).setDuration(120).withEndAction {
-                outgoingView.visibility = android.view.View.GONE
-                outgoingView.alpha = 1f
-
-                incomingView.alpha = 0f
-                incomingView.visibility = android.view.View.VISIBLE
-                incomingView.animate().alpha(1f).setDuration(150).start()
-            }.start()
+        val splitContainer = binding.root.findViewById<SplitMediaContainer>(R.id.flMediaContainer)
+        if (splitContainer != null) {
+            splitContainer.toggleContent(isUp = true)
         } else {
-            mediaView?.visibility = if (isOpenpilot) android.view.View.GONE else android.view.View.VISIBLE
-            opView?.visibility = if (isOpenpilot) android.view.View.VISIBLE else android.view.View.GONE
+            val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+            val currentType = sp.getString("SPLIT_CONTENT_TYPE", "openpilot") ?: "openpilot"
+            val newType = if (currentType == "openpilot") "media" else "openpilot"
+            sp.edit().putString("SPLIT_CONTENT_TYPE", newType).apply()
+            updateSplitContentView()
         }
     }
 
     private fun updateSplitContentView() {
         val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val contentType = sp.getString("SPLIT_CONTENT_TYPE", "media")
-        val isOpenpilot = (contentType == "openpilot")
-
-        val mediaView = binding.root.findViewById<android.view.View>(R.id.mediaPlayerContainer)
-        val opView = binding.root.findViewById<android.view.View>(R.id.openpilotDashboardContainer)
-
-        mediaView?.visibility = if (isOpenpilot) android.view.View.GONE else android.view.View.VISIBLE
-        opView?.visibility = if (isOpenpilot) android.view.View.VISIBLE else android.view.View.GONE
-
-        if (isOpenpilot) {
-            OpenpilotStateRepository.state.value?.let { updateOpenpilotDashboardUI(it) }
+        val contentType = sp.getString("SPLIT_CONTENT_TYPE", "openpilot") ?: "openpilot"
+        val splitContainer = binding.root.findViewById<SplitMediaContainer>(R.id.flMediaContainer)
+        if (splitContainer != null) {
+            if (splitContainer.activeType != contentType) {
+                splitContainer.animateScrollTo(contentType, isUp = (contentType == "media"))
+            }
+        } else {
+            val isOpenpilot = (contentType == "openpilot")
+            val mediaView = binding.root.findViewById<android.view.View>(R.id.mediaPlayerContainer)
+            val opView = binding.root.findViewById<android.view.View>(R.id.openpilotDashboardContainer)
+            mediaView?.visibility = if (isOpenpilot) android.view.View.GONE else android.view.View.VISIBLE
+            opView?.visibility = if (isOpenpilot) android.view.View.VISIBLE else android.view.View.GONE
+            if (isOpenpilot) {
+                OpenpilotStateRepository.state.value?.let { updateOpenpilotDashboardUI(it) }
+            }
         }
     }
 
