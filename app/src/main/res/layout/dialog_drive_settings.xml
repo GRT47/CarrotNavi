@@ -383,6 +383,51 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
+                <!-- 2-0. 미디어 팝업 오버레이 On/Off -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="#1C1C22"
+                    app:strokeColor="#2C2C38"
+                    app:strokeWidth="1dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="미디어 팝업 오버레이"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#FFFFFF"
+                            android:layout_marginBottom="4dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="화면 위에 플로팅 미디어 위젯 카드를 표시합니다."
+                            android:textColor="#71717A"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <Switch
+                            android:id="@+id/swMediaOverlayEnable"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="미디어 팝업 오버레이 켜기"
+                            android:textColor="#E4E4E7"
+                            android:textSize="14sp"/>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- 2-1. 미디어 배경 스타일 -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"

@@ -304,6 +304,14 @@ class HudOverlayManager(
             val rbBgEqCircle = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEqCircle)
             val cbShowAlbumArtWithEq = dialogView.findViewById<android.widget.CheckBox>(R.id.cbShowAlbumArtWithEq)
             
+            val swMediaOverlayEnable = dialogView.findViewById<android.widget.Switch>(R.id.swMediaOverlayEnable)
+            swMediaOverlayEnable?.isChecked = isMediaOverlayActive
+            swMediaOverlayEnable?.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked != isMediaOverlayActive) {
+                    setMediaOverlayVisible(isChecked, savePref = true)
+                }
+            }
+
             val cardMediaSplitRatio = dialogView.findViewById<android.view.View>(R.id.cardMediaSplitRatio)
             cardMediaSplitRatio?.visibility = if (!isMediaOverlayActive) android.view.View.VISIBLE else android.view.View.GONE
 
@@ -1616,8 +1624,14 @@ class HudOverlayManager(
 
     fun notifyMediaOverlayVisibility(isVisible: Boolean) {
         onMediaOverlayVisibilityChanged?.invoke(isVisible)
-        activeDialogView?.findViewById<android.view.View>(R.id.cardMediaSplitRatio)?.visibility =
-            if (!isVisible) View.VISIBLE else View.GONE
+        activeDialogView?.let { view ->
+            view.findViewById<android.view.View>(R.id.cardMediaSplitRatio)?.visibility =
+                if (!isVisible) View.VISIBLE else View.GONE
+            val sw = view.findViewById<android.widget.Switch>(R.id.swMediaOverlayEnable)
+            if (sw != null && sw.isChecked != isVisible) {
+                sw.isChecked = isVisible
+            }
+        }
     }
 
     fun setMediaOverlayVisible(visible: Boolean, savePref: Boolean = true) {
