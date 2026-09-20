@@ -633,15 +633,6 @@
             android:scaleType="center" 
             android:elevation="6dp" />
 
-        <ImageButton 
-            android:id="@+id/btnToggleVisibility" 
-            android:layout_width="48dp" 
-            android:layout_height="48dp" 
-            android:layout_marginBottom="12dp"
-            android:src="@android:drawable/ic_menu_view" 
-            android:background="@drawable/shape_circle_gray" 
-            android:scaleType="center" 
-            android:elevation="6dp" />
 
         <ImageButton
             android:id="@+id/btnSearchAddress"

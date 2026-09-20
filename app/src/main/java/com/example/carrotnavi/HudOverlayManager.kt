@@ -203,15 +203,9 @@ class HudOverlayManager(
             makeDraggable(view, viewIdName, isLandscape, others)
         }
 
-        isOverlayVisible = sharedPref.getBoolean("OVERLAY_VISIBLE", true)
+        isOverlayVisible = true
         val isDebugOverlayVisible = sharedPref.getBoolean("DEBUG_OVERLAY_VISIBLE", false)
         updateOverlayVisibility()
-
-        binding.btnToggleVisibility.setOnClickListener {
-            isOverlayVisible = !isOverlayVisible
-            sharedPref.edit().putBoolean("OVERLAY_VISIBLE", isOverlayVisible).apply()
-            updateOverlayVisibility()
-        }
 
         binding.btnMediaOverlay?.setOnClickListener {
             val isCurrentlyVisible = binding.cvMediaOverlayCard.visibility == View.VISIBLE
@@ -873,11 +867,10 @@ class HudOverlayManager(
             binding.btnQuickFavorites.post { syncQuickDestButtonWidths() }
         }
         
-        // 티맵 및 카카오 주행 화면에서는 하단 바를 가리기 위해 오버레이가 켜져 있으면 항상 표시
-        binding.llStatusGroup?.visibility = if (isOverlayVisible) View.VISIBLE else View.GONE
+        // 티맵 및 카카오 주행 화면에서는 하단 바를 가리기 위해 항상 표시
+        binding.llStatusGroup?.visibility = View.VISIBLE
         
-        binding.btnToggleVisibility.alpha = if (isOverlayVisible) 1.0f else 0.5f
-        binding.btnSettings?.alpha = if (isOverlayVisible) 1.0f else 0.5f
+        binding.btnSettings?.alpha = 1.0f
         binding.btnMediaOverlay?.alpha = if (isOverlayVisible) 1.0f else 0.5f
         binding.btnSearchAddress.alpha = if (isOverlayVisible) 1.0f else 0.5f
         val isMediaOverlaySaved = sharedPref.getBoolean("MEDIA_OVERLAY_VISIBLE", false)
