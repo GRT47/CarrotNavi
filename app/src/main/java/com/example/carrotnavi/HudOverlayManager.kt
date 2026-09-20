@@ -246,8 +246,12 @@ class HudOverlayManager(
 
         binding.btnSettings?.setOnClickListener {
             val dialogView = android.view.LayoutInflater.from(activity).inflate(R.layout.dialog_drive_settings, null)
-            val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(activity)
+            val dialog = android.app.Dialog(activity, R.style.Theme_CarrotNavi_FullScreenDialog)
             dialog.setContentView(dialogView)
+            dialog.window?.setLayout(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
             activeDialogView = dialogView
             dialog.setOnDismissListener {
                 activeDialogView = null
@@ -585,14 +589,6 @@ class HudOverlayManager(
             })
             
             dialog.show()
-            
-            // Force the bottom sheet to be fully expanded
-            val bottomSheet = dialog.findViewById<android.view.View>(com.google.android.material.R.id.design_bottom_sheet)
-            if (bottomSheet != null) {
-                val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
-                behavior.skipCollapsed = true
-            }
         }
 
         // 퀵 목적지 버튼 (집, 사무실, 즐겨찾기)
