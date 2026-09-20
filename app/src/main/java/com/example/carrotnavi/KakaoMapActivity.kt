@@ -879,27 +879,7 @@ class KakaoMapActivity : AppCompatActivity(),
         val opView = binding.root.findViewById<android.view.View>(R.id.openpilotDashboardContainer) ?: return
         if (opView.visibility != android.view.View.VISIBLE) return
 
-        // 1. 헤더 연결 상태
-        val vConnDot = opView.findViewById<android.view.View>(R.id.vOpDashConnDot)
-        val tvConnText = opView.findViewById<android.widget.TextView>(R.id.tvOpDashConnText)
-        val tvDeviceInfo = opView.findViewById<android.widget.TextView>(R.id.tvOpDashDeviceInfo)
-
-        val isConnected = state.ip.isNotEmpty() && state.ip != "-"
-        if (isConnected) {
-            vConnDot?.setBackgroundResource(R.drawable.shape_circle_green)
-            tvConnText?.text = "OP 연결됨"
-            tvConnText?.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
-        } else {
-            vConnDot?.setBackgroundResource(R.drawable.shape_circle_gray)
-            tvConnText?.text = "OP 연결 대기"
-            tvConnText?.setTextColor(android.graphics.Color.parseColor("#9CA3AF"))
-        }
-
-        val ipStr = if (state.ip.isNotEmpty()) state.ip else "-"
-        val verStr = if (state.carrot2.isNotEmpty()) state.carrot2 else "-"
-        tvDeviceInfo?.text = "IP: $ipStr · Ver: $verStr"
-
-        // 2. 차량 비주얼라이저, 속도 및 크루즈
+        // 1. 차량 비주얼라이저, 속도 및 크루즈
         val tvSpeed = opView.findViewById<android.widget.TextView>(R.id.tvOpDashSpeed)
         val tvEngageBadge = opView.findViewById<android.widget.TextView>(R.id.tvOpDashEngageBadge)
         val tvCruiseSet = opView.findViewById<android.widget.TextView>(R.id.tvOpDashCruiseSet)

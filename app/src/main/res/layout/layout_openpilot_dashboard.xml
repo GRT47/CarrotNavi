@@ -23,46 +23,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- 1. 헤더: 연결 상태 및 기기 정보 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="4dp"
-                android:layout_marginBottom="12dp">
-
-                <View
-                    android:id="@+id/vOpDashConnDot"
-                    android:layout_width="10dp"
-                    android:layout_height="10dp"
-                    android:background="@drawable/shape_circle_gray" />
-
-                <TextView
-                    android:id="@+id/tvOpDashConnText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="OP 연결 대기"
-                    android:textColor="#9CA3AF"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="8dp" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:layout_weight="1" />
-
-                <TextView
-                    android:id="@+id/tvOpDashDeviceInfo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="IP: - · Ver: -"
-                    android:textColor="#71717A"
-                    android:textSize="11sp" />
-            </LinearLayout>
-
-            <!-- 2. 대형 속도 & 크루즈 상태 메인 카드 -->
+            <!-- 1. 대형 속도 & 크루즈 상태 메인 카드 (차량 비주얼라이저 & 플로팅 신호등) -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cardOpDashSpeed"
                 android:layout_width="match_parent"
