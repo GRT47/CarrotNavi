@@ -439,160 +439,240 @@
 
                         <!-- 1. 네트워크 -->
                         <LinearLayout
+                            android:id="@+id/layoutDiagNetwork"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackground"
+                            android:padding="6dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="🌐 인터넷 네트워크"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvDiagNetworkBadge"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="대기중"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:id="@+id/tvDiagNetworkDetail"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="🌐 인터넷 네트워크"
-                                android:textColor="#FFFFFF"
-                                android:textSize="14sp"
-                                android:textStyle="bold"/>
+                                android:text="확인 대기"
+                                android:textColor="#B0BEC5"
+                                android:textSize="12sp"
+                                android:layout_marginTop="3dp"/>
 
                             <TextView
-                                android:id="@+id/tvDiagNetworkBadge"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/tvDiagNetworkHint"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="대기중"
+                                android:text="👉 상세 원인 및 가이드 보기 (클릭)"
+                                android:textColor="#80CBC4"
                                 android:textSize="11sp"
-                                android:textStyle="bold"/>
+                                android:layout_marginTop="2dp"/>
                         </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvDiagNetworkDetail"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="확인 대기"
-                            android:textColor="#B0BEC5"
-                            android:textSize="12sp"
-                            android:layout_marginTop="3dp"/>
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:background="#2C2C2C"
-                            android:layout_marginTop="10dp"
-                            android:layout_marginBottom="10dp"/>
+                            android:layout_marginTop="6dp"
+                            android:layout_marginBottom="6dp"/>
 
                         <!-- 2. Tmap App Key -->
                         <LinearLayout
+                            android:id="@+id/layoutDiagTmap"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackground"
+                            android:padding="6dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="🗺️ Tmap SDK (안전운행)"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvDiagTmapBadge"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="대기중"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:id="@+id/tvDiagTmapDetail"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="🗺️ Tmap SDK (안전운행)"
-                                android:textColor="#FFFFFF"
-                                android:textSize="14sp"
-                                android:textStyle="bold"/>
+                                android:text="확인 대기"
+                                android:textColor="#B0BEC5"
+                                android:textSize="12sp"
+                                android:layout_marginTop="3dp"/>
 
                             <TextView
-                                android:id="@+id/tvDiagTmapBadge"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/tvDiagTmapHint"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="대기중"
+                                android:text="👉 상세 원인 및 가이드 보기 (클릭)"
+                                android:textColor="#80CBC4"
                                 android:textSize="11sp"
-                                android:textStyle="bold"/>
+                                android:layout_marginTop="2dp"/>
                         </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvDiagTmapDetail"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="확인 대기"
-                            android:textColor="#B0BEC5"
-                            android:textSize="12sp"
-                            android:layout_marginTop="3dp"/>
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:background="#2C2C2C"
-                            android:layout_marginTop="10dp"
-                            android:layout_marginBottom="10dp"/>
+                            android:layout_marginTop="6dp"
+                            android:layout_marginBottom="6dp"/>
 
                         <!-- 3. Kakao Native Key -->
                         <LinearLayout
+                            android:id="@+id/layoutDiagKakaoNative"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackground"
+                            android:padding="6dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="🚗 Kakao 내비 SDK (경로안내)"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvDiagKakaoNativeBadge"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="대기중"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:id="@+id/tvDiagKakaoNativeDetail"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="🚗 Kakao 내비 SDK (경로안내)"
-                                android:textColor="#FFFFFF"
-                                android:textSize="14sp"
-                                android:textStyle="bold"/>
+                                android:text="확인 대기"
+                                android:textColor="#B0BEC5"
+                                android:textSize="12sp"
+                                android:layout_marginTop="3dp"/>
 
                             <TextView
-                                android:id="@+id/tvDiagKakaoNativeBadge"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/tvDiagKakaoNativeHint"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="대기중"
+                                android:text="👉 상세 원인 및 해결 가이드 보기 (클릭)"
+                                android:textColor="#80CBC4"
                                 android:textSize="11sp"
-                                android:textStyle="bold"/>
+                                android:layout_marginTop="2dp"/>
                         </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvDiagKakaoNativeDetail"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="확인 대기"
-                            android:textColor="#B0BEC5"
-                            android:textSize="12sp"
-                            android:layout_marginTop="3dp"/>
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:background="#2C2C2C"
-                            android:layout_marginTop="10dp"
-                            android:layout_marginBottom="10dp"/>
+                            android:layout_marginTop="6dp"
+                            android:layout_marginBottom="6dp"/>
 
                         <!-- 4. Kakao REST Key -->
                         <LinearLayout
+                            android:id="@+id/layoutDiagKakaoRest"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackground"
+                            android:padding="6dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="🔍 Kakao REST API (목적지 검색)"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvDiagKakaoRestBadge"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="대기중"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:id="@+id/tvDiagKakaoRestDetail"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="🔍 Kakao REST API (목적지 검색)"
-                                android:textColor="#FFFFFF"
-                                android:textSize="14sp"
-                                android:textStyle="bold"/>
+                                android:text="확인 대기"
+                                android:textColor="#B0BEC5"
+                                android:textSize="12sp"
+                                android:layout_marginTop="3dp"/>
 
                             <TextView
-                                android:id="@+id/tvDiagKakaoRestBadge"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/tvDiagKakaoRestHint"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="대기중"
+                                android:text="👉 상세 원인 및 가이드 보기 (클릭)"
+                                android:textColor="#80CBC4"
                                 android:textSize="11sp"
-                                android:textStyle="bold"/>
+                                android:layout_marginTop="2dp"/>
                         </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvDiagKakaoRestDetail"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="확인 대기"
-                            android:textColor="#B0BEC5"
-                            android:textSize="12sp"
-                            android:layout_marginTop="3dp"/>
 
                     </LinearLayout>
                 </LinearLayout>

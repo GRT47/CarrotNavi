@@ -27,6 +27,11 @@ import com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK
 import com.tmapmobility.tmap.tmapsdk.ui.util.TmapUISDK.Companion.initialize
 import com.kakaomobility.knsdk.KNSDK
 import com.kakaomobility.knsdk.KNLanguageType
+import android.content.ClipboardManager
+import android.content.ClipData
+import android.graphics.drawable.ColorDrawable
+import android.util.Base64
+import java.security.MessageDigest
 
 class MainActivity : AppCompatActivity() {
 
@@ -462,6 +467,25 @@ class MainActivity : AppCompatActivity() {
         WAITING, PROGRESS, SUCCESS, WARNING, ERROR
     }
 
+    private enum class DiagItemType {
+        NETWORK, TMAP, KAKAO_NATIVE, KAKAO_REST
+    }
+
+    private class DiagResultInfo(
+        var status: DiagStatus = DiagStatus.WAITING,
+        var badgeText: String = "대기중",
+        var detailText: String = "확인 대기",
+        var rawErrorCode: String? = null,
+        var rawErrorMessage: String? = null
+    )
+
+    private val diagResults = mutableMapOf(
+        DiagItemType.NETWORK to DiagResultInfo(),
+        DiagItemType.TMAP to DiagResultInfo(),
+        DiagItemType.KAKAO_NATIVE to DiagResultInfo(),
+        DiagItemType.KAKAO_REST to DiagResultInfo()
+    )
+
     private val diagOkHttpClient: okhttp3.OkHttpClient by lazy {
         okhttp3.OkHttpClient.Builder()
             .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
@@ -500,6 +524,19 @@ class MainActivity : AppCompatActivity() {
         binding.btnTestConnection.setOnClickListener {
             android.util.Log.d("CarrotNavi", "btnTestConnection clicked")
             runConnectionDiagnostics()
+        }
+
+        binding.layoutDiagNetwork.setOnClickListener {
+            showDiagGuideDialog(DiagItemType.NETWORK)
+        }
+        binding.layoutDiagTmap.setOnClickListener {
+            showDiagGuideDialog(DiagItemType.TMAP)
+        }
+        binding.layoutDiagKakaoNative.setOnClickListener {
+            showDiagGuideDialog(DiagItemType.KAKAO_NATIVE)
+        }
+        binding.layoutDiagKakaoRest.setOnClickListener {
+            showDiagGuideDialog(DiagItemType.KAKAO_REST)
         }
 
         if (intent.getBooleanExtra("run_diag", false)) {
@@ -600,7 +637,13 @@ class MainActivity : AppCompatActivity() {
         if (!isAvailable) {
             runOnUiThread {
                 updateDiagBadge(binding.tvDiagNetworkBadge, DiagStatus.ERROR, "연결 없음")
-                binding.tvDiagNetworkDetail.text = "활성 인터넷 연결이 없습니다. Wi-Fi 또는 테더링을 연결해주세요."
+                val msg = "활성 인터넷 연결이 없습니다. Wi-Fi 또는 테더링을 연결해주세요."
+                binding.tvDiagNetworkDetail.text = msg
+                diagResults[DiagItemType.NETWORK]?.apply {
+                    status = DiagStatus.ERROR
+                    badgeText = "연결 없음"
+                    detailText = msg
+                }
                 onFinished()
             }
             return
@@ -616,7 +659,14 @@ class MainActivity : AppCompatActivity() {
             override fun onFailure(call: okhttp3.Call, e: java.io.IOException) {
                 runOnUiThread {
                     updateDiagBadge(binding.tvDiagNetworkBadge, DiagStatus.WARNING, "외부망 통신 불가")
-                    binding.tvDiagNetworkDetail.text = "로컬 네트워크($transport, IP: $localIp)는 연결되었으나 외부 인터넷 응답 실패 (${e.message})"
+                    val msg = "로컬 네트워크($transport, IP: $localIp)는 연결되었으나 외부 인터넷 응답 실패 (${e.message})"
+                    binding.tvDiagNetworkDetail.text = msg
+                    diagResults[DiagItemType.NETWORK]?.apply {
+                        status = DiagStatus.WARNING
+                        badgeText = "외부망 통신 불가"
+                        detailText = msg
+                        rawErrorMessage = e.message
+                    }
                     onFinished()
                 }
             }
@@ -626,7 +676,13 @@ class MainActivity : AppCompatActivity() {
                 response.close()
                 runOnUiThread {
                     updateDiagBadge(binding.tvDiagNetworkBadge, DiagStatus.SUCCESS, "정상 연결")
-                    binding.tvDiagNetworkDetail.text = "인터넷 정상 통신 ($transport / 지연: ${rtt}ms / 로컬 IP: $localIp)"
+                    val msg = "인터넷 정상 통신 ($transport / 지연: ${rtt}ms / 로컬 IP: $localIp)"
+                    binding.tvDiagNetworkDetail.text = msg
+                    diagResults[DiagItemType.NETWORK]?.apply {
+                        status = DiagStatus.SUCCESS
+                        badgeText = "정상 연결"
+                        detailText = msg
+                    }
                     onFinished()
                 }
             }
@@ -637,7 +693,13 @@ class MainActivity : AppCompatActivity() {
         if (appKey.isEmpty()) {
             runOnUiThread {
                 updateDiagBadge(binding.tvDiagTmapBadge, DiagStatus.WARNING, "미입력")
-                binding.tvDiagTmapDetail.text = "Tmap App Key가 입력되지 않았습니다."
+                val msg = "Tmap App Key가 입력되지 않았습니다."
+                binding.tvDiagTmapDetail.text = msg
+                diagResults[DiagItemType.TMAP]?.apply {
+                    status = DiagStatus.WARNING
+                    badgeText = "미입력"
+                    detailText = msg
+                }
                 onFinished()
             }
             return
@@ -648,7 +710,13 @@ class MainActivity : AppCompatActivity() {
                 override fun onSuccess() {
                     runOnUiThread {
                         updateDiagBadge(binding.tvDiagTmapBadge, DiagStatus.SUCCESS, "인증 성공")
-                        binding.tvDiagTmapDetail.text = "Tmap SDK 라이선스 인증 정상 (안전운행 사용 가능)"
+                        val msg = "Tmap SDK 라이선스 인증 정상 (안전운행 사용 가능)"
+                        binding.tvDiagTmapDetail.text = msg
+                        diagResults[DiagItemType.TMAP]?.apply {
+                            status = DiagStatus.SUCCESS
+                            badgeText = "인증 성공"
+                            detailText = msg
+                        }
                         onFinished()
                     }
                 }
@@ -657,7 +725,15 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         updateDiagBadge(binding.tvDiagTmapBadge, DiagStatus.ERROR, "인증 실패 ($errorCode)")
                         val reason = if (!errorMsg.isNullOrEmpty()) errorMsg else "키 유효성 또는 Tmap 서버 확인 필요"
-                        binding.tvDiagTmapDetail.text = "Tmap 인증 실패 (코드 $errorCode): $reason"
+                        val msg = "Tmap 인증 실패 (코드 $errorCode): $reason"
+                        binding.tvDiagTmapDetail.text = msg
+                        diagResults[DiagItemType.TMAP]?.apply {
+                            status = DiagStatus.ERROR
+                            badgeText = "인증 실패 ($errorCode)"
+                            detailText = msg
+                            rawErrorCode = errorCode.toString()
+                            rawErrorMessage = errorMsg
+                        }
                         onFinished()
                     }
                 }
@@ -669,7 +745,14 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Throwable) {
             runOnUiThread {
                 updateDiagBadge(binding.tvDiagTmapBadge, DiagStatus.ERROR, "초기화 실패")
-                binding.tvDiagTmapDetail.text = "Tmap SDK 초기화 예외: ${e.message}"
+                val msg = "Tmap SDK 초기화 예외: ${e.message}"
+                binding.tvDiagTmapDetail.text = msg
+                diagResults[DiagItemType.TMAP]?.apply {
+                    status = DiagStatus.ERROR
+                    badgeText = "초기화 실패"
+                    detailText = msg
+                    rawErrorMessage = e.message
+                }
                 onFinished()
             }
         }
@@ -679,7 +762,13 @@ class MainActivity : AppCompatActivity() {
         if (nativeAppKey.isEmpty()) {
             runOnUiThread {
                 updateDiagBadge(binding.tvDiagKakaoNativeBadge, DiagStatus.WARNING, "미입력")
-                binding.tvDiagKakaoNativeDetail.text = "Kakao Native App Key가 입력되지 않았습니다."
+                val msg = "Kakao Native App Key가 입력되지 않았습니다."
+                binding.tvDiagKakaoNativeDetail.text = msg
+                diagResults[DiagItemType.KAKAO_NATIVE]?.apply {
+                    status = DiagStatus.WARNING
+                    badgeText = "미입력"
+                    detailText = msg
+                }
                 onFinished()
             }
             return
@@ -699,11 +788,27 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     if (error == null) {
                         updateDiagBadge(binding.tvDiagKakaoNativeBadge, DiagStatus.SUCCESS, "인증 성공")
-                        binding.tvDiagKakaoNativeDetail.text = "Kakao 내비 SDK 인증 정상 (경로안내 사용 가능)"
+                        val msg = "Kakao 내비 SDK 인증 정상 (경로안내 사용 가능)"
+                        binding.tvDiagKakaoNativeDetail.text = msg
+                        diagResults[DiagItemType.KAKAO_NATIVE]?.apply {
+                            status = DiagStatus.SUCCESS
+                            badgeText = "인증 성공"
+                            detailText = msg
+                            rawErrorCode = null
+                            rawErrorMessage = null
+                        }
                     } else {
                         updateDiagBadge(binding.tvDiagKakaoNativeBadge, DiagStatus.ERROR, "인증 실패 (${error.code})")
                         val msg = if (!error.msg.isNullOrEmpty()) error.msg else "오류 코드 ${error.code}"
-                        binding.tvDiagKakaoNativeDetail.text = "KNSDK 인증 실패: $msg"
+                        val detail = "KNSDK 인증 실패: $msg"
+                        binding.tvDiagKakaoNativeDetail.text = detail
+                        diagResults[DiagItemType.KAKAO_NATIVE]?.apply {
+                            status = DiagStatus.ERROR
+                            badgeText = "인증 실패 (${error.code})"
+                            detailText = detail
+                            rawErrorCode = error.code
+                            rawErrorMessage = error.msg
+                        }
                     }
                     onFinished()
                 }
@@ -711,7 +816,14 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Throwable) {
             runOnUiThread {
                 updateDiagBadge(binding.tvDiagKakaoNativeBadge, DiagStatus.ERROR, "초기화 실패")
-                binding.tvDiagKakaoNativeDetail.text = "KNSDK 초기화 예외: ${e.message}"
+                val msg = "KNSDK 초기화 예외: ${e.message}"
+                binding.tvDiagKakaoNativeDetail.text = msg
+                diagResults[DiagItemType.KAKAO_NATIVE]?.apply {
+                    status = DiagStatus.ERROR
+                    badgeText = "초기화 실패"
+                    detailText = msg
+                    rawErrorMessage = e.message
+                }
                 onFinished()
             }
         }
@@ -721,7 +833,13 @@ class MainActivity : AppCompatActivity() {
         if (restApiKey.isEmpty()) {
             runOnUiThread {
                 updateDiagBadge(binding.tvDiagKakaoRestBadge, DiagStatus.WARNING, "미입력")
-                binding.tvDiagKakaoRestDetail.text = "Kakao REST API Key가 입력되지 않았습니다."
+                val msg = "Kakao REST API Key가 입력되지 않았습니다."
+                binding.tvDiagKakaoRestDetail.text = msg
+                diagResults[DiagItemType.KAKAO_REST]?.apply {
+                    status = DiagStatus.WARNING
+                    badgeText = "미입력"
+                    detailText = msg
+                }
                 onFinished()
             }
             return
@@ -733,15 +851,35 @@ class MainActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         val docCount = response.body()?.documents?.size ?: 0
                         updateDiagBadge(binding.tvDiagKakaoRestBadge, DiagStatus.SUCCESS, "인증 성공")
-                        binding.tvDiagKakaoRestDetail.text = "Kakao Local 검색 API 통신 정상 ('서울역' 검색 결과: ${docCount}건 확인)"
+                        val msg = "Kakao Local 검색 API 통신 정상 ('서울역' 검색 결과: ${docCount}건 확인)"
+                        binding.tvDiagKakaoRestDetail.text = msg
+                        diagResults[DiagItemType.KAKAO_REST]?.apply {
+                            status = DiagStatus.SUCCESS
+                            badgeText = "인증 성공"
+                            detailText = msg
+                        }
                     } else {
                         val code = response.code()
                         if (code == 401 || code == 403) {
                             updateDiagBadge(binding.tvDiagKakaoRestBadge, DiagStatus.ERROR, "인증 실패 ($code)")
-                            binding.tvDiagKakaoRestDetail.text = "Kakao REST API Key 인증 실패: 올바른 REST API Key인지 확인하세요 (HTTP $code)"
+                            val msg = "Kakao REST API Key 인증 실패: 올바른 REST API Key인지 확인하세요 (HTTP $code)"
+                            binding.tvDiagKakaoRestDetail.text = msg
+                            diagResults[DiagItemType.KAKAO_REST]?.apply {
+                                status = DiagStatus.ERROR
+                                badgeText = "인증 실패 ($code)"
+                                detailText = msg
+                                rawErrorCode = code.toString()
+                            }
                         } else {
                             updateDiagBadge(binding.tvDiagKakaoRestBadge, DiagStatus.ERROR, "오류 ($code)")
-                            binding.tvDiagKakaoRestDetail.text = "Kakao 검색 API 오류 응답 (HTTP $code)"
+                            val msg = "Kakao 검색 API 오류 응답 (HTTP $code)"
+                            binding.tvDiagKakaoRestDetail.text = msg
+                            diagResults[DiagItemType.KAKAO_REST]?.apply {
+                                status = DiagStatus.ERROR
+                                badgeText = "오류 ($code)"
+                                detailText = msg
+                                rawErrorCode = code.toString()
+                            }
                         }
                     }
                     onFinished()
@@ -751,10 +889,218 @@ class MainActivity : AppCompatActivity() {
             override fun onFailure(call: Call<KakaoSearchResponse>, t: Throwable) {
                 runOnUiThread {
                     updateDiagBadge(binding.tvDiagKakaoRestBadge, DiagStatus.ERROR, "통신 실패")
-                    binding.tvDiagKakaoRestDetail.text = "Kakao 검색 서버 통신 실패 (${t.message})"
+                    val msg = "Kakao 검색 서버 통신 실패 (${t.message})"
+                    binding.tvDiagKakaoRestDetail.text = msg
+                    diagResults[DiagItemType.KAKAO_REST]?.apply {
+                        status = DiagStatus.ERROR
+                        badgeText = "통신 실패"
+                        detailText = msg
+                        rawErrorMessage = t.message
+                    }
                     onFinished()
                 }
             }
         })
+    }
+
+    private fun getAppKeyHash(): String {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val packageInfo = packageManager.getPackageInfo(
+                    packageName,
+                    PackageManager.GET_SIGNING_CERTIFICATES
+                )
+                val signingInfo = packageInfo.signingInfo
+                val signatures = if (signingInfo != null) {
+                    if (signingInfo.hasMultipleSigners()) {
+                        signingInfo.apkContentsSigners
+                    } else {
+                        signingInfo.signingCertificateHistory
+                    }
+                } else null
+
+                if (!signatures.isNullOrEmpty()) {
+                    val md = MessageDigest.getInstance("SHA-1")
+                    md.update(signatures[0].toByteArray())
+                    Base64.encodeToString(md.digest(), Base64.NO_WRAP)
+                } else {
+                    "서명 정보를 찾을 수 없습니다."
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                val packageInfo = packageManager.getPackageInfo(
+                    packageName,
+                    PackageManager.GET_SIGNATURES
+                )
+                val signatures = packageInfo.signatures
+                if (!signatures.isNullOrEmpty()) {
+                    val md = MessageDigest.getInstance("SHA-1")
+                    md.update(signatures[0].toByteArray())
+                    Base64.encodeToString(md.digest(), Base64.NO_WRAP)
+                } else {
+                    "서명 정보를 찾을 수 없습니다."
+                }
+            }
+        } catch (e: Exception) {
+            "키 해시 추출 실패: ${e.message}"
+        }
+    }
+
+    private fun copyToClipboard(label: String, text: String) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        val clip = ClipData.newPlainText(label, text)
+        clipboard?.setPrimaryClip(clip)
+        Toast.makeText(this, "${label}이(가) 클립보드에 복사되었습니다.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showDiagGuideDialog(type: DiagItemType) {
+        val info = diagResults[type] ?: DiagResultInfo()
+        val dialogView = layoutInflater.inflate(R.layout.dialog_diag_guide, null)
+
+        val tvTitle = dialogView.findViewById<TextView>(R.id.tvDiagGuideTitle)
+        val tvBadge = dialogView.findViewById<TextView>(R.id.tvDiagGuideBadge)
+        val tvErrorMsg = dialogView.findViewById<TextView>(R.id.tvDiagGuideErrorMsg)
+        val tvCause = dialogView.findViewById<TextView>(R.id.tvDiagGuideCause)
+        val llKakaoInfo = dialogView.findViewById<View>(R.id.llKakaoAppInfoCard)
+        val tvPkgName = dialogView.findViewById<TextView>(R.id.tvDiagPkgName)
+        val tvKeyHash = dialogView.findViewById<TextView>(R.id.tvDiagKeyHash)
+        val btnCopyPkg = dialogView.findViewById<View>(R.id.btnCopyPkgName)
+        val btnCopyHash = dialogView.findViewById<View>(R.id.btnCopyKeyHash)
+        val tvGuideSteps = dialogView.findViewById<TextView>(R.id.tvDiagGuideSteps)
+        val btnClose = dialogView.findViewById<View>(R.id.btnDiagGuideClose)
+
+        updateDiagBadge(tvBadge, info.status, info.badgeText)
+
+        when (type) {
+            DiagItemType.KAKAO_NATIVE -> {
+                tvTitle.text = "🚗 Kakao 내비 SDK (경로안내)"
+                llKakaoInfo.visibility = View.VISIBLE
+                tvPkgName.text = packageName
+                val keyHash = getAppKeyHash()
+                tvKeyHash.text = keyHash
+
+                btnCopyPkg.setOnClickListener {
+                    copyToClipboard("패키지명", packageName)
+                }
+                btnCopyHash.setOnClickListener {
+                    copyToClipboard("키 해시", keyHash)
+                }
+
+                if (info.status == DiagStatus.SUCCESS) {
+                    tvErrorMsg.text = "Kakao 내비 SDK 인증이 정상 완료되었습니다."
+                    tvErrorMsg.setTextColor(Color.parseColor("#4CAF50"))
+                    tvCause.text = "카카오 라이선스 서버와 정상 인증되어 경로 안내(TBT) 기능을 바로 사용할 수 있습니다."
+                    tvGuideSteps.text = "• 추가 설정 없이 카카오 경로 안내를 정상 이용할 수 있습니다."
+                } else {
+                    tvErrorMsg.text = if (info.detailText.isNotEmpty() && info.status != DiagStatus.WAITING) {
+                        info.detailText
+                    } else {
+                        "진단 테스트를 실행하지 않았거나 인증에 실패했습니다."
+                    }
+                    tvErrorMsg.setTextColor(Color.parseColor("#FF5252"))
+
+                    val isC103 = info.rawErrorCode == "C103" || info.detailText.contains("C103") || info.detailText.contains("INVALID_TOKEN")
+                    if (isC103) {
+                        tvCause.text = "카카오 인증 서버에 등록된 [패키지명] 또는 [키 해시]가 일치하지 않거나, 입력된 키가 '네이티브 앱 키'가 아닙니다.\n(또는 해당 카카오 개발자 앱에 카카오내비 SDK 사용 권한이 비활성화된 상태일 수 있습니다.)"
+                    } else {
+                        tvCause.text = "카카오 내비 SDK 인증 서버 응답 실패 또는 초기화 오류입니다. 앱 키 및 네트워크 상태를 확인하세요."
+                    }
+
+                    tvGuideSteps.text = """
+1. https://developers.kakao.com 접속 후 로그인합니다.
+2. [내 애플리케이션] > [앱 설정] > [플랫폼] 메뉴로 이동합니다.
+3. [Android 플랫폼 등록/수정]에서 위의 [패키지명]과 [키 해시]를 각각 [복사]하여 붙여넣고 저장합니다.
+4. [앱 키] 메뉴에서 반드시 '네이티브 앱 키'를 복사하여 본 앱의 Kakao Native App Key에 입력하세요 (REST API 키와 혼동 주의).
+5. 저장 후 1~2분 뒤 본 앱에서 [재테스트]를 눌러 인증 성공 여부를 확인하세요.
+""".trimIndent()
+                }
+            }
+
+            DiagItemType.TMAP -> {
+                tvTitle.text = "🗺️ Tmap SDK (안전운행)"
+                llKakaoInfo.visibility = View.GONE
+
+                if (info.status == DiagStatus.SUCCESS) {
+                    tvErrorMsg.text = "Tmap SDK 라이선스 인증이 정상 완료되었습니다."
+                    tvErrorMsg.setTextColor(Color.parseColor("#4CAF50"))
+                    tvCause.text = "Tmap 안전운행 모드(SDI/단속카메라/제한속도 경고)를 정상 사용할 수 있습니다."
+                    tvGuideSteps.text = "• 정상 동작 중입니다. 별도 조치가 필요하지 않습니다."
+                } else {
+                    tvErrorMsg.text = if (info.detailText.isNotEmpty() && info.status != DiagStatus.WAITING) {
+                        info.detailText
+                    } else {
+                        "Tmap App Key가 입력되지 않았거나 인증에 실패했습니다."
+                    }
+                    tvErrorMsg.setTextColor(Color.parseColor("#FF5252"))
+                    tvCause.text = "SK OpenAPI 포털 또는 Tmap 서버에서 App Key 검증에 실패했습니다.\n키 오타, 유효기간 만료, 무료 트래픽 초과 여부를 확인하세요."
+                    tvGuideSteps.text = """
+1. SK OpenAPI 포털(https://openapi.sk.com) 또는 TMAP Developer에 로그인합니다.
+2. 발급받은 App Key의 유효기간 및 Tmap API 권한 활성화 여부를 확인합니다.
+3. 입력된 App Key 문자열에 앞뒤 공백이나 오타가 없는지 점검하세요.
+""".trimIndent()
+                }
+            }
+
+            DiagItemType.KAKAO_REST -> {
+                tvTitle.text = "🔍 Kakao REST API (목적지 검색)"
+                llKakaoInfo.visibility = View.GONE
+
+                if (info.status == DiagStatus.SUCCESS) {
+                    tvErrorMsg.text = info.detailText
+                    tvErrorMsg.setTextColor(Color.parseColor("#4CAF50"))
+                    tvCause.text = "카카오 Local 장소/주소 검색 API 서버와 정상 통신 중입니다."
+                    tvGuideSteps.text = "• 목적지 검색 및 외부 지도 공유 연동이 정상 작동합니다."
+                } else {
+                    tvErrorMsg.text = if (info.detailText.isNotEmpty() && info.status != DiagStatus.WAITING) {
+                        info.detailText
+                    } else {
+                        "Kakao REST API Key가 입력되지 않았거나 통신에 실패했습니다."
+                    }
+                    tvErrorMsg.setTextColor(Color.parseColor("#FF5252"))
+                    tvCause.text = "카카오 Local 검색 API 호출 시 HTTP 401(인증 실패) 또는 403 오류가 발생했습니다.\nREST API 키 자리에 네이티브 앱 키를 잘못 넣었거나 키가 유효하지 않습니다."
+                    tvGuideSteps.text = """
+1. 카카오 디벨로퍼스(https://developers.kakao.com)의 [앱 키] 메뉴로 이동합니다.
+2. 4가지 키 중 반드시 'REST API 키'를 복사하여 세 번째 입력란에 붙여넣으세요.
+3. 네이티브 앱 키와 REST API 키는 서로 다른 문자열이므로 혼동에 주의하세요.
+""".trimIndent()
+                }
+            }
+
+            DiagItemType.NETWORK -> {
+                tvTitle.text = "🌐 인터넷 네트워크"
+                llKakaoInfo.visibility = View.GONE
+
+                if (info.status == DiagStatus.SUCCESS) {
+                    tvErrorMsg.text = info.detailText
+                    tvErrorMsg.setTextColor(Color.parseColor("#4CAF50"))
+                    tvCause.text = "기기가 외부 인터넷(카카오/SK 서버)과 원활히 통신하고 있습니다."
+                    tvGuideSteps.text = "• 지도 데이터 다운로드 및 API 인증을 위한 네트워크가 준비되어 있습니다."
+                } else {
+                    tvErrorMsg.text = if (info.detailText.isNotEmpty() && info.status != DiagStatus.WAITING) {
+                        info.detailText
+                    } else {
+                        "활성 네트워크가 없거나 외부 통신이 원활하지 않습니다."
+                    }
+                    tvErrorMsg.setTextColor(Color.parseColor("#FF5252"))
+                    tvCause.text = "Wi-Fi 또는 모바일 데이터 연결이 끊겼거나, 로컬 공유기에는 연결되었으나 외부 인터넷 회선이 차단된 상태입니다."
+                    tvGuideSteps.text = """
+1. 기기의 Wi-Fi 또는 모바일 데이터(LTE/5G) 연결을 확인하세요.
+2. CarlinKit/안드로이드 오토 환경인 경우 스마트폰의 핫스팟 또는 USB 테더링이 정상 작동하는지 확인하세요.
+3. 사설 VPN, 프록시, 또는 사내 방화벽이 외부 서버 접속을 차단하고 있지 않은지 확인하세요.
+""".trimIndent()
+                }
+            }
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        btnClose.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 }

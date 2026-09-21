@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_dark"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Header: Title + Badge -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:id="@+id/tvDiagGuideTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🚗 Kakao 내비 SDK 진단"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvDiagGuideBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="인증 실패 (C103)"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
+        android:layout_marginBottom="14dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 1. 발생한 오류 / 현재 상태 내용 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_dialog_code_box"
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:layout_marginBottom="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="진단 결과 내용"
+                    android:textColor="#9E9E9E"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tvDiagGuideErrorMsg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="KNSDK 인증 실패: SDK Certification Failed - INVALID_TOKEN"
+                    android:textColor="#FF8A80"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- 2. 원인 분석 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔍 원인 분석"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvDiagGuideCause"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="카카오 개발자 콘솔에 앱 패키지명 또는 키 해시가 등록되지 않았거나, 입력된 키가 네이티브 앱 키가 아닙니다."
+                android:textColor="#E0E0E0"
+                android:textSize="13sp"
+                android:lineSpacingExtra="3dp"
+                android:layout_marginBottom="14dp" />
+
+            <!-- 3. 카카오 등록 정보 박스 (패키지명 & 키 해시) - 카카오 항목일 때 표시 -->
+            <LinearLayout
+                android:id="@+id/llKakaoAppInfoCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_dialog_code_box"
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:layout_marginBottom="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📋 카카오 디벨로퍼스 등록용 정보"
+                    android:textColor="#80CBC4"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- 패키지명 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="72dp"
+                        android:layout_height="wrap_content"
+                        android:text="패키지명"
+                        android:textColor="#9E9E9E"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tvDiagPkgName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="com.example.carrotnavi"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCopyPkgName"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="복사"
+                        android:textSize="11sp"
+                        android:textColor="#80CBC4"
+                        app:strokeColor="#80CBC4"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp" />
+                </LinearLayout>
+
+                <!-- 키 해시 (Key Hash) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="72dp"
+                        android:layout_height="wrap_content"
+                        android:text="키 해시"
+                        android:textColor="#9E9E9E"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tvDiagKeyHash"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="조회 중..."
+                        android:textColor="#FFD54F"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:maxLines="2"
+                        android:ellipsize="middle" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCopyKeyHash"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="복사"
+                        android:textSize="11sp"
+                        android:textColor="#FFD54F"
+                        app:strokeColor="#FFD54F"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 4. 해결 방법 가이드 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🛠️ 해결 방법"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvDiagGuideSteps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1. 카카오 디벨로퍼스(developers.kakao.com) 로그인\n2. [내 애플리케이션] > [앱 설정] > [플랫폼] 이동\n3. [Android 플랫폼 등록/수정]에서 위 패키지명과 키 해시 등록\n4. [앱 키]에서 '네이티브 앱 키'를 복사하여 본 앱에 입력"
+                android:textColor="#B0BEC5"
+                android:textSize="12sp"
+                android:lineSpacingExtra="4dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 닫기 버튼 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDiagGuideClose"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:text="확인 (닫기)"
+        android:textSize="14sp"
+        app:backgroundTint="#37474F"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>
