@@ -86,6 +86,75 @@
                 android:orientation="vertical"
                 android:visibility="visible">
 
+                <!-- 1-0. 지도 화면 테마 (주간 / 야간 / 자동) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardMapThemeMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="#1C1C22"
+                    app:strokeColor="#2C2C38"
+                    app:strokeWidth="1dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="지도 화면 테마 (주간 / 야간)"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#FFFFFF"
+                            android:layout_marginBottom="4dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="주간/야간 지도를 수동으로 고정하거나 자동으로 전환합니다."
+                            android:textColor="#71717A"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <RadioGroup
+                            android:id="@+id/rgMapThemeMode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <RadioButton
+                                android:id="@+id/rbThemeAuto"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🔄 자동 (일출/일몰 및 터널 감지)"
+                                android:textSize="14sp"
+                                android:textColor="#E4E4E7"/>
+
+                            <RadioButton
+                                android:id="@+id/rbThemeDay"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="☀️ 주간 모드 (항상 밝은 지도)"
+                                android:textSize="14sp"
+                                android:textColor="#E4E4E7"/>
+
+                            <RadioButton
+                                android:id="@+id/rbThemeNight"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🌙 야간 모드 (항상 어두운 다크 지도)"
+                                android:textSize="14sp"
+                                android:textColor="#E4E4E7"/>
+                        </RadioGroup>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- 1-1. 주행 기본 설정 -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
@@ -383,75 +452,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="gone">
-
-                <!-- 2-0-A. 지도 화면 모드 (주간 / 야간 / 자동) -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardMapThemeMode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    app:cardBackgroundColor="#1C1C22"
-                    app:strokeColor="#2C2C38"
-                    app:strokeWidth="1dp"
-                    app:cardCornerRadius="14dp"
-                    app:cardElevation="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="지도 화면 테마 (주간 / 야간)"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="#FFFFFF"
-                            android:layout_marginBottom="4dp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="주간/야간 지도를 수동으로 고정하거나 자동으로 전환합니다."
-                            android:textColor="#71717A"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="10dp"/>
-
-                        <RadioGroup
-                            android:id="@+id/rgMapThemeMode"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <RadioButton
-                                android:id="@+id/rbThemeAuto"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="🔄 자동 (일출/일몰 및 터널 감지)"
-                                android:textSize="14sp"
-                                android:textColor="#E4E4E7"/>
-
-                            <RadioButton
-                                android:id="@+id/rbThemeDay"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="☀️ 주간 모드 (항상 밝은 지도)"
-                                android:textSize="14sp"
-                                android:textColor="#E4E4E7"/>
-
-                            <RadioButton
-                                android:id="@+id/rbThemeNight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="🌙 야간 모드 (항상 어두운 다크 지도)"
-                                android:textSize="14sp"
-                                android:textColor="#E4E4E7"/>
-                        </RadioGroup>
-
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
 
                 <!-- 2-0. 미디어 팝업 오버레이 On/Off -->
                 <com.google.android.material.card.MaterialCardView

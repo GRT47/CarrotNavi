@@ -78,17 +78,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val currentThemeMode = sharedPref.getString("MAP_THEME_MODE", "auto") ?: "auto"
-        when (currentThemeMode) {
-            "day" -> binding.rbMainThemeDay.isChecked = true
-            "night" -> binding.rbMainThemeNight.isChecked = true
-            else -> binding.rbMainThemeAuto.isChecked = true
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         RemoteLogManager.init(this)
         
@@ -186,23 +175,6 @@ class MainActivity : AppCompatActivity() {
             val intValue = value.toInt()
             binding.tvFakeDropValue.text = "$intValue km/h"
             sharedPref.edit().putInt("BLOCK_SPEED_FAKE_DROP", intValue).apply()
-        }
-
-        // Load and setup Map Theme Mode (주간 / 야간 / 자동)
-        val currentThemeMode = sharedPref.getString("MAP_THEME_MODE", "auto") ?: "auto"
-        when (currentThemeMode) {
-            "day" -> binding.rbMainThemeDay.isChecked = true
-            "night" -> binding.rbMainThemeNight.isChecked = true
-            else -> binding.rbMainThemeAuto.isChecked = true
-        }
-        binding.rgMainMapThemeMode.setOnCheckedChangeListener { _, checkedId ->
-            val mode = when (checkedId) {
-                binding.rbMainThemeDay.id -> "day"
-                binding.rbMainThemeNight.id -> "night"
-                else -> "auto"
-            }
-            sharedPref.edit().putString("MAP_THEME_MODE", mode).apply()
-            SdiDataRepository.applyThemeMode(this)
         }
 
         // Start WebServer Service for IP reporting
