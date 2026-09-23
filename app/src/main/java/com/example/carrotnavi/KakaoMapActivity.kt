@@ -483,6 +483,7 @@ class KakaoMapActivity : AppCompatActivity(),
             }
         }
         
+        SdiDataRepository.applyThemeMode(this)
         SdiDataRepository.isNightMode.observe(this, androidx.lifecycle.Observer { isNight ->
             if (::naviView.isInitialized) {
                 naviView.useDarkMode = isNight ?: false
@@ -1923,6 +1924,10 @@ class KakaoMapActivity : AppCompatActivity(),
 
     override fun onResume() {
         super.onResume()
+        SdiDataRepository.applyThemeMode(this)
+        if (::naviView.isInitialized) {
+            naviView.useDarkMode = SdiDataRepository.isNightMode.value ?: false
+        }
         updateRoadSpeedLimitVisibility()
         updateMediaUIFromService()
         if (::binding.isInitialized) {

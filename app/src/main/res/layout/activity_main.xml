@@ -263,6 +263,71 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- 지도 화면 테마 설정 섹션 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#1E1E1E"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="지도 테마 모드"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        android:layout_marginBottom="4dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="주간/야간 지도를 수동으로 고정하거나 자동으로 전환합니다."
+                        android:textSize="12sp"
+                        android:textColor="#9E9E9E"
+                        android:layout_marginBottom="12dp"/>
+
+                    <RadioGroup
+                        android:id="@+id/rgMainMapThemeMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <RadioButton
+                            android:id="@+id/rbMainThemeAuto"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🔄 자동 (일출/일몰 및 터널 감지)"
+                            android:textSize="14sp"
+                            android:textColor="#FFFFFF"/>
+
+                        <RadioButton
+                            android:id="@+id/rbMainThemeDay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="☀️ 주간 모드 (항상 밝은 지도)"
+                            android:textSize="14sp"
+                            android:textColor="#FFFFFF"/>
+
+                        <RadioButton
+                            android:id="@+id/rbMainThemeNight"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🌙 야간 모드 (항상 어두운 다크 지도)"
+                            android:textSize="14sp"
+                            android:textColor="#FFFFFF"/>
+                    </RadioGroup>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Tmap API 키 설정 섹션 -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

@@ -20,6 +20,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 class MapActivity : AppCompatActivity() {
+    companion object {
+        var instance: MapActivity? = null
+    }
+
     private lateinit var binding: ActivityMapBinding
     private lateinit var hudBinding: com.example.carrotnavi.databinding.LayoutHudOverlaysBinding
     private lateinit var hudOverlayManager: HudOverlayManager
@@ -208,6 +212,12 @@ class MapActivity : AppCompatActivity() {
                     updateMediaUIFromService()
                 }
             }
+            "MAP_THEME_MODE" -> {
+                runOnUiThread {
+                    applyTmapNightModeSetting()
+                    SdiDataRepository.applyThemeMode(this@MapActivity)
+                }
+            }
             "VOICE_VOLUME" -> {
                 val voiceRatio = sharedPreferences.getFloat("VOICE_VOLUME", 1.0f)
                 var maxVol = 10
@@ -365,6 +375,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        instance = this
         getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE).edit().putBoolean("IS_DEBUG_MODE", false).apply()
         super.onCreate(savedInstanceState)
         
@@ -697,6 +708,8 @@ class MapActivity : AppCompatActivity() {
         navigationFragment?.let { frag ->
             // 프래그먼트가 완전히 뷰에 등록된 후 안전운행 모드를 시작하도록 약간의 딜레이를 줍니다.
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                applyTmapNightModeSetting()
+                SdiDataRepository.applyThemeMode(this@MapActivity)
                 frag.startSafeDrive()
                 Log.d("MapActivity", "startSafeDrive() called")
                 binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 500)
@@ -839,7 +852,7 @@ class MapActivity : AppCompatActivity() {
             frag.nightModeLiveData.observe(this@MapActivity, Observer { isNight ->
                 isNight?.let {
                     Log.d("CarrotNavi", "TMap Night Mode changed: $it")
-                    SdiDataRepository.isNightMode.postValue(it)
+                    SdiDataRepository.applyThemeMode(this@MapActivity, it)
                 }
             })
             TmapUISDK.observableEDCData.observe(this@MapActivity, Observer { data ->
@@ -942,6 +955,8 @@ class MapActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         isResumedState = true
+        applyTmapNightModeSetting()
+        SdiDataRepository.applyThemeMode(this)
         updateRoadSpeedLimitVisibility()
         if (::hudOverlayManager.isInitialized) {
             hudOverlayManager.updateOverlayVisibility()
@@ -1018,6 +1033,26 @@ class MapActivity : AppCompatActivity() {
         sharedPref.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         val intent = Intent(this, UdpSenderService::class.java)
         stopService(intent)
+        if (instance == this) {
+            instance = null
+        }
+    }
+
+    fun applyTmapNightModeSetting() {
+        val frag = navigationFragment ?: return
+        val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+        val modeStr = sp.getString("MAP_THEME_MODE", "auto") ?: "auto"
+        val nightMode = when (modeStr) {
+            "day" -> com.tmapmobility.tmap.tmapsdk.ui.data.NightMode.ALWAYS_OFF
+            "night" -> com.tmapmobility.tmap.tmapsdk.ui.data.NightMode.ALWAYS_ON
+            else -> com.tmapmobility.tmap.tmapsdk.ui.data.NightMode.AUTO
+        }
+        try {
+            frag.setNightModeSetting(this, nightMode)
+            Log.d("MapActivity", "Applied TMap NightModeSetting: $nightMode (mode: $modeStr)")
+        } catch (e: Exception) {
+            Log.e("MapActivity", "Failed to setNightModeSetting", e)
+        }
     }
 
 

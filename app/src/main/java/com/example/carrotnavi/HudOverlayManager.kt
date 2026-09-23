@@ -321,6 +321,30 @@ class HudOverlayManager(
             val rbBgEqCircle = dialogView.findViewById<android.widget.RadioButton>(R.id.rbBgEqCircle)
             val cbShowAlbumArtWithEq = dialogView.findViewById<android.widget.CheckBox>(R.id.cbShowAlbumArtWithEq)
             
+            // 지도 테마 모드 (주간 / 야간 / 자동)
+            val rgMapThemeMode = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgMapThemeMode)
+            val rbThemeAuto = dialogView.findViewById<android.widget.RadioButton>(R.id.rbThemeAuto)
+            val rbThemeDay = dialogView.findViewById<android.widget.RadioButton>(R.id.rbThemeDay)
+            val rbThemeNight = dialogView.findViewById<android.widget.RadioButton>(R.id.rbThemeNight)
+
+            val currentThemeMode = sp.getString("MAP_THEME_MODE", "auto") ?: "auto"
+            when (currentThemeMode) {
+                "day" -> rbThemeDay?.isChecked = true
+                "night" -> rbThemeNight?.isChecked = true
+                else -> rbThemeAuto?.isChecked = true
+            }
+
+            rgMapThemeMode?.setOnCheckedChangeListener { _, checkedId ->
+                val newMode = when (checkedId) {
+                    R.id.rbThemeDay -> "day"
+                    R.id.rbThemeNight -> "night"
+                    else -> "auto"
+                }
+                sp.edit().putString("MAP_THEME_MODE", newMode).apply()
+                SdiDataRepository.applyThemeMode(activity)
+                MapActivity.instance?.applyTmapNightModeSetting()
+            }
+
             val swMediaOverlayEnable = dialogView.findViewById<android.widget.Switch>(R.id.swMediaOverlayEnable)
             swMediaOverlayEnable?.isChecked = isMediaOverlayActive
             swMediaOverlayEnable?.setOnCheckedChangeListener { _, isChecked ->

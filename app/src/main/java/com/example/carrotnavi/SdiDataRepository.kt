@@ -5,6 +5,23 @@ import androidx.lifecycle.MutableLiveData
 
 object SdiDataRepository {
     val isNightMode = MutableLiveData<Boolean>(false)
+    var lastTmapDetectedNight: Boolean = false
+
+    fun applyThemeMode(context: android.content.Context, tmapNight: Boolean? = null) {
+        if (tmapNight != null) {
+            lastTmapDetectedNight = tmapNight
+        }
+        val prefs = context.getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE)
+        val mode = prefs.getString("MAP_THEME_MODE", "auto") ?: "auto"
+        val effectiveIsNight = when (mode) {
+            "day" -> false
+            "night" -> true
+            else -> lastTmapDetectedNight
+        }
+        if (isNightMode.value != effectiveIsNight) {
+            isNightMode.postValue(effectiveIsNight)
+        }
+    }
 
     private val _observableRoadLimitSpeed = MutableLiveData<Int>()
     val observableRoadLimitSpeed: LiveData<Int> get() = _observableRoadLimitSpeed

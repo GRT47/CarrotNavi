@@ -98,7 +98,16 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                         editor.putFloat("VOICE_VOLUME", it)
                     }
                 }
+                if (params.containsKey("MAP_THEME_MODE")) {
+                    params["MAP_THEME_MODE"]?.firstOrNull()?.let {
+                        editor.putString("MAP_THEME_MODE", it)
+                    }
+                }
                 editor.apply()
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    SdiDataRepository.applyThemeMode(context)
+                    MapActivity.instance?.applyTmapNightModeSetting()
+                }
                 RemoteLogManager.init(context)
                 
             } catch (e: Exception) {
@@ -141,11 +150,12 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val mediaBgStyle = prefs.getString("MEDIA_BG_STYLE", "album") ?: "album"
         val showAlbumArtWithEq = prefs.getBoolean("SHOW_ALBUM_ART_WITH_EQ", false)
         val mediaSplitRatioF = prefs.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
+        val mapThemeMode = prefs.getString("MAP_THEME_MODE", "auto") ?: "auto"
 
         val deviceId = RemoteLogManager.getDeviceId()
 
         if (session.uri == "/api/settings") {
-            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF}"""
+            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode"}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response
@@ -232,6 +242,18 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                                 <label for="boostProg">점진적 가속 (목표속도 도달 시 정지)</label><br>
                                 <input type="radio" id="boostFixed" name="BLOCK_SPEED_BOOST_MODE" value="1" ${if(blockSpeedBoostMode == 1) "checked" else ""}>
                                 <label for="boostFixed">고정 가속 (강제 풀가속)</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>지도 화면 모드 (테마)</label>
+                            <div class="radio-group">
+                                <input type="radio" id="themeAuto" name="MAP_THEME_MODE" value="auto" ${if(mapThemeMode == "auto") "checked" else ""}>
+                                <label for="themeAuto">🔄 자동 (일출/일몰 및 터널 감지)</label><br>
+                                <input type="radio" id="themeDay" name="MAP_THEME_MODE" value="day" ${if(mapThemeMode == "day") "checked" else ""}>
+                                <label for="themeDay">☀️ 주간 (항상 밝은 지도)</label><br>
+                                <input type="radio" id="themeNight" name="MAP_THEME_MODE" value="night" ${if(mapThemeMode == "night") "checked" else ""}>
+                                <label for="themeNight">🌙 야간 (항상 어두운 다크 지도)</label>
                             </div>
                         </div>
 
