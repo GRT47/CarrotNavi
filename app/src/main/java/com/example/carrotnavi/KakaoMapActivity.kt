@@ -1559,6 +1559,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     override fun guidanceGuideEnded(guidance: KNGuidance) {
+        Log.d("KakaoMapActivity", "guidanceGuideEnded called! hasStarted=$hasStartedRouteGuidance, isFinishing=$isFinishing")
         if(::naviView.isInitialized) naviView.guidanceGuideEnded(guidance)
         isGuidanceActive = false
         hudOverlayManager.binding.btnGpsCancelRoute?.visibility = android.view.View.GONE
@@ -1584,8 +1585,7 @@ class KakaoMapActivity : AppCompatActivity(),
         if(::naviView.isInitialized && !isShowingPreview) naviView.guidanceDidUpdateLocation(guidance, locationGuide)
         
         if (isGuidanceActive && guidance.routeGuide == null && hasStartedRouteGuidance) {
-            if (!isFinishing) finish()
-            return
+            Log.w("KakaoMapActivity", "guidanceDidUpdateLocation: routeGuide is temporarily null (rerouting/calculating). Continuing guidance.")
         }
 
         val speed = locationGuide.gpsMatched?.speed ?: 0
@@ -2434,6 +2434,7 @@ class KakaoMapActivity : AppCompatActivity(),
         }
         
         binding.btnPreviewCancel.setOnClickListener {
+            Log.d("KakaoMapActivity", "Preview Cancel button clicked")
             hidePreviewOverlay()
             finish()
         }
@@ -2937,6 +2938,7 @@ class KakaoMapActivity : AppCompatActivity(),
             // 기존에 떠있는 T맵 안전운행 모드로 돌아갑니다.
             // 단, 아직 경로안내를 시작하지 않은 미리보기 상태에서는 종료하지 않도록 방어합니다.
             if (hasStartedRouteGuidance && !isFinishing) {
+                Log.d("KakaoMapActivity", "naviViewScreenState NONE -> finishing KakaoMapActivity to return to Tmap")
                 finish()
             }
         }
