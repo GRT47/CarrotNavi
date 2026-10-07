@@ -112,6 +112,7 @@ class KakaoMapActivity : AppCompatActivity(),
 
     private var currentRoadLimitSpeed = 0
     private var isCameraEventActive = false
+    private var lastLoggedCameraKey = ""
     private var lastCameraSignX: Float = -1f
     private var lastCameraSignY: Float = -1f
     private var splitHandleManager: SplitHandleManager? = null
@@ -1104,7 +1105,20 @@ class KakaoMapActivity : AppCompatActivity(),
                     dist2 = s2Dist
                 )
                 
-                isCameraEventActive = (s1Limit > 0 && s1Dist > 0) || (s1Type > 0 && s1Dist > 0)
+                val isNowActive = (s1Limit > 0 && s1Dist > 0) || (s1Type > 0 && s1Dist > 0)
+                if (isNowActive) {
+                    val cameraKey = "$s1Type-$s1Limit"
+                    if (cameraKey != lastLoggedCameraKey) {
+                        lastLoggedCameraKey = cameraKey
+                        val typeName = getCameraTypeName(s1Type)
+                        Log.i("CarrotNavi", "[CAMERA] 감지(Kakao): $typeName (제한속도: ${s1Limit}km/h, 남은거리: ${s1Dist}m)")
+                    }
+                } else if (lastLoggedCameraKey.isNotEmpty()) {
+                    Log.i("CarrotNavi", "[CAMERA] 해제(Kakao): 단속구간 통과/해제")
+                    lastLoggedCameraKey = ""
+                }
+                isCameraEventActive = isNowActive
+
                 if (isCameraEventActive) {
                     findKakaoViewById("component_sign_first")?.let { sign ->
                         if (sign.visibility == android.view.View.VISIBLE && sign.width > 0) {
@@ -1123,14 +1137,35 @@ class KakaoMapActivity : AppCompatActivity(),
                 }
                 updateRoadSpeedLimitVisibility()
             } else {
+                if (lastLoggedCameraKey.isNotEmpty()) {
+                    Log.i("CarrotNavi", "[CAMERA] 해제(Kakao): 단속구간 통과/해제")
+                    lastLoggedCameraKey = ""
+                }
                 lastCameraSpeedLimit = 0
                 KakaoSdiRepository.updateSafeties(0, 0, 0, 0, false, 0, 0, 0, 0)
                 isCameraEventActive = false
                 updateRoadSpeedLimitVisibility()
             }
         } ?: run {
+            if (lastLoggedCameraKey.isNotEmpty()) {
+                Log.i("CarrotNavi", "[CAMERA] 해제(Kakao): 단속구간 통과/해제")
+                lastLoggedCameraKey = ""
+            }
             isCameraEventActive = false
             updateRoadSpeedLimitVisibility()
+        }
+    }
+
+    private fun getCameraTypeName(type: Int): String {
+        return when (type) {
+            1 -> "고정식 단속"
+            2 -> "구간단속 시작"
+            3 -> "구간단속 종료"
+            4 -> "구간단속 진행"
+            7 -> "이동식 단속"
+            22 -> "과속방지턱"
+            33 -> "어린이보호구역"
+            else -> "단속카메라(type=$type)"
         }
     }
 
@@ -1373,7 +1408,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     private fun cancelRouteAndReturnToTmap() {
-        Log.d("KakaoMapActivity", "Cancel Route button clicked, stopping guidance")
+        Log.i("CarrotNavi", "[ROUTE] 경로안내 취소(Kakao): 사용자가 경로 취소 버튼 클릭")
         currentRemainDist = 0L
         currentRemainTime = 0L
         updateEtaUi()
@@ -1559,7 +1594,7 @@ class KakaoMapActivity : AppCompatActivity(),
     }
 
     override fun guidanceGuideEnded(guidance: KNGuidance) {
-        Log.d("KakaoMapActivity", "guidanceGuideEnded called! hasStarted=$hasStartedRouteGuidance, isFinishing=$isFinishing")
+        Log.i("CarrotNavi", "[ROUTE] 경로안내 종료(Kakao): 목적지 도착 또는 안내 종료 (hasStarted=$hasStartedRouteGuidance, isFinishing=$isFinishing)")
         if(::naviView.isInitialized) naviView.guidanceGuideEnded(guidance)
         isGuidanceActive = false
         hudOverlayManager.binding.btnGpsCancelRoute?.visibility = android.view.View.GONE
@@ -1605,6 +1640,11 @@ class KakaoMapActivity : AppCompatActivity(),
                 com.kakaomobility.knsdk.KNRoadType.KNRoadType_GeneralRoad -> 50
                 else -> 0
             }
+        }
+        
+        if (roadLimitSpeed > 0 && roadLimitSpeed != currentRoadLimitSpeed) {
+            Log.i("CarrotNavi", "[SPEED_LIMIT] 도로 제한속도 갱신(Kakao): ${currentRoadLimitSpeed}km/h -> ${roadLimitSpeed}km/h (도로: $roadName)")
+            currentRoadLimitSpeed = roadLimitSpeed
         }
         
         var tbtDist = -1
@@ -1861,6 +1901,7 @@ class KakaoMapActivity : AppCompatActivity(),
         trip: KNTrip,
         option: RoutePreviewOption
     ) {
+        Log.i("CarrotNavi", "[ROUTE] 경로안내 시작(Kakao): 목적지=${doc.place_name}, 옵션=${option.title}")
         Toast.makeText(this@KakaoMapActivity, "${option.title}로 안내를 시작합니다.", Toast.LENGTH_SHORT).show()
         SearchHistoryManager.addHistory(this@KakaoMapActivity, SearchHistoryItem.fromKakaoDocument(doc))
         val guidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance() ?: return

@@ -132,6 +132,9 @@ object RemoteLogManager {
                 while (isActive) {
                     val line = reader.readLine()
                     if (line != null) {
+                        if (isNoise(line)) {
+                            continue
+                        }
                         var level = "INFO"
                         if (line.contains(" W ")) level = "WARN"
                         else if (line.contains(" E ")) level = "ERROR"
@@ -170,6 +173,15 @@ object RemoteLogManager {
                 process?.destroy()
             }
         }
+    }
+
+    private fun isNoise(line: String): Boolean {
+        if (line.contains("requestLayout() improperly called")) return true
+        if (line.contains("TrafficStats: tagSocket")) return true
+        if (line.contains("AidlConversionCppNdk")) return true
+        if (line.contains("MediaPlayer: resetDrmState") || line.contains("MediaPlayer: cleanDrmObj")) return true
+        if (line.contains("chatty  : uid=")) return true
+        return false
     }
 
     private fun stopLogcatCapture() {

@@ -46,6 +46,8 @@ class MapActivity : AppCompatActivity() {
     // 단속 이벤트 및 도로 기본 제한속도 제어용 상태
     private var currentRoadLimitSpeed = 0
     private var isCameraEventActive = false
+    private var lastLoggedTmapCameraKey = ""
+    private var lastLoggedTmapRoadLimit = 0
     private var lastCameraSignX = -1f
     private var lastCameraSignY = -1f
     private var splitHandleManager: SplitHandleManager? = null
@@ -735,6 +737,7 @@ class MapActivity : AppCompatActivity() {
                 // 안전운행 모드가 완전히 시작된 후 카카오내비 인텐트를 처리
                 val destPlaceName = intent.getStringExtra("dest_place_name")
                 if (!destPlaceName.isNullOrEmpty()) {
+                    Log.i("CarrotNavi", "[ROUTE] 목적지 수신(MapActivity): $destPlaceName -> KakaoMapActivity로 라우팅")
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                         val naviIntent = Intent(this@MapActivity, KakaoMapActivity::class.java).apply {
                             putExtras(intent)
@@ -857,9 +860,6 @@ class MapActivity : AppCompatActivity() {
             })
             TmapUISDK.observableEDCData.observe(this@MapActivity, Observer { data ->
                 data?.let {
-                    Log.e("SdiDebug", "observableEDCData class: ${it.javaClass.name}")
-                    Log.e("SdiDebug", "observableEDCData: $it")
-                    
                     val sp = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
                     val voiceRatio = sp.getFloat("VOICE_VOLUME", 1.0f)
                     var maxVol = 10
@@ -885,6 +885,12 @@ class MapActivity : AppCompatActivity() {
                         }
                         realRoadLimit = currentLimitSpeed
                     }
+                    
+                    if (realRoadLimit > 0 && realRoadLimit != lastLoggedTmapRoadLimit) {
+                        lastLoggedTmapRoadLimit = realRoadLimit
+                        Log.i("CarrotNavi", "[SPEED_LIMIT] 도로 제한속도 갱신(TMAP): ${realRoadLimit}km/h")
+                    }
+                    
                     currentRoadLimitSpeed = realRoadLimit
                     updateRoadSpeedLimitVisibility()
 
@@ -1004,6 +1010,7 @@ class MapActivity : AppCompatActivity() {
         
         val destPlaceName = newIntent.getStringExtra("dest_place_name")
         if (!destPlaceName.isNullOrEmpty()) {
+            Log.i("CarrotNavi", "[ROUTE] 새 목적지 수신(MapActivity.onNewIntent): $destPlaceName -> KakaoMapActivity로 라우팅")
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 val naviIntent = android.content.Intent(this@MapActivity, KakaoMapActivity::class.java).apply {
                     putExtras(newIntent)
@@ -1110,6 +1117,32 @@ class MapActivity : AppCompatActivity() {
                         lastCameraSignY = relY
                     }
                 }
+            }
+
+            if (hasCamera && sdiObj != null) {
+                val sdiJsonStr = if (sdiObj is String) sdiObj else com.google.gson.Gson().toJson(sdiObj)
+                val json = org.json.JSONObject(sdiJsonStr)
+                val sdiType = json.optInt("nSdiType", 0)
+                val sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
+                val sdiDist = json.optInt("nSdiDist", 0)
+                val cameraKey = "$sdiType-$sdiSpeedLimit"
+                if (cameraKey != lastLoggedTmapCameraKey) {
+                    lastLoggedTmapCameraKey = cameraKey
+                    val typeName = when (sdiType) {
+                        1 -> "고정식 단속"
+                        2 -> "구간단속 시작"
+                        3 -> "구간단속 종료"
+                        4 -> "구간단속 진행"
+                        7 -> "이동식 단속"
+                        22 -> "과속방지턱"
+                        33 -> "어린이보호구역"
+                        else -> "단속카메라(type=$sdiType)"
+                    }
+                    Log.i("CarrotNavi", "[CAMERA] 감지(TMAP): $typeName (제한속도: ${sdiSpeedLimit}km/h, 남은거리: ${sdiDist}m)")
+                }
+            } else if (!hasCamera && lastLoggedTmapCameraKey.isNotEmpty()) {
+                Log.i("CarrotNavi", "[CAMERA] 해제(TMAP): 단속구간 통과/종료")
+                lastLoggedTmapCameraKey = ""
             }
 
             isCameraEventActive = hasCamera

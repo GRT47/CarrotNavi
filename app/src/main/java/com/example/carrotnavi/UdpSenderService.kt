@@ -43,6 +43,8 @@ class UdpSenderService : Service() {
     private var sdiBlockType = 0
     private var sdiBlockSpeed = 0
     private var sdiBlockDist = 0
+    private var lastLoggedUdpCameraKey = ""
+    private var lastLoggedUdpTime = 0L
 
     @Volatile
     private var currentGpsStatusText = "탐색 중"
@@ -587,12 +589,27 @@ class UdpSenderService : Service() {
     }
 
     private fun sendSdiData() {
-        android.util.Log.d("UdpSender", "sendSdiData called. payload=" + latestPayload)
         if (latestPayload == "{}") return
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         if (sharedPref.getBoolean("IS_DEBUG_MODE", false)) return
 
         try {
+            val json = JSONObject(latestPayload)
+            val sdiType = json.optInt("nSdiType", 0)
+            val sdiSpeedLimit = json.optInt("nSdiSpeedLimit", 0)
+            val sdiDist = json.optInt("nSdiDist", 0)
+            val roadLimit = json.optInt("nRoadLimitSpeed", 0)
+            val hasCamera = sdiType > 0 || sdiSpeedLimit > 0
+            val cameraKey = if (hasCamera) "$sdiType-$sdiSpeedLimit" else ""
+            val now = System.currentTimeMillis()
+            if (cameraKey != lastLoggedUdpCameraKey || (hasCamera && now - lastLoggedUdpTime >= 10000)) {
+                lastLoggedUdpCameraKey = cameraKey
+                lastLoggedUdpTime = now
+                if (hasCamera) {
+                    android.util.Log.i("CarrotNavi", "[UDP] 단속 패킷 송신: type=$sdiType, limit=${sdiSpeedLimit}km/h, dist=${sdiDist}m, roadLimit=${roadLimit}km/h -> $targetIp:$udpPort")
+                }
+            }
+
             val buffer = latestPayload.toByteArray(Charsets.UTF_8)
             
             // GRT47의 UDP 전송 로직 유지 (127.0.0.1, 255.255.255.255 및 모든 인터페이스 브로드캐스트)
