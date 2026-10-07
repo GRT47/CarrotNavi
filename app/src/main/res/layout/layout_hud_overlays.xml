@@ -146,8 +146,9 @@
                 <!-- 경로 안내 도착시간(터치 시 남은시간 전환) & 남은거리 그룹 -->
                 <LinearLayout
                     android:id="@+id/llRouteEtaGroup"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1.3"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:visibility="gone">
@@ -155,19 +156,20 @@
                     <View
                         android:layout_width="1dp"
                         android:layout_height="20dp"
-                        android:layout_marginStart="6dp"
-                        android:layout_marginEnd="6dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
                         android:background="#44FFFFFF" />
 
                     <!-- 도착시간/남은시간 터치 토글 뱃지 -->
                     <LinearLayout
                         android:id="@+id/btnToggleEtaTime"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="34dp"
+                        android:layout_weight="1"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        android:gravity="center"
+                        android:paddingStart="6dp"
+                        android:paddingEnd="6dp"
                         android:background="@drawable/bg_eta_time_clickable"
                         android:clickable="true"
                         android:focusable="true">
@@ -188,8 +190,9 @@
                             android:layout_height="wrap_content"
                             android:text="--:--"
                             android:textColor="#FFFFFF"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textSize="13.5sp"
+                            android:textStyle="bold"
+                            android:singleLine="true" />
                     </LinearLayout>
 
                     <!-- 남은거리 표시 -->
@@ -197,11 +200,13 @@
                         android:id="@+id/tvRemainDist"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="2dp"
                         android:text="-- km"
                         android:textColor="#00E5FF"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textSize="13.5sp"
+                        android:textStyle="bold"
+                        android:singleLine="true" />
                 </LinearLayout>
 
                 <!-- [구역 2] 원터치 목적지 버튼 그룹 (집, 사무실, 즐겨찾기) - 티맵 안전운행 시에만 표시 -->
@@ -358,14 +363,15 @@
                 <!-- 경로 취소 버튼 (카카오 경로 안내 중에만 표시) -->
                 <LinearLayout
                     android:id="@+id/btnGpsCancelRoute"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="34dp"
+                    android:layout_weight="1"
                     android:layout_marginStart="6dp"
                     android:background="@drawable/bg_btn_cancel_route"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="12dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
                     android:visibility="gone"
                     android:clickable="true"
                     android:focusable="true">

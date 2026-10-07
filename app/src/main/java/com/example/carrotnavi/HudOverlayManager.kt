@@ -1002,6 +1002,8 @@ class HudOverlayManager(
         val btnHome = binding.btnQuickHome
         val btnOffice = binding.btnQuickOffice
         val btnFav = binding.btnQuickFavorites
+        val etaGroup = binding.llRouteEtaGroup
+        val btnEtaTime = binding.btnToggleEtaTime
 
         if (isLandscape) {
             // [가로 모드] 1줄 배치 (GPS 상태 | 집,사무실,즐겨찾기 | 구분선 | 주소 | 경로취소)
@@ -1041,6 +1043,8 @@ class HudOverlayManager(
                 }
                 val btnParams = btn.layoutParams as? LinearLayout.LayoutParams
                     ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (34 * density).toInt())
+                btnParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+                btnParams.weight = 0f
                 btnParams.marginStart = (6 * density).toInt()
                 btnParams.gravity = android.view.Gravity.CENTER_VERTICAL
                 btn.layoutParams = btnParams
@@ -1071,6 +1075,22 @@ class HudOverlayManager(
                 }
             }
             btnFav?.post { syncQuickDestButtonWidths() }
+
+            // 가로 모드에서는 경로안내 도착정보(ETA) 및 토글 버튼도 내용물 크기(wrap_content)에 맞춤
+            if (etaGroup != null) {
+                val ep = etaGroup.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                ep.width = LinearLayout.LayoutParams.WRAP_CONTENT
+                ep.weight = 0f
+                etaGroup.layoutParams = ep
+            }
+            if (btnEtaTime != null) {
+                val bp = btnEtaTime.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (34 * density).toInt())
+                bp.width = LinearLayout.LayoutParams.WRAP_CONTENT
+                bp.weight = 0f
+                btnEtaTime.layoutParams = bp
+            }
         } else {
             // [세로 모드] 2줄 배치 (Row 1: GPS 상태 | 집,사무실,즐겨찾기, Row 2: 현위치 주소)
             gpsInfo.orientation = LinearLayout.VERTICAL
@@ -1109,7 +1129,9 @@ class HudOverlayManager(
                     topRow.addView(btn)
                 }
                 val btnParams = btn.layoutParams as? LinearLayout.LayoutParams
-                    ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (34 * density).toInt())
+                    ?: LinearLayout.LayoutParams(0, (34 * density).toInt(), 1f)
+                btnParams.width = 0
+                btnParams.weight = 1f
                 btnParams.marginStart = (6 * density).toInt()
                 btnParams.gravity = android.view.Gravity.CENTER_VERTICAL
                 btn.layoutParams = btnParams
@@ -1139,6 +1161,22 @@ class HudOverlayManager(
                     bp.weight = 1f
                     it.layoutParams = bp
                 }
+            }
+
+            // 세로 모드 1열: 경로안내 모드 시 도착정보(ETA)와 경로취소 버튼이 남은 가로 너비를 균형 있게 나누어(1.3:1) 꽉 채움!
+            if (etaGroup != null) {
+                val ep = etaGroup.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.3f)
+                ep.width = 0
+                ep.weight = 1.3f
+                etaGroup.layoutParams = ep
+            }
+            if (btnEtaTime != null) {
+                val bp = btnEtaTime.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(0, (34 * density).toInt(), 1f)
+                bp.width = 0
+                bp.weight = 1f
+                btnEtaTime.layoutParams = bp
             }
         }
     }
