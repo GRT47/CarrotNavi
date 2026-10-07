@@ -142,63 +142,6 @@ class MainActivity : BaseActivity() {
         binding.cbBackgroundLocation.isChecked = sharedPref.getBoolean("REQ_BACKGROUND", false)
         binding.cbDistanceFormatKm.isChecked = sharedPref.getBoolean("USE_KM_DISTANCE_FORMAT", true)
         
-        // Load and setup DPI Scale Spinner
-        val dpiOptions = listOf(
-            Pair("75% (최소 크기 - 와이드/소형 화면)", 0.75f),
-            Pair("80% (매우 작게)", 0.80f),
-            Pair("85% (작게)", 0.85f),
-            Pair("90% (약간 작게)", 0.90f),
-            Pair("95% (미세 축소)", 0.95f),
-            Pair("100% (기본값 / 순정 화면)", 1.00f),
-            Pair("105% (미세 확대)", 1.05f),
-            Pair("110% (약간 크게)", 1.10f),
-            Pair("115% (크게)", 1.15f),
-            Pair("120% (매우 크게 - 대형 태블릿 권장)", 1.20f),
-            Pair("125% (최대 크기)", 1.25f)
-        )
-        val currentDpiScale = BaseActivity.getDpiScale(this)
-        val spinnerAdapter = object : android.widget.ArrayAdapter<String>(
-            this,
-            android.R.layout.simple_spinner_item,
-            dpiOptions.map { it.first }
-        ) {
-            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
-                val v = super.getView(position, convertView, parent)
-                (v as? TextView)?.setTextColor(Color.WHITE)
-                return v
-            }
-            override fun getDropDownView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
-                val v = super.getDropDownView(position, convertView, parent)
-                v.setBackgroundColor(Color.parseColor("#2C2C2C"))
-                (v as? TextView)?.apply {
-                    setTextColor(Color.WHITE)
-                    setPadding(32, 24, 32, 24)
-                }
-                return v
-            }
-        }
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spDpiScale.adapter = spinnerAdapter
-
-        var selectedIndex = dpiOptions.indexOfFirst { Math.abs(it.second - currentDpiScale) < 0.01f }
-        if (selectedIndex == -1) selectedIndex = 5 // 1.00f default
-        binding.spDpiScale.setSelection(selectedIndex, false)
-
-        binding.spDpiScale.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val targetScale = dpiOptions[position].second
-                val current = BaseActivity.getDpiScale(this@MainActivity)
-                if (Math.abs(targetScale - current) > 0.01f) {
-                    BaseActivity.setDpiScale(this@MainActivity, targetScale)
-                    Toast.makeText(this@MainActivity, "화면 배율이 ${dpiOptions[position].first}로 변경되었습니다.", Toast.LENGTH_SHORT).show()
-                    binding.spDpiScale.post {
-                        BaseActivity.recreateAllActivities()
-                    }
-                }
-            }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
-        }
-        
         // Load and setup Offset Slider
         val currentOffset = sharedPref.getInt("BLOCK_SPEED_OFFSET", 0)
         binding.sliderOffset.value = currentOffset.toFloat()
