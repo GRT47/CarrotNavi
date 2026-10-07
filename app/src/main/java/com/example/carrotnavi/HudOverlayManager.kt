@@ -969,22 +969,27 @@ class HudOverlayManager(
         if (activity.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE) {
             return
         }
+        val density = activity.resources.displayMetrics.density
+        val baseWidth = (75 * density).toInt()
         val favWidth = binding.btnQuickFavorites.width
-        if (favWidth > 0) {
-            var changed = false
-            if (binding.btnQuickHome.layoutParams.width != favWidth) {
-                binding.btnQuickHome.layoutParams.width = favWidth
+        val targetWidth = maxOf(baseWidth, favWidth)
+
+        var changed = false
+        val home = binding.btnQuickHome
+        val office = binding.btnQuickOffice
+        val fav = binding.btnQuickFavorites
+
+        listOf(home, office, fav).forEach { btn ->
+            if (btn.layoutParams.width != targetWidth) {
+                btn.layoutParams.width = targetWidth
                 changed = true
             }
-            if (binding.btnQuickOffice.layoutParams.width != favWidth) {
-                binding.btnQuickOffice.layoutParams.width = favWidth
-                changed = true
-            }
-            if (changed) {
-                binding.btnQuickHome.requestLayout()
-                binding.btnQuickOffice.requestLayout()
-                binding.llQuickDestToolbar.requestLayout()
-            }
+        }
+        if (changed) {
+            home.requestLayout()
+            office.requestLayout()
+            fav.requestLayout()
+            binding.llQuickDestToolbar.requestLayout()
         }
     }
 
@@ -1066,11 +1071,12 @@ class HudOverlayManager(
                 tbp.weight = 0f
                 qdToolbar.layoutParams = tbp
             }
+            val quickBtnWidth = (75 * density).toInt()
             listOf(btnHome, btnOffice, btnFav).forEach { btn ->
                 btn?.let {
                     val bp = it.layoutParams as? LinearLayout.LayoutParams
-                        ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (32 * density).toInt())
-                    bp.width = LinearLayout.LayoutParams.WRAP_CONTENT
+                        ?: LinearLayout.LayoutParams(quickBtnWidth, (32 * density).toInt())
+                    bp.width = quickBtnWidth
                     bp.weight = 0f
                     it.layoutParams = bp
                 }
