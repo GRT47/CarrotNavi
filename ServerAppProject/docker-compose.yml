@@ -8,4 +8,5 @@ services:
       - "5000:5000"
     volumes:
       - /volume1/docker/carrotpilot/commanav_server:/app
+    command: gunicorn --bind 0.0.0.0:5000 --workers 2 --threads 4 --worker-class gthread --timeout 120 --keep-alive 5 app:app
     restart: always

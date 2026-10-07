@@ -1,7 +1,8 @@
 import os
 import sqlite3
+import time
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -11,12 +12,19 @@ if not os.path.exists('data'):
 DB_FILE = 'data/logs.db'
 
 def get_db_connection():
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=30.0)
     conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA busy_timeout = 30000')
     return conn
 
 def init_db():
     conn = get_db_connection()
+    try:
+        conn.execute('PRAGMA journal_mode=WAL')
+        conn.execute('PRAGMA synchronous=NORMAL')
+    except Exception:
+        pass
+
     # logs table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS logs (
@@ -40,36 +48,49 @@ def init_db():
         )
     ''')
     
-    # Add alias and app_version columns if they don't exist (migration)
-    try:
-        conn.execute('ALTER TABLE devices ADD COLUMN alias TEXT')
-    except sqlite3.OperationalError:
-        pass # Column already exists
+    # Add alias, app_version, is_pinned columns if they don't exist (migration)
+    for col, col_type, default in [
+        ('alias', 'TEXT', None),
+        ('app_version', 'TEXT', None),
+        ('is_pinned', 'INTEGER', '0')
+    ]:
+        try:
+            default_clause = f" DEFAULT {default}" if default is not None else ""
+            conn.execute(f'ALTER TABLE devices ADD COLUMN {col} {col_type}{default_clause}')
+        except sqlite3.OperationalError:
+            pass # Column already exists
         
     try:
-        conn.execute('ALTER TABLE devices ADD COLUMN app_version TEXT')
-    except sqlite3.OperationalError:
-        pass # Column already exists
-        
-    try:
-        conn.execute('ALTER TABLE devices ADD COLUMN is_pinned INTEGER DEFAULT 0')
-    except sqlite3.OperationalError:
-        pass # Column already exists
-        
-    try:
-        conn.execute('CREATE INDEX IF NOT EXISTS idx_logs_device_time ON logs(device_id, timestamp)')
-    except sqlite3.OperationalError:
-        pass
-        
-    try:
-        conn.execute('CREATE INDEX IF NOT EXISTS idx_logs_device_level ON logs(device_id, level)')
-    except sqlite3.OperationalError:
-        pass
+        existing_indexes = {row['name'] for row in conn.execute("PRAGMA index_list('logs')").fetchall()}
+        if 'idx_logs_device_id_desc' not in existing_indexes:
+            conn.execute('CREATE INDEX IF NOT EXISTS idx_logs_device_id_desc ON logs(device_id, id DESC)')
+        if 'idx_logs_device_time' not in existing_indexes:
+            conn.execute('CREATE INDEX IF NOT EXISTS idx_logs_device_time ON logs(device_id, timestamp)')
+        if 'idx_logs_device_level' not in existing_indexes:
+            conn.execute('CREATE INDEX IF NOT EXISTS idx_logs_device_level ON logs(device_id, level)')
+    except Exception as e:
+        print(f"Index check/creation notice: {e}")
         
     conn.commit()
     conn.close()
 
 init_db()
+
+_last_cleanup_time = 0
+
+def maybe_cleanup_old_logs():
+    global _last_cleanup_time
+    now = time.time()
+    # Run cleanup at most once every 6 hours (21600 seconds)
+    if now - _last_cleanup_time > 21600:
+        _last_cleanup_time = now
+        try:
+            conn = get_db_connection()
+            conn.execute("DELETE FROM logs WHERE created_at < datetime('now', '-7 days')")
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Periodic log cleanup error: {e}")
 
 @app.route('/')
 def index():
@@ -145,13 +166,20 @@ def device_logs(device_id):
         query += clause
         count_query += clause
         
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
+    # Order by id DESC (uses primary key/index, orders of magnitude faster than created_at)
+    query += ' ORDER BY id DESC LIMIT ? OFFSET ?'
     
     conn = get_db_connection()
-    total_count = conn.execute(count_query, params).fetchone()[0]
+    logs = conn.execute(query, params + [per_page, offset]).fetchall()
+    
+    # Fast count optimization
+    if page == 1 and len(logs) < per_page:
+        total_count = len(logs)
+    else:
+        total_count = conn.execute(count_query, params).fetchone()[0]
+        
     total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
     
-    logs = conn.execute(query, params + [per_page, offset]).fetchall()
     device = conn.execute('SELECT * FROM devices WHERE device_id = ?', (device_id,)).fetchone()
     conn.close()
     
@@ -167,7 +195,7 @@ def download_logs(device_id):
     category = request.args.get('category', 'all').strip()
     clean = request.args.get('clean', '0') == '1'
     
-    query = 'SELECT * FROM logs WHERE device_id = ?'
+    query = 'SELECT timestamp, level, message, stacktrace FROM logs WHERE device_id = ?'
     params = [device_id]
     
     if start_date:
@@ -202,21 +230,24 @@ def download_logs(device_id):
     if clean:
         query += ' AND message NOT LIKE "%requestLayout()%" AND message NOT LIKE "%TrafficStats%" AND message NOT LIKE "%AidlConversionCppNdk%"'
             
-    query += ' ORDER BY created_at ASC'
-    
-    conn = get_db_connection()
-    logs = conn.execute(query, params).fetchall()
-    conn.close()
+    query += ' ORDER BY id ASC'
     
     def generate():
-        for log in logs:
-            ts = log['timestamp'][:19].replace('T', ' ')
-            line = f"[{ts}] {log['level']} : {log['message']}"
-            if log['stacktrace']:
-                line += f"\n{log['stacktrace']}"
-            yield line + '\n'
-            
-    from flask import Response
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        while True:
+            rows = cursor.fetchmany(1000)
+            if not rows:
+                break
+            for log in rows:
+                ts = (log['timestamp'] or '')[:19].replace('T', ' ')
+                line = f"[{ts}] {log['level']} : {log['message']}"
+                if log['stacktrace']:
+                    line += f"\n{log['stacktrace']}"
+                yield line + '\n'
+        conn.close()
+        
     suffix = "_clean" if clean else ""
     if start_date or end_date or q or category != 'all':
         filename = f"logs_{device_id}_filtered{suffix}.txt"
@@ -356,6 +387,8 @@ def receive_logs():
     
     conn.commit()
     conn.close()
+    
+    maybe_cleanup_old_logs()
     return jsonify({'status': 'success'}), 200
 
 @app.route('/api/logs/batch', methods=['POST'])
@@ -395,11 +428,10 @@ def receive_logs_batch():
         ON CONFLICT(device_id) DO UPDATE SET last_seen=CURRENT_TIMESTAMP
     ''', (device_id,))
     
-    # 7일 경과 로그 삭제
-    conn.execute("DELETE FROM logs WHERE created_at < datetime('now', '-7 days')")
-    
     conn.commit()
     conn.close()
+    
+    maybe_cleanup_old_logs()
     return jsonify({'status': 'success', 'inserted': len(insert_data)}), 200
 
 @app.route('/api/devices/<device_id>/toggle', methods=['POST'])
