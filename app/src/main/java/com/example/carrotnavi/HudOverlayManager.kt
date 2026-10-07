@@ -397,9 +397,13 @@ class HudOverlayManager(
                             BaseActivity.setDpiScale(activity, targetScale)
                             Toast.makeText(activity, "화면 배율이 ${dpiOptions[position].first}로 변경되었습니다.", Toast.LENGTH_SHORT).show()
                             dialog.dismiss()
-                            spDpiScale.post {
-                                BaseActivity.recreateAllActivities()
-                            }
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                val baseAct = activity as? BaseActivity
+                                BaseActivity.recreateAllActivities(baseAct)
+                                if (baseAct == null && !activity.isFinishing) {
+                                    activity.recreate()
+                                }
+                            }, 100)
                         }
                     }
                     override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
