@@ -970,9 +970,10 @@ class HudOverlayManager(
             return
         }
         val density = activity.resources.displayMetrics.density
-        val baseWidth = (75 * density).toInt()
-        val favWidth = binding.btnQuickFavorites.width
-        val targetWidth = maxOf(baseWidth, favWidth)
+        val baseWidth = (88 * density).toInt()
+        val textWidth = binding.tvQuickFavorites?.paint?.measureText("⭐ 즐겨찾기") ?: 0f
+        val minWidthNeeded = (textWidth + 18 * density).toInt()
+        val targetWidth = maxOf(baseWidth, minWidthNeeded)
 
         var changed = false
         val home = binding.btnQuickHome
@@ -1071,7 +1072,8 @@ class HudOverlayManager(
                 tbp.weight = 0f
                 qdToolbar.layoutParams = tbp
             }
-            val quickBtnWidth = (75 * density).toInt()
+            val textWidth = binding.tvQuickFavorites?.paint?.measureText("⭐ 즐겨찾기") ?: 0f
+            val quickBtnWidth = maxOf((88 * density).toInt(), (textWidth + 18 * density).toInt())
             listOf(btnHome, btnOffice, btnFav).forEach { btn ->
                 btn?.let {
                     val bp = it.layoutParams as? LinearLayout.LayoutParams
