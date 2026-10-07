@@ -207,8 +207,9 @@
                 <!-- [구역 2] 원터치 목적지 버튼 그룹 (집, 사무실, 즐겨찾기) - 티맵 안전운행 시에만 표시 -->
                 <LinearLayout
                     android:id="@+id/llQuickDestGroup"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:layout_marginStart="4dp"
@@ -226,8 +227,9 @@
                     <!-- 원터치 목적지 3개 버튼을 묶어주는 툴바 컨테이너 -->
                     <LinearLayout
                         android:id="@+id/llQuickDestToolbar"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="36dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_hud_quick_group"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
@@ -236,8 +238,9 @@
 
                         <LinearLayout
                             android:id="@+id/btnQuickHome"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="32dp"
+                            android:layout_weight="1"
                             android:background="@drawable/bg_hud_quick_btn"
                             android:orientation="horizontal"
                             android:gravity="center"
@@ -261,8 +264,9 @@
 
                         <LinearLayout
                             android:id="@+id/btnQuickOffice"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="32dp"
+                            android:layout_weight="1"
                             android:layout_marginStart="3dp"
                             android:background="@drawable/bg_hud_quick_btn"
                             android:orientation="horizontal"
@@ -287,8 +291,9 @@
 
                         <LinearLayout
                             android:id="@+id/btnQuickFavorites"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="32dp"
+                            android:layout_weight="1"
                             android:layout_marginStart="3dp"
                             android:background="@drawable/bg_hud_quick_btn"
                             android:orientation="horizontal"

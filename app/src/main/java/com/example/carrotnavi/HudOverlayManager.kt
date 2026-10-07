@@ -712,25 +712,9 @@ class HudOverlayManager(
             showFavoritesDialog()
         }
 
-        // 집, 사무실 버튼 폭을 즐겨찾기 버튼 폭과 동일하게 동기화
-        binding.btnQuickFavorites.addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ ->
-            val favWidth = right - left
-            if (favWidth > 0) {
-                var changed = false
-                if (binding.btnQuickHome.layoutParams.width != favWidth) {
-                    binding.btnQuickHome.layoutParams.width = favWidth
-                    changed = true
-                }
-                if (binding.btnQuickOffice.layoutParams.width != favWidth) {
-                    binding.btnQuickOffice.layoutParams.width = favWidth
-                    changed = true
-                }
-                if (changed) {
-                    binding.btnQuickHome.requestLayout()
-                    binding.btnQuickOffice.requestLayout()
-                    binding.llQuickDestToolbar.requestLayout()
-                }
-            }
+        // 집, 사무실 버튼 폭을 즐겨찾기 버튼 폭과 동일하게 동기화 (가로 모드 전용)
+        binding.btnQuickFavorites.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            syncQuickDestButtonWidths()
         }
         binding.btnQuickFavorites.post { syncQuickDestButtonWidths() }
     }
@@ -982,6 +966,9 @@ class HudOverlayManager(
     }
 
     private fun syncQuickDestButtonWidths() {
+        if (activity.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            return
+        }
         val favWidth = binding.btnQuickFavorites.width
         if (favWidth > 0) {
             var changed = false
@@ -1009,6 +996,12 @@ class HudOverlayManager(
         val divider = binding.vGpsDivider ?: return
         val addressTv = binding.tvGpsAddress ?: return
         val cancelBtn = binding.btnGpsCancelRoute
+
+        val qdGroup = binding.llQuickDestGroup
+        val qdToolbar = binding.llQuickDestToolbar
+        val btnHome = binding.btnQuickHome
+        val btnOffice = binding.btnQuickOffice
+        val btnFav = binding.btnQuickFavorites
 
         if (isLandscape) {
             // [가로 모드] 1줄 배치 (GPS 상태 | 집,사무실,즐겨찾기 | 구분선 | 주소 | 경로취소)
@@ -1052,6 +1045,32 @@ class HudOverlayManager(
                 btnParams.gravity = android.view.Gravity.CENTER_VERTICAL
                 btn.layoutParams = btnParams
             }
+
+            // 가로 모드에서는 원터치 목적지 그룹 및 툴바가 내용물 크기(wrap_content)에 맞춤
+            if (qdGroup != null) {
+                val qdp = qdGroup.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                qdp.width = LinearLayout.LayoutParams.WRAP_CONTENT
+                qdp.weight = 0f
+                qdGroup.layoutParams = qdp
+            }
+            if (qdToolbar != null) {
+                val tbp = qdToolbar.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (36 * density).toInt())
+                tbp.width = LinearLayout.LayoutParams.WRAP_CONTENT
+                tbp.weight = 0f
+                qdToolbar.layoutParams = tbp
+            }
+            listOf(btnHome, btnOffice, btnFav).forEach { btn ->
+                btn?.let {
+                    val bp = it.layoutParams as? LinearLayout.LayoutParams
+                        ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (32 * density).toInt())
+                    bp.width = LinearLayout.LayoutParams.WRAP_CONTENT
+                    bp.weight = 0f
+                    it.layoutParams = bp
+                }
+            }
+            btnFav?.post { syncQuickDestButtonWidths() }
         } else {
             // [세로 모드] 2줄 배치 (Row 1: GPS 상태 | 집,사무실,즐겨찾기, Row 2: 현위치 주소)
             gpsInfo.orientation = LinearLayout.VERTICAL
@@ -1095,7 +1114,32 @@ class HudOverlayManager(
                 btnParams.gravity = android.view.Gravity.CENTER_VERTICAL
                 btn.layoutParams = btnParams
             }
-            binding.btnQuickFavorites.post { syncQuickDestButtonWidths() }
+
+            // 세로 모드 1열: 원터치 목적지 그룹(llQuickDestGroup)이 남은 가로 너비를 꽉 채우고,
+            // 3개 버튼(집, 사무실, 즐겨찾기)이 1:1:1 균등 분할되어 빈 공백 없이 꽉 참!
+            if (qdGroup != null) {
+                val qdp = qdGroup.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                qdp.width = 0
+                qdp.weight = 1f
+                qdGroup.layoutParams = qdp
+            }
+            if (qdToolbar != null) {
+                val tbp = qdToolbar.layoutParams as? LinearLayout.LayoutParams
+                    ?: LinearLayout.LayoutParams(0, (36 * density).toInt(), 1f)
+                tbp.width = 0
+                tbp.weight = 1f
+                qdToolbar.layoutParams = tbp
+            }
+            listOf(btnHome, btnOffice, btnFav).forEach { btn ->
+                btn?.let {
+                    val bp = it.layoutParams as? LinearLayout.LayoutParams
+                        ?: LinearLayout.LayoutParams(0, (32 * density).toInt(), 1f)
+                    bp.width = 0
+                    bp.weight = 1f
+                    it.layoutParams = bp
+                }
+            }
         }
     }
 
