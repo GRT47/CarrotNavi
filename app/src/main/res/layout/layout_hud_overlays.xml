@@ -146,30 +146,30 @@
                 <!-- 경로 안내 도착시간(터치 시 남은시간 전환) & 남은거리 그룹 -->
                 <LinearLayout
                     android:id="@+id/llRouteEtaGroup"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1.3"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:visibility="gone">
 
+                    <!-- GPS 상태와 도착 정보 사이 좌측 구분선 -->
                     <View
+                        android:id="@+id/vRouteEtaStartDivider"
                         android:layout_width="1dp"
                         android:layout_height="20dp"
                         android:layout_marginStart="4dp"
                         android:layout_marginEnd="4dp"
                         android:background="#44FFFFFF" />
 
-                    <!-- 도착시간/남은시간 터치 토글 뱃지 -->
+                    <!-- 도착시간/남은시간 터치 토글 뱃지 (내용물에 맞게 wrap_content 보장되어 절대 글자 안 잘림) -->
                     <LinearLayout
                         android:id="@+id/btnToggleEtaTime"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="34dp"
-                        android:layout_weight="1"
                         android:orientation="horizontal"
-                        android:gravity="center"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="6dp"
+                        android:gravity="center_vertical"
+                        android:paddingStart="7dp"
+                        android:paddingEnd="7dp"
                         android:background="@drawable/bg_eta_time_clickable"
                         android:clickable="true"
                         android:focusable="true">
@@ -190,23 +190,32 @@
                             android:layout_height="wrap_content"
                             android:text="--:--"
                             android:textColor="#FFFFFF"
-                            android:textSize="13.5sp"
+                            android:textSize="13sp"
                             android:textStyle="bold"
                             android:singleLine="true" />
                     </LinearLayout>
 
-                    <!-- 남은거리 표시 -->
+                    <!-- 남은거리 표시 (wrap_content로 항상 온전하게 표시) -->
                     <TextView
                         android:id="@+id/tvRemainDist"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
-                        android:layout_marginEnd="2dp"
+                        android:layout_marginEnd="4dp"
                         android:text="-- km"
                         android:textColor="#00E5FF"
-                        android:textSize="13.5sp"
+                        android:textSize="13sp"
                         android:textStyle="bold"
                         android:singleLine="true" />
+
+                    <!-- 도착시간/남은거리와 경로취소 버튼 사이의 명확한 경계 구분선 -->
+                    <View
+                        android:id="@+id/vRouteEtaEndDivider"
+                        android:layout_width="1dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="#44FFFFFF" />
                 </LinearLayout>
 
                 <!-- [구역 2] 원터치 목적지 버튼 그룹 (집, 사무실, 즐겨찾기) - 티맵 안전운행 시에만 표시 -->
@@ -366,30 +375,31 @@
                     android:layout_width="0dp"
                     android:layout_height="34dp"
                     android:layout_weight="1"
-                    android:layout_marginStart="6dp"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/bg_btn_cancel_route"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
                     android:visibility="gone"
                     android:clickable="true"
                     android:focusable="true">
 
                     <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
                         android:src="@drawable/ic_round_close_24"
                         app:tint="#FFFFFF"
-                        android:layout_marginEnd="4dp" />
+                        android:layout_marginEnd="3dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="경로취소"
                         android:textColor="#FFFFFF"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:textSize="12.5sp"
+                        android:textStyle="bold"
+                        android:singleLine="true" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

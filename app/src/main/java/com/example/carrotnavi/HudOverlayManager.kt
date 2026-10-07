@@ -1004,6 +1004,7 @@ class HudOverlayManager(
         val btnFav = binding.btnQuickFavorites
         val etaGroup = binding.llRouteEtaGroup
         val btnEtaTime = binding.btnToggleEtaTime
+        val etaEndDivider = binding.vRouteEtaEndDivider
 
         if (isLandscape) {
             // [가로 모드] 1줄 배치 (GPS 상태 | 집,사무실,즐겨찾기 | 구분선 | 주소 | 경로취소)
@@ -1091,6 +1092,8 @@ class HudOverlayManager(
                 bp.weight = 0f
                 btnEtaTime.layoutParams = bp
             }
+            // 가로 모드에서는 Row 사이의 구분선(vGpsDivider)이 별도로 있으므로 ETA 끝 구분선 숨김
+            etaEndDivider?.visibility = View.GONE
         } else {
             // [세로 모드] 2줄 배치 (Row 1: GPS 상태 | 집,사무실,즐겨찾기, Row 2: 현위치 주소)
             gpsInfo.orientation = LinearLayout.VERTICAL
@@ -1132,7 +1135,7 @@ class HudOverlayManager(
                     ?: LinearLayout.LayoutParams(0, (34 * density).toInt(), 1f)
                 btnParams.width = 0
                 btnParams.weight = 1f
-                btnParams.marginStart = (6 * density).toInt()
+                btnParams.marginStart = (2 * density).toInt()
                 btnParams.gravity = android.view.Gravity.CENTER_VERTICAL
                 btn.layoutParams = btnParams
             }
@@ -1163,21 +1166,24 @@ class HudOverlayManager(
                 }
             }
 
-            // 세로 모드 1열: 경로안내 모드 시 도착정보(ETA)와 경로취소 버튼이 남은 가로 너비를 균형 있게 나누어(1.3:1) 꽉 채움!
+            // 세로 모드 1열: 도착시간/남은거리는 절대 잘리지 않도록 wrap_content로 필요한 크기를 100% 보장!
+            // 경로취소 버튼 폭이 작아지더라도 도착시간 남은거리가 우선적으로 온전하게 표시됨.
             if (etaGroup != null) {
                 val ep = etaGroup.layoutParams as? LinearLayout.LayoutParams
-                    ?: LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.3f)
-                ep.width = 0
-                ep.weight = 1.3f
+                    ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                ep.width = LinearLayout.LayoutParams.WRAP_CONTENT
+                ep.weight = 0f
                 etaGroup.layoutParams = ep
             }
             if (btnEtaTime != null) {
                 val bp = btnEtaTime.layoutParams as? LinearLayout.LayoutParams
-                    ?: LinearLayout.LayoutParams(0, (34 * density).toInt(), 1f)
-                bp.width = 0
-                bp.weight = 1f
+                    ?: LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (34 * density).toInt())
+                bp.width = LinearLayout.LayoutParams.WRAP_CONTENT
+                bp.weight = 0f
                 btnEtaTime.layoutParams = bp
             }
+            // 도착시간/남은거리와 경로취소 사이의 경계선 표시
+            etaEndDivider?.visibility = View.VISIBLE
         }
     }
 

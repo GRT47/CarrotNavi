@@ -1438,6 +1438,8 @@ class KakaoMapActivity : AppCompatActivity(),
         }
 
         etaGroup.visibility = android.view.View.VISIBLE
+        val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        hudOverlayManager.binding.vRouteEtaEndDivider?.visibility = if (isLandscape) android.view.View.GONE else android.view.View.VISIBLE
 
         // 남은 거리 포맷
         val distStr = if (currentRemainDist >= 1000) {
