@@ -4,15 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CommaNav Device Logs</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     <style>
         :root {
             --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
             --success-color: #4cc9f0;
             --danger-color: #f72585;
             --warning-color: #f8961e;
             --dark-bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-bg: rgba(30, 41, 59, 0.75);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: rgba(255, 255, 255, 0.1);
@@ -30,8 +33,8 @@
 
         h1 { 
             font-weight: 700;
-            font-size: 2.5rem;
-            margin-bottom: 40px;
+            font-size: 2.3rem;
+            margin-bottom: 30px;
             background: linear-gradient(to right, #4cc9f0, #4361ee);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -40,25 +43,70 @@
 
         h2 { 
             font-weight: 600;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin-bottom: 20px;
             color: #e2e8f0;
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .badge {
             background: linear-gradient(135deg, #4361ee, #3f37c9);
             color: white;
-            font-size: 0.85rem;
-            padding: 4px 12px;
+            font-size: 0.8rem;
+            padding: 3px 10px;
             border-radius: 20px;
             font-weight: 500;
             box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; }
+        .tag-camera {
+            background: linear-gradient(135deg, #7209b7, #b5179e);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-right: 6px;
+            display: inline-block;
+        }
+        .tag-route {
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-right: 6px;
+            display: inline-block;
+        }
+        .tag-speed {
+            background: linear-gradient(135deg, #e76f51, #f4a261);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-right: 6px;
+            display: inline-block;
+        }
+        .tag-udp {
+            background: linear-gradient(135deg, #2a9d8f, #264653);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-right: 6px;
+            display: inline-block;
+        }
+
+        .container { max-width: 1300px; margin: 0 auto; }
 
         .card { 
             background: var(--card-bg); 
@@ -71,85 +119,93 @@
             margin-bottom: 30px;
         }
 
-        table { 
-            width: 100%; 
-            border-collapse: separate; 
-            border-spacing: 0;
-            margin-top: 10px; 
-            table-layout: fixed;
-        }
-
-        th, td { 
-            padding: 16px; 
-            text-align: left; 
-            border-bottom: 1px solid var(--border-color); 
-        }
-
-        th { 
-            background-color: rgba(255, 255, 255, 0.03); 
-            color: var(--text-muted);
-            font-weight: 500;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
-        }
-
-        th:first-child { border-top-left-radius: 8px; }
-        th:last-child { border-top-right-radius: 8px; }
-
-        tbody tr { transition: background-color 0.2s ease; }
-        tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
-
-        .log-error { color: var(--danger-color); font-weight: 700; }
-        .log-warn { color: var(--warning-color); font-weight: 700; }
-        
-        .stacktrace { 
-            font-family: 'JetBrains Mono', monospace; 
-            font-size: 0.8rem; 
-            background: rgba(0, 0, 0, 0.3); 
-            color: #e2e8f0;
-            padding: 12px; 
-            border-radius: 8px; 
-            margin-top: 10px;
-            white-space: pre-wrap; 
-            word-break: break-all;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .filter-form {
-            margin-bottom: 25px; 
-            padding: 15px 20px; 
-            background-color: rgba(255, 255, 255, 0.03); 
+        /* Filter Controls */
+        .filter-panel {
+            background-color: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
             gap: 15px;
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
-        .filter-form label {
-            font-weight: 500; 
+        .filter-input-search {
+            flex: 1;
+            min-width: 260px;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
             font-size: 0.9rem;
-            color: var(--text-muted);
+            outline: none;
+            transition: all 0.2s;
+        }
+        .filter-input-search:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(67, 97, 238, 0.3);
         }
 
-        .filter-form input[type="datetime-local"] {
-            padding: 8px 12px; 
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1); 
+        .filter-input-date {
+            padding: 9px 12px; 
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.12); 
             border-radius: 8px;
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             color-scheme: dark;
             outline: none;
             transition: border-color 0.2s;
+            font-size: 0.85rem;
         }
-
-        .filter-form input[type="datetime-local"]:focus {
+        .filter-input-date:focus {
             border-color: var(--primary-color);
         }
 
+        /* Category Chips */
+        .category-chips {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .chip:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+        .chip.active {
+            background: linear-gradient(135deg, #4361ee, #3a56d4);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+        }
+
+        /* Buttons */
         .btn { 
             padding: 8px 16px; 
             border: none; 
@@ -163,8 +219,9 @@
             align-items: center;
             justify-content: center;
             text-decoration: none;
+            gap: 6px;
         }
-        .btn:active { transform: scale(0.96); }
+        .btn:active { transform: scale(0.97); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         .btn-primary { 
@@ -195,6 +252,110 @@
         }
         .btn-info:hover:not(:disabled) { box-shadow: 0 6px 16px rgba(0, 180, 216, 0.5); transform: translateY(-1px); }
 
+        .btn-clean {
+            background: linear-gradient(135deg, #06d6a0, #118ab2);
+            color: white;
+            box-shadow: 0 4px 12px rgba(6, 214, 160, 0.3);
+        }
+        .btn-clean:hover:not(:disabled) { box-shadow: 0 6px 16px rgba(6, 214, 160, 0.5); transform: translateY(-1px); }
+
+        .btn-live {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-muted);
+        }
+        .btn-live.active {
+            background: rgba(76, 201, 240, 0.15);
+            border-color: #4cc9f0;
+            color: #4cc9f0;
+            box-shadow: 0 0 14px rgba(76, 201, 240, 0.3);
+        }
+
+        .dot-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #94a3b8;
+            display: inline-block;
+        }
+        .btn-live.active .dot-indicator {
+            background-color: #4cc9f0;
+            box-shadow: 0 0 8px #4cc9f0;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
+        }
+
+        /* Table */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin-top: 10px; 
+            table-layout: fixed;
+        }
+
+        th, td { 
+            padding: 14px 16px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+
+        th { 
+            background-color: rgba(255, 255, 255, 0.03); 
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        th:first-child { border-top-left-radius: 8px; }
+        th:last-child { border-top-right-radius: 8px; }
+
+        tbody tr { transition: background-color 0.2s ease; }
+        tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+
+        tr.row-new {
+            animation: rowHighlight 2s ease-out;
+        }
+        @keyframes rowHighlight {
+            0% { background-color: rgba(76, 201, 240, 0.35); }
+            100% { background-color: transparent; }
+        }
+
+        .log-error { color: var(--danger-color); font-weight: 700; }
+        .log-warn { color: var(--warning-color); font-weight: 700; }
+        .log-info { color: #a2d2ff; }
+        .log-debug { color: var(--text-muted); }
+
+        .timestamp {
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+        }
+
+        .stacktrace { 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 0.8rem; 
+            background: rgba(0, 0, 0, 0.35); 
+            color: #e2e8f0;
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-top: 8px;
+            white-space: pre-wrap; 
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
         .pagination {
             display: flex; 
             justify-content: center; 
@@ -209,56 +370,25 @@
             background: rgba(255, 255, 255, 0.05);
             padding: 6px 16px;
             border-radius: 20px;
+            font-size: 0.85rem;
         }
         
         .empty-state {
             text-align: center;
-            padding: 40px;
+            padding: 50px 20px;
             color: var(--text-muted);
-        }
-        
-        td { font-size: 0.9rem; }
-        
-        .timestamp {
-            color: var(--text-muted);
-            font-family: monospace;
-            font-size: 0.85rem;
-        }
-        
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            width: 100%;
+            font-size: 0.95rem;
         }
 
-        /* Mobile Optimization */
         @media (max-width: 768px) {
-            body { padding: 20px 10px; }
-            h1 { font-size: 1.8rem; margin-bottom: 20px; }
+            body { padding: 15px 10px; }
+            h1 { font-size: 1.8rem; }
             .card { padding: 15px; }
-            th, td { padding: 12px 8px; font-size: 0.8rem; }
-            
-            table { min-width: 700px; } /* Ensures columns don't collapse too much on small screens */
-
-            .filter-form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .filter-form input, .filter-form button, .filter-form a {
-                width: 100%;
-                margin-left: 0 !important;
-                margin-bottom: 5px;
-                text-align: center;
-                box-sizing: border-box;
-            }
-            
-            h2 { font-size: 1.2rem; flex-wrap: wrap; }
-            .badge { font-size: 0.75rem; }
+            table { min-width: 650px; }
+            .filter-row { flex-direction: column; align-items: stretch; }
+            .filter-input-search, .filter-input-date, .btn { width: 100%; box-sizing: border-box; }
         }
     </style>
-    <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 </head>
 <body>
     <div class="container">
@@ -266,68 +396,101 @@
         
         <div class="card">
             <h2>
-                Device Logs ({{ device_alias if device_alias else selected_device }})
-                <span class="badge">페이지당 100건</span>
+                Logs: {{ device_alias if device_alias else selected_device }}
+                <span class="badge">{{ total_count if total_count is defined else '조회됨' }}</span>
+                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal; margin-left: auto;">
+                    기기 ID: <strong style="color: var(--text-main);">{{ selected_device }}</strong>
+                </span>
             </h2>
-            <div style="margin-bottom: 25px;">
-                <a href="/" class="btn btn-secondary">← 대시보드로 돌아가기</a>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <a href="/" class="btn btn-secondary">← 기기 목록</a>
+                <button type="button" id="btnLive" class="btn btn-live" onclick="toggleLive()">
+                    <span class="dot-indicator"></span> 실시간 모니터링: <span id="liveStatusText">OFF</span>
+                </button>
             </div>
             
-            <form method="GET" action="/device/{{ selected_device }}" class="filter-form">
-                <label for="start_date">시작:</label>
-                <input type="datetime-local" id="start_date" name="start_date" value="{{ start_date or '' }}">
+            <!-- Filter Form -->
+            <form id="filterForm" method="GET" action="/device/{{ selected_device }}" class="filter-panel">
+                <input type="hidden" name="category" id="categoryInput" value="{{ category or 'all' }}">
                 
-                <label for="end_date">종료:</label>
-                <input type="datetime-local" id="end_date" name="end_date" value="{{ end_date or '' }}">
-                
-                <button type="submit" class="btn btn-primary">필터 적용</button>
-                <a href="/device/{{ selected_device }}" class="btn btn-danger">초기화</a>
-                <button type="submit" formaction="/device/{{ selected_device }}/download" class="btn btn-info" style="margin-left: auto;">다운로드 (.txt)</button>
+                <!-- Category Chips -->
+                <div class="category-chips">
+                    <button type="button" class="chip {% if not category or category == 'all' %}active{% endif %}" onclick="setCategory('all')">전체</button>
+                    <button type="button" class="chip {% if category == 'camera' %}active{% endif %}" onclick="setCategory('camera')">📸 단속카메라</button>
+                    <button type="button" class="chip {% if category == 'route' %}active{% endif %}" onclick="setCategory('route')">🧭 경로안내</button>
+                    <button type="button" class="chip {% if category == 'speed' %}active{% endif %}" onclick="setCategory('speed')">⚡ 제한속도</button>
+                    <button type="button" class="chip {% if category == 'udp' %}active{% endif %}" onclick="setCategory('udp')">📡 UDP</button>
+                    <button type="button" class="chip {% if category == 'error' %}active{% endif %}" onclick="setCategory('error')">🚨 에러/경고</button>
+                </div>
+
+                <!-- Search and Dates -->
+                <div class="filter-row">
+                    <input type="text" id="q" name="q" value="{{ q or '' }}" placeholder="🔍 키워드 검색 (예: CAMERA, ROUTE, 80km, Error)..." class="filter-input-search">
+                    
+                    <label for="start_date" style="font-size: 0.85rem; color: var(--text-muted);">시작:</label>
+                    <input type="datetime-local" id="start_date" name="start_date" value="{{ start_date or '' }}" class="filter-input-date">
+                    
+                    <label for="end_date" style="font-size: 0.85rem; color: var(--text-muted);">종료:</label>
+                    <input type="datetime-local" id="end_date" name="end_date" value="{{ end_date or '' }}" class="filter-input-date">
+                    
+                    <button type="submit" class="btn btn-primary">필터 적용</button>
+                    <a href="/device/{{ selected_device }}" class="btn btn-secondary">초기화</a>
+                </div>
+
+                <!-- Download Actions -->
+                <div class="filter-row" style="margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;">
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">다운로드 옵션:</span>
+                    <button type="submit" formaction="/device/{{ selected_device }}/download" class="btn btn-info">
+                        📥 검색 결과 다운로드 (.txt)
+                    </button>
+                    <button type="button" onclick="downloadClean()" class="btn btn-clean">
+                        ✨ 핵심 로그만 다운로드 (노이즈 제외)
+                    </button>
+                </div>
             </form>
             
+            <!-- Log Table -->
             <div class="table-responsive">
-                <table>
+                <table id="logTable">
                     <thead>
-                    <tr>
-                        <th style="width: 150px;">시간</th>
-                        <th style="width: 100px;">기기 ID</th>
-                        <th style="width: 80px;">앱 버전</th>
-                        <th style="width: 80px;">레벨</th>
-                        <th>메시지</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in logs %}
-                    <tr>
-                        <td class="timestamp">{{ log.timestamp[:19] | replace('T', ' ') }}</td>
-                        <td style="color: var(--text-muted); font-size: 0.85rem;">{{ log.device_id }}</td>
-                        <td style="font-family: monospace; color: #a2d2ff;">{{ log.app_version }}</td>
-                        <td class="{% if log.level == 'ERROR' %}log-error{% elif log.level == 'WARN' %}log-warn{% endif %}">
-                            {{ log.level }}
-                        </td>
-                        <td style="word-break: break-all; word-wrap: break-word; line-height: 1.5;">
-                            {{ log.message }}
-                            {% if log.stacktrace %}
-                            <div class="stacktrace">{{ log.stacktrace }}</div>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% if not logs %}
-                    <tr><td colspan="5" class="empty-state">로그가 없습니다.</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                        <tr>
+                            <th style="width: 160px;">시간</th>
+                            <th style="width: 85px;">버전</th>
+                            <th style="width: 80px;">레벨</th>
+                            <th>메시지</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        {% for log in logs %}
+                        <tr data-id="{{ log.id }}">
+                            <td class="timestamp">{{ log.timestamp[:19] | replace('T', ' ') }}</td>
+                            <td style="font-family: 'JetBrains Mono', monospace; color: #a2d2ff; font-size: 0.82rem;">{{ log.app_version or '-' }}</td>
+                            <td class="{% if log.level in ['ERROR', 'FATAL'] %}log-error{% elif log.level == 'WARN' %}log-warn{% elif log.level == 'INFO' %}log-info{% else %}log-debug{% endif %}">
+                                {{ log.level }}
+                            </td>
+                            <td class="log-message-cell" style="word-break: break-all; word-wrap: break-word; line-height: 1.5; font-size: 0.9rem;">
+                                {{ log.message }}
+                                {% if log.stacktrace %}
+                                <div class="stacktrace">{{ log.stacktrace }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not logs %}
+                        <tr id="emptyRow"><td colspan="4" class="empty-state">조회된 로그가 없습니다.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
 
+            <!-- Pagination -->
             <div class="pagination">
                 {% set query_str = '' %}
-                {% if start_date %}
-                    {% set query_str = query_str ~ '&start_date=' ~ start_date %}
-                {% endif %}
-                {% if end_date %}
-                    {% set query_str = query_str ~ '&end_date=' ~ end_date %}
-                {% endif %}
+                {% if start_date %}{% set query_str = query_str ~ '&start_date=' ~ start_date %}{% endif %}
+                {% if end_date %}{% set query_str = query_str ~ '&end_date=' ~ end_date %}{% endif %}
+                {% if q %}{% set query_str = query_str ~ '&q=' ~ q %}{% endif %}
+                {% if category and category != 'all' %}{% set query_str = query_str ~ '&category=' ~ category %}{% endif %}
                 
                 {% if page > 1 %}
                 <a href="/device/{{ selected_device }}?page={{ page - 1 }}{{ query_str }}" class="btn btn-primary">이전 페이지</a>
@@ -345,26 +508,8 @@
             </div>
         </div>
     </div>
-    <script>
-        function toggleLogging(deviceId) {
-            fetch(`/api/devices/${deviceId}/toggle`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === 'success') {
-                    location.reload();
-                } else {
-                    alert('상태 변경 실패: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('네트워크 오류가 발생했습니다.');
-            });
-        }
-    </script>
-    <!-- Flatpickr JS -->
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
     <script>
@@ -374,6 +519,119 @@
             time_24hr: true,
             locale: "ko"
         });
+
+        function setCategory(cat) {
+            document.getElementById('categoryInput').value = cat;
+            document.getElementById('filterForm').submit();
+        }
+
+        function downloadClean() {
+            const form = document.getElementById('filterForm');
+            const url = new URL(form.action + '/download', window.location.origin);
+            const formData = new FormData(form);
+            formData.forEach((value, key) => {
+                if (value) url.searchParams.append(key, value);
+            });
+            url.searchParams.set('clean', '1');
+            window.location.href = url.toString();
+        }
+
+        // Format special badges in message cells
+        function formatMessageBadges(cell) {
+            let html = cell.innerHTML;
+            html = html.replace(/\[CAMERA\]/g, '<span class="tag-camera">📸 CAMERA</span>');
+            html = html.replace(/\[ROUTE\]/g, '<span class="tag-route">🧭 ROUTE</span>');
+            html = html.replace(/\[SPEED_LIMIT\]/g, '<span class="tag-speed">⚡ SPEED</span>');
+            html = html.replace(/\[UDP\]/g, '<span class="tag-udp">📡 UDP</span>');
+            html = html.replace(/\[SDI\]/g, '<span class="tag-camera">🛡️ SDI</span>');
+            cell.innerHTML = html;
+        }
+
+        document.querySelectorAll('.log-message-cell').forEach(formatMessageBadges);
+
+        // Live Monitoring (Auto-Refresh)
+        let isLive = false;
+        let liveTimer = null;
+        let maxLogId = 0;
+
+        // Find initial max ID from rendered rows
+        document.querySelectorAll('#logTableBody tr[data-id]').forEach(row => {
+            const id = parseInt(row.getAttribute('data-id'), 10);
+            if (id > maxLogId) maxLogId = id;
+        });
+
+        function toggleLive() {
+            isLive = !isLive;
+            const btn = document.getElementById('btnLive');
+            const text = document.getElementById('liveStatusText');
+            if (isLive) {
+                btn.classList.add('active');
+                text.textContent = 'ON';
+                liveTimer = setInterval(fetchLatestLogs, 3000);
+            } else {
+                btn.classList.remove('active');
+                text.textContent = 'OFF';
+                clearInterval(liveTimer);
+                liveTimer = null;
+            }
+        }
+
+        function fetchLatestLogs() {
+            const deviceId = "{{ selected_device }}";
+            const category = document.getElementById('categoryInput').value;
+            const q = document.getElementById('q').value;
+            
+            let url = `/api/device/${deviceId}/latest?since_id=${maxLogId}`;
+            if (category && category !== 'all') url += `&category=${encodeURIComponent(category)}`;
+            if (q) url += `&q=${encodeURIComponent(q)}`;
+
+            fetch(url)
+                .then(res => res.json())
+                .then(logs => {
+                    if (logs && logs.length > 0) {
+                        const tbody = document.getElementById('logTableBody');
+                        const emptyRow = document.getElementById('emptyRow');
+                        if (emptyRow) emptyRow.remove();
+
+                        logs.reverse().forEach(log => {
+                            if (log.id > maxLogId) maxLogId = log.id;
+                            
+                            const tr = document.createElement('tr');
+                            tr.setAttribute('data-id', log.id);
+                            tr.classList.add('row-new');
+
+                            let levelClass = 'log-debug';
+                            if (log.level === 'ERROR' || log.level === 'FATAL') levelClass = 'log-error';
+                            else if (log.level === 'WARN') levelClass = 'log-warn';
+                            else if (log.level === 'INFO') levelClass = 'log-info';
+
+                            const ts = (log.timestamp || '').substring(0, 19).replace('T', ' ');
+
+                            tr.innerHTML = `
+                                <td class="timestamp">${ts}</td>
+                                <td style="font-family: 'JetBrains Mono', monospace; color: #a2d2ff; font-size: 0.82rem;">${log.app_version || '-'}</td>
+                                <td class="${levelClass}">${log.level}</td>
+                                <td class="log-message-cell" style="word-break: break-all; word-wrap: break-word; line-height: 1.5; font-size: 0.9rem;">
+                                    ${escapeHtml(log.message || '')}
+                                    ${log.stacktrace ? `<div class="stacktrace">${escapeHtml(log.stacktrace)}</div>` : ''}
+                                </td>
+                            `;
+                            formatMessageBadges(tr.querySelector('.log-message-cell'));
+                            tbody.insertBefore(tr, tbody.firstChild);
+                        });
+                    }
+                })
+                .catch(err => console.error("Live tail error:", err));
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
     </script>
 </body>
 </html>

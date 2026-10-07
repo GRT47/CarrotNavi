@@ -56,6 +56,16 @@ def init_db():
     except sqlite3.OperationalError:
         pass # Column already exists
         
+    try:
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_logs_device_time ON logs(device_id, timestamp)')
+    except sqlite3.OperationalError:
+        pass
+        
+    try:
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_logs_device_level ON logs(device_id, level)')
+    except sqlite3.OperationalError:
+        pass
+        
     conn.commit()
     conn.close()
 
@@ -83,6 +93,8 @@ def device_logs(device_id):
     page = request.args.get('page', 1, type=int)
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
+    q = request.args.get('q', '').strip()
+    category = request.args.get('category', 'all').strip()
     
     per_page = 100
     offset = (page - 1) * per_page
@@ -106,6 +118,32 @@ def device_logs(device_id):
             params.append(end_date + ':59')
         else:
             params.append(end_date)
+            
+    if q:
+        query += ' AND (message LIKE ? OR stacktrace LIKE ?)'
+        count_query += ' AND (message LIKE ? OR stacktrace LIKE ?)'
+        params.extend([f'%{q}%', f'%{q}%'])
+
+    if category == 'camera':
+        clause = ' AND (message LIKE "%[CAMERA]%" OR message LIKE "%[SDI]%" OR message LIKE "%카메라%" OR message LIKE "%단속%")'
+        query += clause
+        count_query += clause
+    elif category == 'route':
+        clause = ' AND (message LIKE "%[ROUTE]%" OR message LIKE "%경로%")'
+        query += clause
+        count_query += clause
+    elif category == 'error':
+        clause = ' AND level IN ("WARN", "ERROR", "FATAL")'
+        query += clause
+        count_query += clause
+    elif category == 'udp':
+        clause = ' AND (message LIKE "%[UDP]%" OR message LIKE "%Udp%")'
+        query += clause
+        count_query += clause
+    elif category == 'speed':
+        clause = ' AND (message LIKE "%[SPEED_LIMIT]%" OR message LIKE "%제한속도%")'
+        query += clause
+        count_query += clause
         
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
     
@@ -119,12 +157,15 @@ def device_logs(device_id):
     
     device_alias = device['alias'] if device and device['alias'] else device_id
     
-    return render_template('device_logs.html', logs=logs, selected_device=device_id, device_alias=device_alias, page=page, total_pages=total_pages, start_date=start_date, end_date=end_date)
+    return render_template('device_logs.html', logs=logs, selected_device=device_id, device_alias=device_alias, page=page, total_pages=total_pages, start_date=start_date, end_date=end_date, q=q, category=category)
 
 @app.route('/device/<device_id>/download')
 def download_logs(device_id):
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
+    q = request.args.get('q', '').strip()
+    category = request.args.get('category', 'all').strip()
+    clean = request.args.get('clean', '0') == '1'
     
     query = 'SELECT * FROM logs WHERE device_id = ?'
     params = [device_id]
@@ -142,6 +183,24 @@ def download_logs(device_id):
             params.append(end_date + ':59')
         else:
             params.append(end_date)
+
+    if q:
+        query += ' AND (message LIKE ? OR stacktrace LIKE ?)'
+        params.extend([f'%{q}%', f'%{q}%'])
+
+    if category == 'camera':
+        query += ' AND (message LIKE "%[CAMERA]%" OR message LIKE "%[SDI]%" OR message LIKE "%카메라%" OR message LIKE "%단속%")'
+    elif category == 'route':
+        query += ' AND (message LIKE "%[ROUTE]%" OR message LIKE "%경로%")'
+    elif category == 'error':
+        query += ' AND level IN ("WARN", "ERROR", "FATAL")'
+    elif category == 'udp':
+        query += ' AND (message LIKE "%[UDP]%" OR message LIKE "%Udp%")'
+    elif category == 'speed':
+        query += ' AND (message LIKE "%[SPEED_LIMIT]%" OR message LIKE "%제한속도%")'
+
+    if clean:
+        query += ' AND message NOT LIKE "%requestLayout()%" AND message NOT LIKE "%TrafficStats%" AND message NOT LIKE "%AidlConversionCppNdk%"'
             
     query += ' ORDER BY created_at ASC'
     
@@ -158,11 +217,46 @@ def download_logs(device_id):
             yield line + '\n'
             
     from flask import Response
-    filename = f"logs_{device_id}.txt"
-    if start_date or end_date:
-        filename = f"logs_{device_id}_filtered.txt"
+    suffix = "_clean" if clean else ""
+    if start_date or end_date or q or category != 'all':
+        filename = f"logs_{device_id}_filtered{suffix}.txt"
+    else:
+        filename = f"logs_{device_id}{suffix}.txt"
         
     return Response(generate(), mimetype='text/plain', headers={"Content-Disposition": f"attachment;filename={filename}"})
+
+@app.route('/api/device/<device_id>/latest')
+def get_latest_logs(device_id):
+    since_id = request.args.get('since_id', 0, type=int)
+    limit = min(request.args.get('limit', 50, type=int), 200)
+    category = request.args.get('category', 'all').strip()
+    q = request.args.get('q', '').strip()
+    
+    query = 'SELECT id, device_id, timestamp, app_version, level, message, stacktrace, created_at FROM logs WHERE device_id = ? AND id > ?'
+    params = [device_id, since_id]
+    
+    if q:
+        query += ' AND (message LIKE ? OR stacktrace LIKE ?)'
+        params.extend([f'%{q}%', f'%{q}%'])
+
+    if category == 'camera':
+        query += ' AND (message LIKE "%[CAMERA]%" OR message LIKE "%[SDI]%" OR message LIKE "%카메라%" OR message LIKE "%단속%")'
+    elif category == 'route':
+        query += ' AND (message LIKE "%[ROUTE]%" OR message LIKE "%경로%")'
+    elif category == 'error':
+        query += ' AND level IN ("WARN", "ERROR", "FATAL")'
+    elif category == 'udp':
+        query += ' AND (message LIKE "%[UDP]%" OR message LIKE "%Udp%")'
+    elif category == 'speed':
+        query += ' AND (message LIKE "%[SPEED_LIMIT]%" OR message LIKE "%제한속도%")'
+        
+    query += ' ORDER BY id DESC LIMIT ?'
+    params.append(limit)
+    
+    conn = get_db_connection()
+    logs = conn.execute(query, params).fetchall()
+    conn.close()
+    return jsonify([dict(log) for log in logs])
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
