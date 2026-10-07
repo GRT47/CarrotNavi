@@ -412,6 +412,13 @@ class HudOverlayManager(
                 }
             }
 
+            // 전체화면 모드 스위치
+            val swFullscreenMode = dialogView.findViewById<android.widget.Switch>(R.id.swFullscreenMode)
+            swFullscreenMode?.isChecked = BaseActivity.isFullscreen(activity)
+            swFullscreenMode?.setOnCheckedChangeListener { _, isChecked ->
+                BaseActivity.setFullscreen(activity, isChecked)
+            }
+
             val swMediaOverlayEnable = dialogView.findViewById<android.widget.Switch>(R.id.swMediaOverlayEnable)
             swMediaOverlayEnable?.isChecked = isMediaOverlayActive
             swMediaOverlayEnable?.setOnCheckedChangeListener { _, isChecked ->

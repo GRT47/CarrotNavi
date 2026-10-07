@@ -864,6 +864,51 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- 전체화면 모드 (상단바 / 하단바 숨김) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="#1C1C22"
+                    app:strokeColor="#2C2C38"
+                    app:strokeWidth="1dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="전체화면 모드"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#FFFFFF"
+                            android:layout_marginBottom="4dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="상단 상태바와 하단 내비게이션 바(소프트키)를 숨겨 화면을 꽉 채웁니다."
+                            android:textColor="#71717A"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <Switch
+                            android:id="@+id/swFullscreenMode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="전체화면 모드 켜기"
+                            android:textColor="#E4E4E7"
+                            android:textSize="14sp"/>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- 2-4. 미디어 연동 권한 -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"

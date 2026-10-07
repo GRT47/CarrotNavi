@@ -271,7 +271,8 @@ class MapActivity : BaseActivity() {
 
         // 미디어 오버레이 활성화 여부와 관계없이 분할모드 유지 (사용자 요청)
         val ratio = configuredRatio
-        splitHandleManager?.setHandleVisible(ratio < 5.0f)
+        // 오른쪽 끝으로 닫혀도(ratio == 5.0f) 핸들을 화면 가장자리에 유지하여 다시 열거나 탭할 수 있도록 함
+        splitHandleManager?.setHandleVisible(true)
         
         val mainContainer = binding.root.findViewById<android.widget.LinearLayout>(R.id.llSplitContainer)
         val tmapLayout = binding.root.findViewById<android.widget.FrameLayout>(R.id.mapOverlayContainer)
@@ -490,8 +491,12 @@ class MapActivity : BaseActivity() {
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            if (BaseActivity.isFullscreen(this)) {
+                v.setPadding(0, 0, 0, 0)
+            } else {
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            }
             insets
         }
 

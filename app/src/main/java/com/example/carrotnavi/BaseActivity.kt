@@ -4,7 +4,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import java.util.Collections
 
 open class BaseActivity : AppCompatActivity() {
 
@@ -26,9 +35,85 @@ open class BaseActivity : AppCompatActivity() {
         super.applyOverrideConfiguration(overrideConfiguration)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activeActivities.add(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        applyFullscreen(isFullscreen(this))
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            applyFullscreen(isFullscreen(this))
+        }
+    }
+
+    override fun onDestroy() {
+        activeActivities.remove(this)
+        super.onDestroy()
+    }
+
+    fun applyFullscreen(isFullscreen: Boolean) {
+        val win = window ?: return
+        val decor = win.decorView
+        val controller = WindowCompat.getInsetsController(win, decor)
+        if (isFullscreen) {
+            // 상단 상태바 및 하단 내비게이션 바(소프트키) 숨김
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+            @Suppress("DEPRECATION")
+            decor.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            )
+        } else {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+            @Suppress("DEPRECATION")
+            decor.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+        }
+        ViewCompat.requestApplyInsets(decor)
+    }
+
     companion object {
         const val PREF_KEY_DPI_SCALE = "CUSTOM_DPI_SCALE"
         const val DEFAULT_DPI_SCALE = 1.0f
+
+        const val PREF_KEY_FULLSCREEN = "FULLSCREEN_MODE"
+        const val DEFAULT_FULLSCREEN = false
+
+        private val activeActivities = Collections.synchronizedSet(HashSet<BaseActivity>())
+
+        fun isFullscreen(context: Context): Boolean {
+            val prefs = context.getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+            return prefs.getBoolean(PREF_KEY_FULLSCREEN, DEFAULT_FULLSCREEN)
+        }
+
+        fun setFullscreen(context: Context, enabled: Boolean) {
+            val prefs = context.getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
+            prefs.edit().putBoolean(PREF_KEY_FULLSCREEN, enabled).apply()
+
+            Handler(Looper.getMainLooper()).post {
+                val list = synchronized(activeActivities) { activeActivities.toList() }
+                list.forEach { activity ->
+                    try {
+                        if (!activity.isFinishing && !activity.isDestroyed) {
+                            activity.applyFullscreen(enabled)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
 
         fun getSystemDpi(): Int {
             return Resources.getSystem().configuration.densityDpi

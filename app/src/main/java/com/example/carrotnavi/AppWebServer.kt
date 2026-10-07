@@ -103,6 +103,13 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                         editor.putString("MAP_THEME_MODE", it)
                     }
                 }
+                if (params.containsKey("FULLSCREEN_MODE")) {
+                    val fullscreen = params["FULLSCREEN_MODE"]?.firstOrNull() == "true"
+                    editor.putBoolean(BaseActivity.PREF_KEY_FULLSCREEN, fullscreen)
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        BaseActivity.setFullscreen(context, fullscreen)
+                    }
+                }
                 var dpiChanged = false
                 if (params.containsKey("CUSTOM_DPI_SCALE")) {
                     params["CUSTOM_DPI_SCALE"]?.firstOrNull()?.toFloatOrNull()?.let { scale ->
@@ -167,11 +174,12 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val mediaSplitRatioF = prefs.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
         val mapThemeMode = prefs.getString("MAP_THEME_MODE", "auto") ?: "auto"
         val customDpiScale = prefs.getFloat(BaseActivity.PREF_KEY_DPI_SCALE, BaseActivity.DEFAULT_DPI_SCALE)
+        val isFullscreen = prefs.getBoolean(BaseActivity.PREF_KEY_FULLSCREEN, BaseActivity.DEFAULT_FULLSCREEN)
 
         val deviceId = RemoteLogManager.getDeviceId()
 
         if (session.uri == "/api/settings") {
-            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode", "CUSTOM_DPI_SCALE":$customDpiScale}"""
+            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode", "CUSTOM_DPI_SCALE":$customDpiScale, "FULLSCREEN_MODE":$isFullscreen}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response
@@ -277,6 +285,17 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                                 <option value="1.25" ${if(Math.abs(customDpiScale - 1.25f) < 0.01f) "selected" else ""}>125% (최대 크기)</option>
                             </select>
                             <div class="hint">저장 시 현재 화면의 글자와 버튼 크기가 즉시 재적용됩니다.</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>전체화면 모드 (상단 상태바 / 하단 내비바 숨김)</label>
+                            <div class="radio-group">
+                                <input type="radio" id="fsOn" name="FULLSCREEN_MODE" value="true" ${if(isFullscreen) "checked" else ""}>
+                                <label for="fsOn">켜기 (상단바/하단바 숨김)</label><br>
+                                <input type="radio" id="fsOff" name="FULLSCREEN_MODE" value="false" ${if(!isFullscreen) "checked" else ""}>
+                                <label for="fsOff">끄기 (기본 화면)</label>
+                            </div>
+                            <div class="hint">활성화 시 상단 상태바 및 하단 소프트키를 숨겨 화면을 꽉 채웁니다. (화면 가장자리 스와이프 시 일시 표시)</div>
                         </div>
 
                         <div class="form-group">
