@@ -15,7 +15,7 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import kotlin.concurrent.thread
 
-class DebugSenderActivity : AppCompatActivity() {
+class DebugSenderActivity : BaseActivity() {
 
     private val fieldsMap = mutableMapOf<String, EditText>()
     private lateinit var etIp: EditText

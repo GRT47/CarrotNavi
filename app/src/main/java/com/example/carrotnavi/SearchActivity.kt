@@ -35,7 +35,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 
-class SearchActivity : AppCompatActivity() {
+class SearchActivity : BaseActivity() {
 
     private val searchRetrofit: Retrofit by lazy {
         Retrofit.Builder()

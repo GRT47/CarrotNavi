@@ -64,7 +64,7 @@ import com.kakaomobility.knsdk.guidance.knguidance.common.KNLocation
 import com.kakaomobility.knsdk.trip.kntrip.KNTrip
 import com.kakaomobility.knsdk.common.objects.KNError
 
-class KakaoMapActivity : AppCompatActivity(), 
+class KakaoMapActivity : BaseActivity(), 
     KNGuidance_GuideStateDelegate,
     KNGuidance_LocationGuideDelegate,
     KNGuidance_RouteGuideDelegate,

@@ -103,10 +103,23 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                         editor.putString("MAP_THEME_MODE", it)
                     }
                 }
+                var dpiChanged = false
+                if (params.containsKey("CUSTOM_DPI_SCALE")) {
+                    params["CUSTOM_DPI_SCALE"]?.firstOrNull()?.toFloatOrNull()?.let { scale ->
+                        val currentScale = prefs.getFloat(BaseActivity.PREF_KEY_DPI_SCALE, BaseActivity.DEFAULT_DPI_SCALE)
+                        if (Math.abs(currentScale - scale) > 0.001f) {
+                            editor.putFloat(BaseActivity.PREF_KEY_DPI_SCALE, scale)
+                            dpiChanged = true
+                        }
+                    }
+                }
                 editor.apply()
                 android.os.Handler(android.os.Looper.getMainLooper()).post {
                     SdiDataRepository.applyThemeMode(context)
                     MapActivity.instance?.applyTmapNightModeSetting()
+                    if (dpiChanged) {
+                        BaseActivity.recreateAllActivities()
+                    }
                 }
                 RemoteLogManager.init(context)
                 
@@ -151,11 +164,12 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val showAlbumArtWithEq = prefs.getBoolean("SHOW_ALBUM_ART_WITH_EQ", false)
         val mediaSplitRatioF = prefs.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
         val mapThemeMode = prefs.getString("MAP_THEME_MODE", "auto") ?: "auto"
+        val customDpiScale = prefs.getFloat(BaseActivity.PREF_KEY_DPI_SCALE, BaseActivity.DEFAULT_DPI_SCALE)
 
         val deviceId = RemoteLogManager.getDeviceId()
 
         if (session.uri == "/api/settings") {
-            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode"}"""
+            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode", "CUSTOM_DPI_SCALE":$customDpiScale}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response
@@ -243,6 +257,24 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                                 <input type="radio" id="boostFixed" name="BLOCK_SPEED_BOOST_MODE" value="1" ${if(blockSpeedBoostMode == 1) "checked" else ""}>
                                 <label for="boostFixed">고정 가속 (강제 풀가속)</label>
                             </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>화면 크기 / DPI 배율 (내비 UI 확대·축소)</label>
+                            <select name="CUSTOM_DPI_SCALE">
+                                <option value="0.75" ${if(Math.abs(customDpiScale - 0.75f) < 0.01f) "selected" else ""}>75% (최소 크기 - 와이드/소형 화면 넓게 보기)</option>
+                                <option value="0.80" ${if(Math.abs(customDpiScale - 0.80f) < 0.01f) "selected" else ""}>80% (매우 작게)</option>
+                                <option value="0.85" ${if(Math.abs(customDpiScale - 0.85f) < 0.01f) "selected" else ""}>85% (작게)</option>
+                                <option value="0.90" ${if(Math.abs(customDpiScale - 0.90f) < 0.01f) "selected" else ""}>90% (약간 작게)</option>
+                                <option value="0.95" ${if(Math.abs(customDpiScale - 0.95f) < 0.01f) "selected" else ""}>95% (미세 축소)</option>
+                                <option value="1.00" ${if(Math.abs(customDpiScale - 1.00f) < 0.01f) "selected" else ""}>100% (기본값 / 순정 화면)</option>
+                                <option value="1.05" ${if(Math.abs(customDpiScale - 1.05f) < 0.01f) "selected" else ""}>105% (미세 확대)</option>
+                                <option value="1.10" ${if(Math.abs(customDpiScale - 1.10f) < 0.01f) "selected" else ""}>110% (약간 크게)</option>
+                                <option value="1.15" ${if(Math.abs(customDpiScale - 1.15f) < 0.01f) "selected" else ""}>115% (크게)</option>
+                                <option value="1.20" ${if(Math.abs(customDpiScale - 1.20f) < 0.01f) "selected" else ""}>120% (매우 크게 - 대형 태블릿 권장)</option>
+                                <option value="1.25" ${if(Math.abs(customDpiScale - 1.25f) < 0.01f) "selected" else ""}>125% (최대 크기)</option>
+                            </select>
+                            <div class="hint">저장 시 현재 화면의 글자와 버튼 크기가 즉시 재적용됩니다.</div>
                         </div>
 
                         <div class="form-group">

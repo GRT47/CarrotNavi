@@ -19,7 +19,7 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class MapActivity : AppCompatActivity() {
+class MapActivity : BaseActivity() {
     companion object {
         var instance: MapActivity? = null
     }
