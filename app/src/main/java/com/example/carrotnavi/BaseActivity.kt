@@ -1,13 +1,10 @@
 package com.example.carrotnavi
 
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import java.util.Collections
 
 open class BaseActivity : AppCompatActivity() {
 
@@ -29,23 +26,9 @@ open class BaseActivity : AppCompatActivity() {
         super.applyOverrideConfiguration(overrideConfiguration)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val scale = getDpiScale(this)
-        updateResources(this, scale)
-        activeActivities.add(this)
-    }
-
-    override fun onDestroy() {
-        activeActivities.remove(this)
-        super.onDestroy()
-    }
-
     companion object {
         const val PREF_KEY_DPI_SCALE = "CUSTOM_DPI_SCALE"
         const val DEFAULT_DPI_SCALE = 1.0f
-
-        private val activeActivities = Collections.synchronizedSet(HashSet<BaseActivity>())
 
         fun getSystemDpi(): Int {
             return Resources.getSystem().configuration.densityDpi
@@ -59,73 +42,20 @@ open class BaseActivity : AppCompatActivity() {
         fun setDpiScale(context: Context, scale: Float) {
             val prefs = context.getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
             prefs.edit().putFloat(PREF_KEY_DPI_SCALE, scale).apply()
-            updateResources(context, scale)
         }
 
-        fun updateResources(context: Context, scale: Float) {
+        fun restartApp(context: Context) {
             try {
-                val systemDpi = getSystemDpi()
-                val targetDpi = if (scale in 0.5f..2.0f && scale != 1.0f) {
-                    (systemDpi * scale).toInt()
-                } else {
-                    systemDpi
-                }
-
-                val res = context.resources
-                val config = Configuration(res.configuration)
-                config.densityDpi = targetDpi
-                val metrics = res.displayMetrics
-                metrics.densityDpi = targetDpi
-                metrics.density = targetDpi / 160.0f
-                metrics.scaledDensity = metrics.density
-
-                @Suppress("DEPRECATION")
-                res.updateConfiguration(config, metrics)
-
-                val appRes = context.applicationContext?.resources
-                if (appRes != null && appRes !== res) {
-                    val appConfig = Configuration(appRes.configuration)
-                    appConfig.densityDpi = targetDpi
-                    val appMetrics = appRes.displayMetrics
-                    appMetrics.densityDpi = targetDpi
-                    appMetrics.density = targetDpi / 160.0f
-                    appMetrics.scaledDensity = appMetrics.density
-                    @Suppress("DEPRECATION")
-                    appRes.updateConfiguration(appConfig, appMetrics)
+                val packageManager = context.packageManager
+                val intent = packageManager.getLaunchIntentForPackage(context.packageName)
+                if (intent != null) {
+                    val componentName = intent.component
+                    val restartIntent = Intent.makeRestartActivityTask(componentName)
+                    context.startActivity(restartIntent)
+                    Runtime.getRuntime().exit(0)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-            }
-        }
-
-        fun recreateAllActivities(callerActivity: BaseActivity? = null) {
-            Handler(Looper.getMainLooper()).post {
-                val scale = if (callerActivity != null) getDpiScale(callerActivity) else 1.0f
-                if (callerActivity != null) {
-                    updateResources(callerActivity, scale)
-                }
-
-                val list = synchronized(activeActivities) { activeActivities.toList() }
-                list.forEach { activity ->
-                    try {
-                        if (!activity.isFinishing && !activity.isDestroyed) {
-                            updateResources(activity, scale)
-                            activity.recreate()
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-
-                if (callerActivity != null && !list.contains(callerActivity)) {
-                    try {
-                        if (!callerActivity.isFinishing && !callerActivity.isDestroyed) {
-                            callerActivity.recreate()
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
             }
         }
 

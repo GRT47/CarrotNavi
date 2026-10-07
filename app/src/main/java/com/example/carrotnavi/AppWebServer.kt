@@ -118,9 +118,9 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                     SdiDataRepository.applyThemeMode(context)
                     MapActivity.instance?.applyTmapNightModeSetting()
                     if (dpiChanged) {
-                        val scale = prefs.getFloat(BaseActivity.PREF_KEY_DPI_SCALE, BaseActivity.DEFAULT_DPI_SCALE)
-                        BaseActivity.updateResources(context, scale)
-                        BaseActivity.recreateAllActivities(MapActivity.instance)
+                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                            BaseActivity.restartApp(context)
+                        }, 500)
                     }
                 }
                 RemoteLogManager.init(context)
