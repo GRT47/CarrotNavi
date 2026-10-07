@@ -77,7 +77,7 @@
             android:orientation="vertical">
 
             <!-- ============================================================= -->
-            <!-- [TAB 1] 🚗 주행 / 오디오 컨테이너 (가로 2열) -->
+            <!-- [TAB 1] 🚗 주행 / 오디오 컨테이너 (가로 2열 균형 배치) -->
             <!-- ============================================================= -->
             <LinearLayout
                 android:id="@+id/llTabDriving"
@@ -87,82 +87,13 @@
                 android:baselineAligned="false"
                 android:visibility="visible">
 
-                <!-- 좌측 컬럼: 주행 기본 설정 + 구간단속 보상가속 -->
+                <!-- [좌측 컬럼] 🚗 주행 및 속도 제어 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical"
                     android:layout_marginEnd="8dp">
-
-                    <!-- 1-0. 지도 화면 테마 (주간 / 야간 / 자동) -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardMapThemeMode"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        app:cardBackgroundColor="#1C1C22"
-                        app:strokeColor="#2C2C38"
-                        app:strokeWidth="1dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="지도 화면 테마 (주간 / 야간)"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="#FFFFFF"
-                                android:layout_marginBottom="4dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="주간/야간 지도를 수동으로 고정하거나 자동으로 전환합니다."
-                                android:textColor="#71717A"
-                                android:textSize="12sp"
-                                android:layout_marginBottom="10dp"/>
-
-                            <RadioGroup
-                                android:id="@+id/rgMapThemeMode"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical">
-
-                                <RadioButton
-                                    android:id="@+id/rbThemeAuto"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="🔄 자동 (일출/일몰 및 터널 감지)"
-                                    android:textSize="13sp"
-                                    android:textColor="#E4E4E7"/>
-
-                                <RadioButton
-                                    android:id="@+id/rbThemeDay"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="☀️ 주간 모드 (항상 밝은 지도)"
-                                    android:textSize="13sp"
-                                    android:textColor="#E4E4E7"/>
-
-                                <RadioButton
-                                    android:id="@+id/rbThemeNight"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="🌙 야간 모드 (항상 어두운 다크 지도)"
-                                    android:textSize="13sp"
-                                    android:textColor="#E4E4E7"/>
-                            </RadioGroup>
-
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
 
                     <!-- 1-1. 주행 기본 설정 -->
                     <com.google.android.material.card.MaterialCardView
@@ -188,6 +119,14 @@
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="거리 표기 단위를 설정합니다."
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
                                 android:layout_marginBottom="12dp"/>
 
                             <Switch
@@ -225,6 +164,14 @@
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="구간단속 구간에서 목표 평균속도를 맞추기 위해 가속합니다."
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
                                 android:layout_marginBottom="12dp"/>
 
                             <Switch
@@ -348,7 +295,7 @@
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- 우측 컬럼: 오디오 및 음량 설정 -->
+                <!-- [우측 컬럼] 🔊 내비 음성 및 오디오 제어 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -380,6 +327,14 @@
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="안내 음성 출력 시 다른 미디어의 음량을 제어합니다."
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
                                 android:layout_marginBottom="12dp"/>
 
                             <TextView
@@ -395,7 +350,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
-                                android:layout_marginBottom="14dp">
+                                android:layout_marginBottom="16dp">
 
                                 <RadioButton
                                     android:id="@+id/rbAudioDuckingNone"
@@ -463,7 +418,7 @@
             </LinearLayout>
 
             <!-- ============================================================= -->
-            <!-- [TAB 2] 🎵 미디어 / 화면 컨테이너 (가로 2열) -->
+            <!-- [TAB 2] 🎵 미디어 / 화면 컨테이너 (미디어 vs 화면 1:1 완벽 분리) -->
             <!-- ============================================================= -->
             <LinearLayout
                 android:id="@+id/llTabMedia"
@@ -473,7 +428,7 @@
                 android:baselineAligned="false"
                 android:visibility="gone">
 
-                <!-- 좌측 컬럼: 지도 화면 모드 + 미디어 팝업 오버레이 + 미디어 배경 스타일 -->
+                <!-- [좌측 컬럼] 🎵 미디어 & 음악 위젯 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -481,7 +436,55 @@
                     android:orientation="vertical"
                     android:layout_marginEnd="8dp">
 
-                    <!-- 2-0. 미디어 팝업 오버레이 On/Off -->
+                    <!-- 2-1. 음악 앱 연동 권한 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="음악 앱 연동 권한"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="재생 중인 음악의 곡명/아티스트/앨범아트를 수신하기 위해 필요합니다."
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="12dp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnMediaPermission"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:text="미디어 알림 접근 권한 열기"
+                                app:backgroundTint="#F59E0B"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="10dp"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 2-2. 미디어 팝업 오버레이 On/Off -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -526,7 +529,7 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- 2-1. 미디어 배경 스타일 -->
+                    <!-- 2-3. 미디어 뒷배경 스타일 -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -602,17 +605,8 @@
 
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
 
-                <!-- 우측 컬럼: 분할 비율 + 하단 바 높이 + 미디어 권한 -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="8dp">
-
-                    <!-- 2-1-B. 분할 화면 표시 콘텐츠 선택 -->
+                    <!-- 2-4. 분할 화면 표시 콘텐츠 선택 -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardSplitContentType"
                         android:layout_width="match_parent"
@@ -658,7 +652,7 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:text="🎵 미디어 플레이어"
+                                    android:text="🎵 미디어"
                                     android:textColor="#E4E4E7"
                                     android:textSize="13sp"
                                     android:checked="true"/>
@@ -668,7 +662,7 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:text="🚗 오픈파일럿 주행정보"
+                                    android:text="🚗 오픈파일럿"
                                     android:textColor="#E4E4E7"
                                     android:textSize="13sp"/>
                             </RadioGroup>
@@ -676,7 +670,184 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- 2-2. 화면 분할 비율 -->
+                </LinearLayout>
+
+                <!-- [우측 컬럼] 🖥️ 화면 디스플레이 & 인터페이스 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+                    <!-- 2-5. 전체화면 모드 (상단바 / 하단바 숨김) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="전체화면 모드"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="상단 상태바와 하단 내비게이션 바(소프트키)를 숨겨 화면을 꽉 채웁니다."
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="10dp"/>
+
+                            <Switch
+                                android:id="@+id/swFullscreenMode"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="전체화면 모드 켜기"
+                                android:textColor="#E4E4E7"
+                                android:textSize="14sp"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 2-6. 화면 크기 / DPI 배율 설정 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="화면 크기 / DPI 배율"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="기기 화면 해상도/비율에 맞게 내비 UI(버튼, 글자, 하단바) 크기를 조절합니다."
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="12dp"/>
+
+                            <Spinner
+                                android:id="@+id/spDpiScale"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_hud_quick_btn"
+                                android:paddingStart="12dp"
+                                android:paddingEnd="12dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="* 배율 변경 시 새 화면 크기 적용을 위해 앱이 재시작됩니다."
+                                android:textColor="#3B82F6"
+                                android:textSize="11sp"
+                                android:layout_marginTop="8dp"/>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 2-7. 지도 화면 테마 (주간 / 야간 / 자동) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardMapThemeMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:cardBackgroundColor="#1C1C22"
+                        app:strokeColor="#2C2C38"
+                        app:strokeWidth="1dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="지도 화면 테마 (주간 / 야간)"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="주간/야간 지도를 수동으로 고정하거나 자동으로 전환합니다."
+                                android:textColor="#71717A"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="10dp"/>
+
+                            <RadioGroup
+                                android:id="@+id/rgMapThemeMode"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <RadioButton
+                                    android:id="@+id/rbThemeAuto"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="🔄 자동 (일출/일몰 및 터널 감지)"
+                                    android:textSize="13sp"
+                                    android:textColor="#E4E4E7"/>
+
+                                <RadioButton
+                                    android:id="@+id/rbThemeDay"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="☀️ 주간 모드 (항상 밝은 지도)"
+                                    android:textSize="13sp"
+                                    android:textColor="#E4E4E7"/>
+
+                                <RadioButton
+                                    android:id="@+id/rbThemeNight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="🌙 야간 모드 (항상 어두운 다크 지도)"
+                                    android:textSize="13sp"
+                                    android:textColor="#E4E4E7"/>
+                            </RadioGroup>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 2-8. 화면 분할 비율 -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardMediaSplitRatio"
                         android:layout_width="match_parent"
@@ -740,7 +911,7 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- 2-3. 하단 상태바 높이 오프셋 (티맵/카카오 통합, 가로/세로 분리) -->
+                    <!-- 2-9. 하단 상태바 높이 오프셋 (티맵/카카오 통합, 가로/세로 분리) -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -848,157 +1019,12 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- 화면 크기 / DPI 배율 설정 -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        app:cardBackgroundColor="#1C1C22"
-                        app:strokeColor="#2C2C38"
-                        app:strokeWidth="1dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="화면 크기 / DPI 배율"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="#FFFFFF"
-                                android:layout_marginBottom="4dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="기기 화면 해상도/비율에 맞게 내비 UI(버튼, 글자, 하단바) 크기를 조절합니다."
-                                android:textColor="#71717A"
-                                android:textSize="12sp"
-                                android:layout_marginBottom="12dp"/>
-
-                            <Spinner
-                                android:id="@+id/spDpiScale"
-                                android:layout_width="match_parent"
-                                android:layout_height="48dp"
-                                android:background="@drawable/bg_hud_quick_btn"
-                                android:paddingStart="12dp"
-                                android:paddingEnd="12dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="* 배율 변경 시 새 화면 크기 적용을 위해 앱이 재시작됩니다."
-                                android:textColor="#3B82F6"
-                                android:textSize="11sp"
-                                android:layout_marginTop="8dp"/>
-
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- 전체화면 모드 (상단바 / 하단바 숨김) -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        app:cardBackgroundColor="#1C1C22"
-                        app:strokeColor="#2C2C38"
-                        app:strokeWidth="1dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="전체화면 모드"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="#FFFFFF"
-                                android:layout_marginBottom="4dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="상단 상태바와 하단 내비게이션 바(소프트키)를 숨겨 화면을 꽉 채웁니다."
-                                android:textColor="#71717A"
-                                android:textSize="12sp"
-                                android:layout_marginBottom="10dp"/>
-
-                            <Switch
-                                android:id="@+id/swFullscreenMode"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="전체화면 모드 켜기"
-                                android:textColor="#E4E4E7"
-                                android:textSize="14sp"/>
-
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- 2-4. 미디어 연동 권한 -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        app:cardBackgroundColor="#1C1C22"
-                        app:strokeColor="#2C2C38"
-                        app:strokeWidth="1dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="음악 앱 연동 권한"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="#FFFFFF"
-                                android:layout_marginBottom="4dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="재생 중인 음악의 곡명/아티스트/앨범아트를 수신하기 위해 필요합니다."
-                                android:textColor="#71717A"
-                                android:textSize="12sp"
-                                android:layout_marginBottom="12dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnMediaPermission"
-                                android:layout_width="match_parent"
-                                android:layout_height="48dp"
-                                android:text="미디어 알림 접근 권한 열기"
-                                app:backgroundTint="#F59E0B"
-                                android:textColor="#FFFFFF"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                app:cornerRadius="10dp"/>
-
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
             </LinearLayout>
 
             <!-- ============================================================= -->
-            <!-- [TAB 3] ⚙️ 시스템 / 정보 컨테이너 (가로 2열) -->
+            <!-- [TAB 3] ⚙️ 시스템 / 정보 컨테이너 (통신 vs 관리 1:1 대칭 배치) -->
             <!-- ============================================================= -->
             <LinearLayout
                 android:id="@+id/llTabSystem"
@@ -1008,7 +1034,7 @@
                 android:baselineAligned="false"
                 android:visibility="gone">
 
-                <!-- 좌측 컬럼: 통신 및 원격 연결 -->
+                <!-- [좌측 컬럼] 📡 통신 및 원격 연결 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -1089,7 +1115,7 @@
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- 우측 컬럼: 앱 관리 & 업데이트 + 버전 푸터 -->
+                <!-- [우측 컬럼] 🛠️ 앱 관리 & 업데이트 -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
