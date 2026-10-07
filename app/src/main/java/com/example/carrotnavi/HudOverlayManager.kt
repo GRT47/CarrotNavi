@@ -476,8 +476,22 @@ class HudOverlayManager(
             } else {
                 sp.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
             }
-            sliderMediaRatio.value = currentRatio
-            fun fmt(v: Float) = if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()
+            val step = sliderMediaRatio.stepSize
+            val safeSliderVal = if (step > 0f) {
+                val steps = Math.round((currentRatio - sliderMediaRatio.valueFrom) / step)
+                (sliderMediaRatio.valueFrom + steps * step).coerceIn(sliderMediaRatio.valueFrom, sliderMediaRatio.valueTo)
+            } else {
+                currentRatio.coerceIn(sliderMediaRatio.valueFrom, sliderMediaRatio.valueTo)
+            }
+            sliderMediaRatio.value = safeSliderVal
+            fun fmt(v: Float): String {
+                val rounded1 = Math.round(v * 10f) / 10f
+                return if (Math.abs(v - rounded1) < 0.01f) {
+                    if (v == v.toInt().toFloat()) v.toInt().toString() else String.format(java.util.Locale.US, "%.1f", v)
+                } else {
+                    String.format(java.util.Locale.US, "%.2f", v)
+                }
+            }
             tvMediaRatioValue.text = "${fmt(currentRatio)} : ${fmt(5f - currentRatio)}"
             
             cbBackgroundLocation.isChecked = sp.getBoolean("REQ_BACKGROUND", false)
@@ -1609,9 +1623,23 @@ class HudOverlayManager(
         } else {
             sp.getFloat("MEDIA_SPLIT_RATIO_F", 3.5f)
         }
-        sliderMediaRatio.value = currentRatio.coerceIn(0.5f, 5.0f)
-        fun fmt(v: Float) = if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()
-        tvMediaRatioValue.text = "${fmt(sliderMediaRatio.value)} : ${fmt(5f - sliderMediaRatio.value)}"
+        val step = sliderMediaRatio.stepSize
+        val safeSliderVal = if (step > 0f) {
+            val steps = Math.round((currentRatio - sliderMediaRatio.valueFrom) / step)
+            (sliderMediaRatio.valueFrom + steps * step).coerceIn(sliderMediaRatio.valueFrom, sliderMediaRatio.valueTo)
+        } else {
+            currentRatio.coerceIn(sliderMediaRatio.valueFrom, sliderMediaRatio.valueTo)
+        }
+        sliderMediaRatio.value = safeSliderVal
+        fun fmt(v: Float): String {
+            val rounded1 = Math.round(v * 10f) / 10f
+            return if (Math.abs(v - rounded1) < 0.01f) {
+                if (v == v.toInt().toFloat()) v.toInt().toString() else String.format(java.util.Locale.US, "%.1f", v)
+            } else {
+                String.format(java.util.Locale.US, "%.2f", v)
+            }
+        }
+        tvMediaRatioValue.text = "${fmt(currentRatio)} : ${fmt(5f - currentRatio)}"
 
         fun applyRatio(v: Float) {
             sliderMediaRatio.value = v

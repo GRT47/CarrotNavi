@@ -226,25 +226,25 @@ class SplitHandleManager(
     private fun handleSingleTap() {
         val cur = getCurrentRatio()
         val targetRatio: Float
-        if (cur < 4.8f) {
+        if (cur < 4.85f) {
             // 현재 열려 있음 -> 최근 열린 비율 저장 후 전체화면(5.0f)으로 닫기
             sharedPref.edit().putFloat(getLastOpenRatioKey(), cur).apply()
             targetRatio = 5.0f
         } else {
             // 현재 닫혀 있음 -> 이전 비율 복원 (없으면 기본 3.5f)
             val lastOpen = sharedPref.getFloat(getLastOpenRatioKey(), 3.5f)
-            targetRatio = if (lastOpen in 1.0f..4.5f) lastOpen else 3.5f
+            targetRatio = if (lastOpen in 1.0f..4.85f) lastOpen else 3.5f
         }
         commitRatio(targetRatio)
     }
 
     private fun handleDragEnd(rawRatio: Float) {
-        // 4.6 이상이면 완전 닫힘(5.0f)으로 스냅
-        val snappedRatio = if (rawRatio >= 4.6f) {
+        // 끝까지 밀었을 때 (4.85f 이상) 완전 닫힘(5.0f)으로 스냅
+        val snappedRatio = if (rawRatio >= 4.85f) {
             5.0f
         } else {
-            // 0.5 단위로 부드럽게 스냅 (예: 2.0, 2.5, 3.0, 3.5, 4.0, 4.5)
-            val rounded = (round(rawRatio * 2f) / 2f).coerceIn(1.0f, 4.5f)
+            // 경계선 핸들 조정 시 0.02 단위(약 0.4% 정밀도)로 매우 섬세하게 미세 조절
+            val rounded = (round(rawRatio * 50f) / 50f).coerceIn(1.0f, 4.80f)
             // 열린 상태면 최근 열린 비율로 기억
             sharedPref.edit().putFloat(getLastOpenRatioKey(), rounded).apply()
             rounded
