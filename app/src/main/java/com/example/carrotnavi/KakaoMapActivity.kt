@@ -131,6 +131,9 @@ class KakaoMapActivity : AppCompatActivity(),
     private var isShowingRemainingTime = false
     private var currentRemainDist: Long = 0L
     private var currentRemainTime: Long = 0L
+    private var currentDestPlaceName: String = ""
+    private var currentDestRoadAddress: String = ""
+    private var currentDestAddress: String = ""
 
     private var v2Client: com.example.carrotnavi.v2.OpenpilotV2Client? = null
     private var streamingManager: com.example.carrotnavi.v2.VideoStreamingManager? = null
@@ -1471,6 +1474,32 @@ class KakaoMapActivity : AppCompatActivity(),
         }
     }
 
+    private fun isDestinationText(text: String): Boolean {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return false
+        if (currentDestPlaceName.isEmpty() && currentDestRoadAddress.isEmpty() && currentDestAddress.isEmpty()) {
+            currentDestPlaceName = sharedPref.getString("RECENT_DEST_NAME", "") ?: ""
+            currentDestRoadAddress = sharedPref.getString("RECENT_DEST_ROAD_ADDRESS", "") ?: ""
+            currentDestAddress = sharedPref.getString("RECENT_DEST_ADDRESS", "") ?: ""
+        }
+        if (currentDestPlaceName.isNotEmpty()) {
+            if (trimmed == currentDestPlaceName || currentDestPlaceName.contains(trimmed) || trimmed.contains(currentDestPlaceName)) {
+                return true
+            }
+        }
+        if (currentDestRoadAddress.isNotEmpty()) {
+            if (trimmed == currentDestRoadAddress || currentDestRoadAddress.contains(trimmed) || trimmed.contains(currentDestRoadAddress)) {
+                return true
+            }
+        }
+        if (currentDestAddress.isNotEmpty()) {
+            if (trimmed == currentDestAddress || currentDestAddress.contains(trimmed) || trimmed.contains(currentDestAddress)) {
+                return true
+            }
+        }
+        return false
+    }
+
     private fun syncGoalTextAddress() {
         if (!::hudOverlayManager.isInitialized) return
         val tvGoal = (if (goalTextId != 0) findViewById<android.widget.TextView?>(goalTextId) else null)
@@ -1484,7 +1513,8 @@ class KakaoMapActivity : AppCompatActivity(),
                         val txt = s?.toString()?.trim() ?: ""
                         if (txt.isNotEmpty() && txt != lastKnownAddress) {
                             lastKnownAddress = txt
-                            runOnUiThread { updateGpsAddressUi(txt) }
+                            val isDest = isDestinationText(txt)
+                            runOnUiThread { updateGpsAddressUi(txt, isDest) }
                         }
                     }
                     override fun afterTextChanged(s: android.text.Editable?) {}
@@ -1493,12 +1523,13 @@ class KakaoMapActivity : AppCompatActivity(),
             val curText = tvGoal.text?.toString()?.trim() ?: ""
             if (curText.isNotEmpty() && curText != lastKnownAddress) {
                 lastKnownAddress = curText
-                updateGpsAddressUi(curText)
+                val isDest = isDestinationText(curText)
+                updateGpsAddressUi(curText, isDest)
             }
         }
     }
 
-    private fun updateGpsAddressUi(address: String) {
+    private fun updateGpsAddressUi(address: String, isDestination: Boolean = false) {
         if (!::hudOverlayManager.isInitialized) return
         val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
         val bottomBar = (if (bottomBarId != 0) findViewById<android.view.View?>(bottomBarId) else null)
@@ -1507,7 +1538,7 @@ class KakaoMapActivity : AppCompatActivity(),
         val hasValidBar = bottomBar != null && (bottomBar.width > 0 || bottomBar.isShown)
         val hasAddr = hasValidBar && address.isNotEmpty()
         hudOverlayManager.binding.tvGpsAddress?.let { tv ->
-            tv.text = hudOverlayManager.formatAddressWithPin(this, address)
+            tv.text = hudOverlayManager.formatAddressWithPin(this, address, isDestination)
             tv.gravity = android.view.Gravity.CENTER
             tv.isSelected = true
             tv.visibility = if (hasAddr) android.view.View.VISIBLE else android.view.View.GONE
@@ -1929,9 +1960,12 @@ class KakaoMapActivity : AppCompatActivity(),
         hudOverlayManager.binding.btnSearchAddress.visibility = android.view.View.VISIBLE
         hudOverlayManager.binding.llRightBottomGrid?.visibility = android.view.View.VISIBLE
         val destTitle = doc.road_address_name.ifEmpty { doc.address_name.ifEmpty { doc.place_name } }
+        currentDestPlaceName = doc.place_name.trim()
+        currentDestRoadAddress = doc.road_address_name.trim()
+        currentDestAddress = doc.address_name.trim()
         if (destTitle.isNotEmpty()) {
             lastKnownAddress = destTitle
-            updateGpsAddressUi(destTitle)
+            updateGpsAddressUi(destTitle, isDestination = true)
         }
         lastCameraSignX = -1f
         lastCameraSignY = -1f

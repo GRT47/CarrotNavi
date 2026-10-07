@@ -1187,9 +1187,10 @@ class HudOverlayManager(
         }
     }
 
-    fun formatAddressWithPin(context: Context, address: String): CharSequence {
+    fun formatAddressWithPin(context: Context, address: String, isDestination: Boolean = false): CharSequence {
         if (address.isEmpty()) return ""
-        val drawable = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_location_pin_small)?.mutate()
+        val drawableRes = if (isDestination) R.drawable.ic_destination_flag else R.drawable.ic_location_pin_small
+        val drawable = androidx.core.content.ContextCompat.getDrawable(context, drawableRes)?.mutate()
             ?: return address
         val size = (15 * context.resources.displayMetrics.density).toInt()
         drawable.setBounds(0, 0, size, size)
