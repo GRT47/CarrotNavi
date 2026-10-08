@@ -1042,6 +1042,7 @@ class MapActivity : BaseActivity() {
         if (::hudOverlayManager.isInitialized) {
             hudOverlayManager.onDestroy()
         }
+        TrafficSignalRepository.clear()
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         sharedPref.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         val intent = Intent(this, UdpSenderService::class.java)
@@ -1758,9 +1759,39 @@ class MapActivity : BaseActivity() {
                     }
                 }
                 Log.e("MapActivity", "Successfully registered observableLaneData observer")
+                startObservingTmapTrafficSignalData(sdkManager)
             }
         } catch (e: Exception) {
             Log.e("MapActivity", "Failed to observe lane data via SDKManager: ${e.message}")
+        }
+    }
+
+    private fun startObservingTmapTrafficSignalData(sdkManager: Any) {
+        try {
+            val getObservableTrafficSignalDataMethod = sdkManager.javaClass.getMethod("getObservableTrafficSignalData")
+            @Suppress("UNCHECKED_CAST")
+            val observableTrafficSignalData = getObservableTrafficSignalDataMethod.invoke(sdkManager) as? androidx.lifecycle.LiveData<*>
+            observableTrafficSignalData?.observe(this) { signalData ->
+                if (signalData != null) {
+                    try {
+                        val dataClass = signalData.javaClass
+                        val isVisible = dataClass.getMethod("isTrafficSignalVisible").invoke(signalData) as? Boolean ?: false
+                        val isRed = dataClass.getMethod("isRedLightOn").invoke(signalData) as? Boolean ?: false
+                        val isGreen = dataClass.getMethod("isGreenLightOn").invoke(signalData) as? Boolean ?: false
+                        val isLeft = dataClass.getMethod("isLeftLightOn").invoke(signalData) as? Boolean ?: false
+                        val remainTime = dataClass.getMethod("getRemainTime").invoke(signalData) as? Int ?: 0
+
+                        TrafficSignalRepository.updateSignal(isVisible, isRed, isGreen, isLeft, remainTime)
+                    } catch (e: Exception) {
+                        Log.e("MapActivity", "Error parsing ObservableTrafficSignalData: ${e.message}")
+                    }
+                } else {
+                    TrafficSignalRepository.clear()
+                }
+            }
+            Log.e("MapActivity", "Successfully registered observableTrafficSignalData observer")
+        } catch (e: Exception) {
+            Log.e("MapActivity", "Failed to observe traffic signal data: ${e.message}")
         }
     }
 }

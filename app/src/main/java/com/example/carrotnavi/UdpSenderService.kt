@@ -694,6 +694,9 @@ class UdpSenderService : Service() {
     private var nLaneAvailableField: java.lang.reflect.Field? = null
     private var nLaneEtcInfoField: java.lang.reflect.Field? = null
 
+    // Compass (nPosAngle) Reflection Field
+    private var nPosAngleField: java.lang.reflect.Field? = null
+
     private fun getRoadLimitSpeedFromEngine(): Int {
         try {
             if (sdkManagerCompanion == null) {
@@ -711,6 +714,7 @@ class UdpSenderService : Service() {
                 val rgData = getRecentRGDataMethod?.invoke(sdkManager)
                 if (rgData != null) {
                     updateLaneInfoFromEngine(rgData)
+                    updateCompassFromEngine(rgData)
 
                     if (nRoadLimitSpeedField == null) {
                         nRoadLimitSpeedField = rgData.javaClass.getField("nRoadLimitSpeed")
@@ -748,6 +752,20 @@ class UdpSenderService : Service() {
             LaneDataRepository.updateLaneData(bLane, laneCount, laneDist, turnInfo, available, etcInfo)
         } catch (e: Exception) {
             android.util.Log.e("UdpSenderService", "Error in updateLaneInfoFromEngine: ${e.message}", e)
+        }
+    }
+
+    private fun updateCompassFromEngine(rgData: Any) {
+        try {
+            if (nPosAngleField == null) {
+                nPosAngleField = rgData.javaClass.getField("nPosAngle")
+            }
+            val angle = nPosAngleField?.getInt(rgData) ?: -1
+            if (angle in 0..360) {
+                CompassDataRepository.updateAngle(angle)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("UdpSenderService", "Error in updateCompassFromEngine: ${e.message}", e)
         }
     }
 }

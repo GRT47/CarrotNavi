@@ -1052,6 +1052,10 @@ class HudOverlayManager(
         }
         if (!isOverlayVisible) {
             binding.cvLaneGuideOverlay?.visibility = View.GONE
+            binding.cvTrafficSignalOverlay?.visibility = View.GONE
+            binding.cvCompassOverlay?.visibility = View.GONE
+        } else {
+            binding.cvCompassOverlay?.visibility = View.VISIBLE
         }
         onOverlayVisibilityChanged?.invoke()
     }
@@ -1342,11 +1346,97 @@ class HudOverlayManager(
             updateLaneGuideUI(data)
         })
 
-        // 테스트 편의: 우측 상단 상태 영역 롱클릭 시 모의 4차선 가이드 10초간 미리보기 표출
-        binding.llTopUiGroup?.setOnLongClickListener {
-            android.widget.Toast.makeText(activity, "차선 가이드 오버레이 미리보기 (10초)", android.widget.Toast.LENGTH_SHORT).show()
+        CompassDataRepository.observableCompass.observe(lifecycleOwner, Observer { data ->
+            updateCompassUI(data)
+        })
+
+        TrafficSignalRepository.observableSignal.observe(lifecycleOwner, Observer { data ->
+            updateTrafficSignalUI(data)
+        })
+
+        // 테스트 편의: 우측 상단 상태 영역 또는 나침반 뱃지 롱클릭 시 모의 4차선 가이드 & 스마트 신호등 & 나침반 10초간 미리보기 표출
+        val testModeTrigger = View.OnLongClickListener {
+            android.widget.Toast.makeText(activity, "차선 가이드 & 스마트 신호등 미리보기 (10초)", android.widget.Toast.LENGTH_SHORT).show()
             LaneDataRepository.startTestMode(10000)
+            TrafficSignalRepository.startTestMode(10000)
+            CompassDataRepository.updateAngle(45)
             true
+        }
+        binding.llTopUiGroup?.setOnLongClickListener(testModeTrigger)
+        binding.cvCompassOverlay?.setOnLongClickListener(testModeTrigger)
+    }
+
+    private fun updateCompassUI(data: CompassData?) {
+        val overlay = binding.cvCompassOverlay ?: return
+        if (!isOverlayVisible || data == null) {
+            overlay.visibility = View.GONE
+            return
+        }
+        overlay.visibility = View.VISIBLE
+        binding.ivCompassNeedle?.rotation = data.angle.toFloat()
+        binding.tvCompassText?.text = "${data.angle}° ${data.directionText}"
+    }
+
+    private fun updateTrafficSignalUI(data: TrafficSignalData?) {
+        val overlay = binding.cvTrafficSignalOverlay ?: return
+        if (!isOverlayVisible || data == null || !data.isVisible) {
+            if (overlay.visibility == View.VISIBLE) {
+                overlay.animate()
+                    .alpha(0f)
+                    .translationY(-15f)
+                    .setDuration(250)
+                    .withEndAction {
+                        overlay.visibility = View.GONE
+                    }
+                    .start()
+            }
+            return
+        }
+
+        // 4구 신호등 LED 점등 상태 반영
+        binding.vSignalRed?.setBackgroundResource(
+            if (data.isRed) R.drawable.shape_circle_red else R.drawable.shape_circle_dark
+        )
+        binding.vSignalYellow?.setBackgroundResource(R.drawable.shape_circle_dark)
+
+        binding.ivSignalLeft?.let { iv ->
+            if (data.isLeft) {
+                iv.alpha = 1.0f
+                iv.setColorFilter(Color.parseColor("#4CD964"))
+            } else {
+                iv.alpha = 0.2f
+                iv.setColorFilter(Color.parseColor("#666666"))
+            }
+        }
+
+        binding.vSignalGreen?.setBackgroundResource(
+            if (data.isGreen) R.drawable.shape_circle_green else R.drawable.shape_circle_dark
+        )
+
+        // 신호 잔여 시간 카운트다운
+        if (data.remainTime > 0) {
+            binding.tvSignalRemainTime?.text = "${data.remainTime}s"
+            binding.tvSignalRemainTime?.visibility = View.VISIBLE
+            if (data.isRed) {
+                binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#FF3B30"))
+            } else if (data.isGreen || data.isLeft) {
+                binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#4CD964"))
+            } else {
+                binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#FFCC00"))
+            }
+        } else {
+            binding.tvSignalRemainTime?.visibility = View.GONE
+        }
+
+        if (overlay.visibility != View.VISIBLE) {
+            overlay.alpha = 0f
+            overlay.translationY = -15f
+            overlay.visibility = View.VISIBLE
+            overlay.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(250)
+                .start()
         }
     }
 

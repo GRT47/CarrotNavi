@@ -675,62 +675,188 @@
             android:visibility="visible" />
     </LinearLayout>
 
-    <!-- 전방 교차로 차선 가이드 오버레이 (상단 중앙) -->
+    <!-- 실시간 나침반 / 차량 진행 방위각 (nPosAngle) 뱃지 (좌측 상단 표지판 아래) -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/cvLaneGuideOverlay"
+        android:id="@+id/cvCompassOverlay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="12dp"
-        app:cardCornerRadius="16dp"
+        android:layout_gravity="top|start"
+        android:layout_marginTop="78dp"
+        android:layout_marginStart="8dp"
+        app:cardCornerRadius="12dp"
         app:cardBackgroundColor="#D90E131F"
-        app:cardElevation="10dp"
-        android:visibility="gone">
+        app:cardElevation="6dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="visible">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="8dp"
-            android:gravity="center_horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp">
 
-            <!-- 상단: 교차로 남은 거리 뱃지 -->
+            <ImageView
+                android:id="@+id/ivCompassNeedle"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_compass_needle"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/tvCompassText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0° N"
+                android:textColor="#00F2FE"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 상단 중앙 HUD 그룹 (스마트 신호등 + 차선 가이드) -->
+    <LinearLayout
+        android:id="@+id/llTopCenterContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:elevation="10dp">
+
+        <!-- C-ITS 스마트 교통 신호등 오버레이 (ObservableTrafficSignalData) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvTrafficSignalOverlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            app:cardCornerRadius="14dp"
+            app:cardBackgroundColor="#EA0A0D14"
+            app:cardElevation="8dp"
+            android:visibility="gone">
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="4dp">
-                
-                <TextView
-                    android:id="@+id/tvLaneGuideTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="전방 교차로"
-                    android:textColor="#A0AEC0"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="6dp" />
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp">
 
-                <TextView
-                    android:id="@+id/tvLaneGuideDistance"
+                <!-- 4구 신호등 하우징 -->
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="300m"
-                    android:textColor="#00F2FE"
-                    android:textSize="13sp"
+                    android:orientation="horizontal"
+                    android:background="#202530"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="4dp"
+                    android:gravity="center_vertical"
+                    android:layout_marginEnd="10dp">
+
+                    <!-- 적색 -->
+                    <View
+                        android:id="@+id/vSignalRed"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:background="@drawable/shape_circle_red"
+                        android:layout_marginEnd="5dp" />
+
+                    <!-- 황색 -->
+                    <View
+                        android:id="@+id/vSignalYellow"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:background="@drawable/shape_circle_dark"
+                        android:layout_marginEnd="5dp" />
+
+                    <!-- 좌회전 -->
+                    <ImageView
+                        android:id="@+id/ivSignalLeft"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_signal_left"
+                        android:alpha="0.2"
+                        android:layout_marginEnd="5dp" />
+
+                    <!-- 녹색 -->
+                    <View
+                        android:id="@+id/vSignalGreen"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:background="@drawable/shape_circle_dark" />
+                </LinearLayout>
+
+                <!-- 신호 잔여 시간 카운트다운 -->
+                <TextView
+                    android:id="@+id/tvSignalRemainTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="15s"
+                    android:textColor="#FF3B30"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-            <!-- 하단: 가로 방향 차선 목록 컨테이너 -->
+        <!-- 전방 교차로 차선 가이드 오버레이 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvLaneGuideOverlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="#D90E131F"
+            app:cardElevation="10dp"
+            android:visibility="gone">
+
             <LinearLayout
-                android:id="@+id/llLaneContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+                android:orientation="vertical"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp"
+                android:gravity="center_horizontal">
+
+                <!-- 상단: 교차로 남은 거리 뱃지 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+                    
+                    <TextView
+                        android:id="@+id/tvLaneGuideTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="전방 교차로"
+                        android:textColor="#A0AEC0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/tvLaneGuideDistance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="300m"
+                        android:textColor="#00F2FE"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- 하단: 가로 방향 차선 목록 컨테이너 -->
+                <LinearLayout
+                    android:id="@+id/llLaneContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
 
 </merge>
