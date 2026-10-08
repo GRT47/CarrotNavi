@@ -719,6 +719,7 @@ class MapActivity : BaseActivity() {
                 SdiDataRepository.applyThemeMode(this@MapActivity)
                 frag.startSafeDrive()
                 Log.d("MapActivity", "startSafeDrive() called")
+                startObservingTmapLaneData()
                 binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 500)
                 binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 1500)
                 binding.root.postDelayed({ alignGpsOverlayWithEndButton() }, 3000)
@@ -1724,6 +1725,41 @@ class MapActivity : BaseActivity() {
                 tvXStateBadge?.setTextColor(android.graphics.Color.parseColor("#9CA3AF"))
                 tvXStateDesc?.text = "상태 확인 중"
             }
+        }
+    }
+
+    private fun startObservingTmapLaneData() {
+        try {
+            val sdkManagerClass = Class.forName("com.skt.tmap.engine.navigation.SDKManager")
+            val companionField = sdkManagerClass.getField("Companion")
+            val sdkManagerCompanion = companionField.get(null)
+            val getInstanceMethod = sdkManagerCompanion?.javaClass?.getMethod("getInstance")
+            val sdkManager = getInstanceMethod?.invoke(sdkManagerCompanion)
+            if (sdkManager != null) {
+                val getObservableLaneDataMethod = sdkManager.javaClass.getMethod("getObservableLaneData")
+                @Suppress("UNCHECKED_CAST")
+                val observableLaneData = getObservableLaneDataMethod.invoke(sdkManager) as? androidx.lifecycle.LiveData<*>
+                observableLaneData?.observe(this) { laneData ->
+                    if (laneData != null) {
+                        try {
+                            val dataClass = laneData.javaClass
+                            val showLane = dataClass.getMethod("getShowLane").invoke(laneData) as? Boolean ?: false
+                            val laneCount = dataClass.getMethod("getLaneCount").invoke(laneData) as? Int ?: 0
+                            val laneDist = dataClass.getMethod("getLaneDistance").invoke(laneData) as? Int ?: 0
+                            val laneTurnInfo = dataClass.getMethod("getLaneTurnInfo").invoke(laneData) as? IntArray
+                            val laneAvailableInfo = dataClass.getMethod("getLaneAvailableInfo").invoke(laneData) as? IntArray
+                            val laneEtcInfo = dataClass.getMethod("getLaneEtcInfo").invoke(laneData) as? IntArray
+
+                            LaneDataRepository.updateLaneData(showLane, laneCount, laneDist, laneTurnInfo, laneAvailableInfo, laneEtcInfo)
+                        } catch (e: Exception) {
+                            Log.e("MapActivity", "Error parsing ObservableLaneData: ${e.message}")
+                        }
+                    }
+                }
+                Log.d("MapActivity", "Successfully registered observableLaneData observer")
+            }
+        } catch (e: Exception) {
+            Log.e("MapActivity", "Failed to observe lane data via SDKManager: ${e.message}")
         }
     }
 }

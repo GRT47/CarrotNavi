@@ -1050,6 +1050,9 @@ class HudOverlayManager(
                 notifyMediaOverlayVisibility(false)
             }
         }
+        if (!isOverlayVisible) {
+            binding.cvLaneGuideOverlay?.visibility = View.GONE
+        }
         onOverlayVisibilityChanged?.invoke()
     }
 
@@ -1334,6 +1337,92 @@ class HudOverlayManager(
             // they are in the Top Bar which is still in Activity's XML!
             // Wait, I should not update TopBar views here if they are not in binding.
         })
+
+        LaneDataRepository.observableLaneGuide.observe(lifecycleOwner, Observer { data ->
+            updateLaneGuideUI(data)
+        })
+    }
+
+    private fun updateLaneGuideUI(data: LaneGuideData?) {
+        val overlay = binding.cvLaneGuideOverlay ?: return
+        val container = binding.llLaneContainer ?: return
+
+        if (!isOverlayVisible || data == null || !data.isVisible || data.lanes.isEmpty()) {
+            if (overlay.visibility == View.VISIBLE) {
+                overlay.animate()
+                    .alpha(0f)
+                    .translationY(-20f)
+                    .setDuration(250)
+                    .withEndAction {
+                        overlay.visibility = View.GONE
+                        container.removeAllViews()
+                    }
+                    .start()
+            }
+            return
+        }
+
+        // 교차로까지 남은 거리 표시
+        binding.tvLaneGuideDistance?.text = if (data.distance >= 1000) {
+            String.format("%.1fkm", data.distance / 1000.0)
+        } else {
+            "${data.distance}m"
+        }
+
+        // 차선 아이템 동적 구성
+        container.removeAllViews()
+        val inflater = LayoutInflater.from(activity)
+
+        for (lane in data.lanes) {
+            val laneView = inflater.inflate(R.layout.item_hud_lane, container, false)
+            val ivArrow = laneView.findViewById<android.widget.ImageView>(R.id.ivLaneArrow)
+            val tvNumber = laneView.findViewById<android.widget.TextView>(R.id.tvLaneNumber)
+            val flContainer = laneView.findViewById<android.widget.FrameLayout>(R.id.flArrowContainer)
+
+            val drawableRes = when (lane.turnType) {
+                LaneTurnType.LEFT -> R.drawable.ic_lane_left
+                LaneTurnType.RIGHT -> R.drawable.ic_lane_right
+                LaneTurnType.STRAIGHT_LEFT -> R.drawable.ic_lane_straight_left
+                LaneTurnType.STRAIGHT_RIGHT -> R.drawable.ic_lane_straight_right
+                LaneTurnType.UTURN, LaneTurnType.LEFT_UTURN -> R.drawable.ic_lane_uturn
+                else -> R.drawable.ic_lane_straight
+            }
+            ivArrow.setImageResource(drawableRes)
+
+            if (lane.isAvailable) {
+                // 추천 주행 차선: 네온 시안 강조
+                ivArrow.setColorFilter(Color.parseColor("#00F2FE"))
+                ivArrow.alpha = 1.0f
+                tvNumber.setTextColor(Color.parseColor("#00F2FE"))
+                flContainer.setBackgroundResource(R.drawable.shape_lane_available_bg)
+            } else {
+                // 비추천 차선: 딤드 처리
+                ivArrow.setColorFilter(Color.parseColor("#888888"))
+                ivArrow.alpha = 0.35f
+                tvNumber.setTextColor(Color.parseColor("#666666"))
+                flContainer.background = null
+            }
+
+            if (lane.isBusLane) {
+                tvNumber.text = "BUS"
+                tvNumber.setTextColor(Color.parseColor("#3B82F6"))
+            } else {
+                tvNumber.text = "${lane.laneNumber}"
+            }
+
+            container.addView(laneView)
+        }
+
+        if (overlay.visibility != View.VISIBLE) {
+            overlay.alpha = 0f
+            overlay.translationY = -20f
+            overlay.visibility = View.VISIBLE
+            overlay.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(300)
+                .start()
+        }
     }
 
     private fun makeDraggable(view: View, viewIdName: String, isLandscape: Boolean, otherViews: List<View>) {

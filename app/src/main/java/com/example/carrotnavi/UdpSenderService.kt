@@ -686,6 +686,14 @@ class UdpSenderService : Service() {
     private var getRecentRGDataMethod: java.lang.reflect.Method? = null
     private var nRoadLimitSpeedField: java.lang.reflect.Field? = null
 
+    // Lane Info Reflection Fields
+    private var bLaneField: java.lang.reflect.Field? = null
+    private var nLaneCountField: java.lang.reflect.Field? = null
+    private var nLaneDistField: java.lang.reflect.Field? = null
+    private var nLaneTurnInfoField: java.lang.reflect.Field? = null
+    private var nLaneAvailableField: java.lang.reflect.Field? = null
+    private var nLaneEtcInfoField: java.lang.reflect.Field? = null
+
     private fun getRoadLimitSpeedFromEngine(): Int {
         try {
             if (sdkManagerCompanion == null) {
@@ -702,6 +710,8 @@ class UdpSenderService : Service() {
                 }
                 val rgData = getRecentRGDataMethod?.invoke(sdkManager)
                 if (rgData != null) {
+                    updateLaneInfoFromEngine(rgData)
+
                     if (nRoadLimitSpeedField == null) {
                         nRoadLimitSpeedField = rgData.javaClass.getField("nRoadLimitSpeed")
                     }
@@ -717,4 +727,26 @@ class UdpSenderService : Service() {
         }
         return -1
     }
+
+    private fun updateLaneInfoFromEngine(rgData: Any) {
+        try {
+            val rgClass = rgData.javaClass
+            if (bLaneField == null) bLaneField = rgClass.getField("bLane")
+            if (nLaneCountField == null) nLaneCountField = rgClass.getField("nLaneCount")
+            if (nLaneDistField == null) nLaneDistField = rgClass.getField("nLaneDist")
+            if (nLaneTurnInfoField == null) nLaneTurnInfoField = rgClass.getField("nLaneTurnInfo")
+            if (nLaneAvailableField == null) nLaneAvailableField = rgClass.getField("nLaneAvailable")
+            if (nLaneEtcInfoField == null) nLaneEtcInfoField = rgClass.getField("nLaneEtcInfo")
+
+            val bLane = bLaneField?.getBoolean(rgData) ?: false
+            val laneCount = nLaneCountField?.getInt(rgData) ?: 0
+            val laneDist = nLaneDistField?.getInt(rgData) ?: 0
+            val turnInfo = nLaneTurnInfoField?.get(rgData) as? IntArray
+            val available = nLaneAvailableField?.get(rgData) as? IntArray
+            val etcInfo = nLaneEtcInfoField?.get(rgData) as? IntArray
+
+            LaneDataRepository.updateLaneData(bLane, laneCount, laneDist, turnInfo, available, etcInfo)
+        } catch (_: Exception) {}
+    }
 }
+
