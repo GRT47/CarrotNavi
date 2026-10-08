@@ -134,6 +134,10 @@ class KakaoMapActivity : BaseActivity(),
     private var currentDestPlaceName: String = ""
     private var currentDestRoadAddress: String = ""
     private var currentDestAddress: String = ""
+    private var lastGuideDoc: KakaoDocument? = null
+    private var lastGuideTrip: KNTrip? = null
+    private var lastGuideOption: RoutePreviewOption? = null
+    private var isSimulPaused: Boolean = false
 
     private var v2Client: com.example.carrotnavi.v2.OpenpilotV2Client? = null
     private var streamingManager: com.example.carrotnavi.v2.VideoStreamingManager? = null
@@ -310,16 +314,61 @@ class KakaoMapActivity : BaseActivity(),
             if (::naviView.isInitialized) {
                 naviView.sndVolume = sharedPreferences.getFloat("VOICE_VOLUME", 1.0f)
             }
+        } else if (key == "SDK_SIMULATION_SPEED") {
+            val speed = sharedPreferences.getInt("SDK_SIMULATION_SPEED", 60)
+            try {
+                com.kakaomobility.knsdk.KNSDK.sharedSimulGuidance()?.setSimulationSpeed(speed)
+            } catch (e: Exception) {}
         }
     }
     companion object {
         private var knsdkInitialized = false
+        var instance: KakaoMapActivity? = null
+
+        fun enableRouteSimulation(speed: Int, useSamePace: Boolean = true) {
+            try {
+                val baseClass = com.kakaomobility.knsdk.KNBaseSDK::class.java
+                val fieldS = baseClass.getDeclaredField("s")
+                fieldS.isAccessible = true
+                fieldS.setBoolean(com.kakaomobility.knsdk.KNSDK, true)
+
+                val fieldT = baseClass.getDeclaredField("t")
+                fieldT.isAccessible = true
+                fieldT.setInt(com.kakaomobility.knsdk.KNSDK, speed)
+
+                val fieldU = baseClass.getDeclaredField("u")
+                fieldU.isAccessible = true
+                fieldU.setBoolean(com.kakaomobility.knsdk.KNSDK, useSamePace)
+
+                android.util.Log.i("CarrotNavi", "[SIMUL] KNSDK routeSimul enabled (speed=$speed, s=true)")
+            } catch (e: Exception) {
+                android.util.Log.e("CarrotNavi", "[SIMUL] Failed to enable route simul via reflection", e)
+            }
+        }
+
+        fun disableRouteSimulation() {
+            try {
+                val baseClass = com.kakaomobility.knsdk.KNBaseSDK::class.java
+                val fieldS = baseClass.getDeclaredField("s")
+                fieldS.isAccessible = true
+                fieldS.setBoolean(com.kakaomobility.knsdk.KNSDK, false)
+
+                val fieldT = baseClass.getDeclaredField("t")
+                fieldT.isAccessible = true
+                fieldT.setInt(com.kakaomobility.knsdk.KNSDK, 0)
+
+                android.util.Log.i("CarrotNavi", "[SIMUL] KNSDK routeSimul disabled (s=false)")
+            } catch (e: Exception) {
+                android.util.Log.e("CarrotNavi", "[SIMUL] Failed to disable route simul via reflection", e)
+            }
+        }
     }
 
     private var kakaoInitRetryCount = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        instance = this
         getSharedPreferences("CarrotNaviPrefs", android.content.Context.MODE_PRIVATE).edit().putBoolean("IS_DEBUG_MODE", false).apply()
         super.onCreate(savedInstanceState)
         
@@ -2023,10 +2072,53 @@ class KakaoMapActivity : BaseActivity(),
         trip: KNTrip,
         option: RoutePreviewOption
     ) {
+        lastGuideDoc = doc
+        lastGuideTrip = trip
+        lastGuideOption = option
+        isSimulPaused = false
+
         Log.i("CarrotNavi", "[ROUTE] 경로안내 시작(Kakao): 목적지=${doc.place_name}, 옵션=${option.title}")
         Toast.makeText(this@KakaoMapActivity, "${option.title}로 안내를 시작합니다.", Toast.LENGTH_SHORT).show()
         SearchHistoryManager.addHistory(this@KakaoMapActivity, SearchHistoryItem.fromKakaoDocument(doc))
-        val guidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance() ?: return
+
+        val isSimulation = sharedPref.getBoolean("SDK_SIMULATION_ENABLED", false)
+        val simulSpeed = sharedPref.getInt("SDK_SIMULATION_SPEED", 60)
+
+        val guidance: com.kakaomobility.knsdk.guidance.knguidance.KNGuidance
+        if (isSimulation) {
+            Log.i("CarrotNavi", "[ROUTE] SDK 모의주행 모드로 안내 시작 (최대 속도: ${simulSpeed}km/h)")
+            Toast.makeText(this@KakaoMapActivity, "🚗 SDK 모의주행 시작 (${simulSpeed}km/h)", Toast.LENGTH_SHORT).show()
+            try {
+                com.kakaomobility.knsdk.KNSDK.sharedGuidance()?.stop()
+            } catch (e: Exception) {}
+            enableRouteSimulation(simulSpeed, true)
+            val simulGuidance = com.kakaomobility.knsdk.KNSDK.sharedSimulGuidance()
+            if (simulGuidance != null) {
+                binding.naviView.initWithGuidance(
+                    simulGuidance,
+                    null,
+                    option.priority,
+                    option.avoidOption
+                )
+                guidance = simulGuidance
+            } else {
+                guidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance() ?: return
+            }
+        } else {
+            try {
+                com.kakaomobility.knsdk.KNSDK.sharedSimulGuidance()?.stop()
+                com.kakaomobility.knsdk.KNSDK.removeSharedSimulGuidance()
+            } catch (e: Exception) {}
+            disableRouteSimulation()
+            val driveGuidance = com.kakaomobility.knsdk.KNSDK.sharedGuidance() ?: return
+            binding.naviView.initWithGuidance(
+                driveGuidance,
+                null,
+                option.priority,
+                option.avoidOption
+            )
+            guidance = driveGuidance
+        }
 
         binding.naviView.mapComponent?.mapView?.removeRoutesAll()
         binding.naviView.mapComponent?.mapView?.removeMarkersAll()
@@ -2143,6 +2235,86 @@ class KakaoMapActivity : BaseActivity(),
         // 종료될 때 onDestroy가 또 불려서 TMAP 복귀를 방해하지 않도록 조건 추가
         if (isFinishing || hasStartedRouteGuidance) {
             KNSDK.sharedGuidance()?.stop()
+        }
+        try {
+            KNSDK.sharedSimulGuidance()?.stop()
+            KNSDK.removeSharedSimulGuidance()
+            disableRouteSimulation()
+        } catch (e: Exception) {}
+        if (instance == this) {
+            instance = null
+        }
+    }
+
+    fun applySimulationMode(isSimul: Boolean, speed: Int) {
+        runOnUiThread {
+            if (hasStartedRouteGuidance && lastGuideDoc != null && lastGuideTrip != null && lastGuideOption != null) {
+                Log.i("CarrotNavi", "[SIMUL] 실시간 모의주행 모드 전환: isSimul=$isSimul, speed=$speed")
+                executeGuidanceWithTrip(lastGuideDoc!!, lastGuideTrip!!, lastGuideOption!!)
+            } else if (isSimul) {
+                KNSDK.sharedSimulGuidance()?.setSimulationSpeed(speed)
+            }
+        }
+    }
+
+    fun startSimulation(speed: Int = 60) {
+        runOnUiThread {
+            sharedPref.edit().putBoolean("SDK_SIMULATION_ENABLED", true).putInt("SDK_SIMULATION_SPEED", speed).apply()
+            if (hasStartedRouteGuidance && lastGuideDoc != null && lastGuideTrip != null && lastGuideOption != null) {
+                applySimulationMode(true, speed)
+            } else {
+                val history = SearchHistoryManager.getHistory(this)
+                val lastItem = history.firstOrNull()
+                if (lastItem != null) {
+                    Toast.makeText(this, "최근 목적지(${lastItem.place_name})로 모의주행을 시작합니다.", Toast.LENGTH_SHORT).show()
+                    startRouteGuidance(lastItem.toKakaoDocument())
+                } else {
+                    Toast.makeText(this, "목적지 검색 기록이 없습니다. 목적지를 먼저 검색해 주세요.", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    fun stopSimulation() {
+        runOnUiThread {
+            sharedPref.edit().putBoolean("SDK_SIMULATION_ENABLED", false).apply()
+            try {
+                KNSDK.sharedSimulGuidance()?.stop()
+                KNSDK.removeSharedSimulGuidance()
+            } catch (e: Exception) {}
+            disableRouteSimulation()
+            if (hasStartedRouteGuidance && lastGuideDoc != null && lastGuideTrip != null && lastGuideOption != null) {
+                Toast.makeText(this, "모의주행을 중지하고 실제 주행 모드로 전환합니다.", Toast.LENGTH_SHORT).show()
+                executeGuidanceWithTrip(lastGuideDoc!!, lastGuideTrip!!, lastGuideOption!!)
+            } else {
+                Toast.makeText(this, "모의주행이 중지되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun togglePauseSimulation() {
+        runOnUiThread {
+            val simul = KNSDK.sharedSimulGuidance()
+            if (simul != null) {
+                if (isSimulPaused) {
+                    simul.resumeSimul()
+                    isSimulPaused = false
+                    Toast.makeText(this, "모의주행 재개", Toast.LENGTH_SHORT).show()
+                } else {
+                    simul.pauseSimul()
+                    isSimulPaused = true
+                    Toast.makeText(this, "모의주행 일시정지", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(this, "현재 모의주행 중이 아닙니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun setSimulationSpeed(speed: Int) {
+        runOnUiThread {
+            sharedPref.edit().putInt("SDK_SIMULATION_SPEED", speed).apply()
+            KNSDK.sharedSimulGuidance()?.setSimulationSpeed(speed)
         }
     }
 

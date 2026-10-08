@@ -40,8 +40,52 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                     response.addHeader("Access-Control-Allow-Origin", "*")
                     return response
                 }
+
+                if (session.uri == "/api/simul_start") {
+                    val speedParam = params["speed"]?.firstOrNull()?.toIntOrNull()
+                    val currentSpeed = speedParam ?: prefs.getInt("SDK_SIMULATION_SPEED", 60)
+                    prefs.edit()
+                        .putBoolean("SDK_SIMULATION_ENABLED", true)
+                        .putInt("SDK_SIMULATION_SPEED", currentSpeed)
+                        .apply()
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        KakaoMapActivity.instance?.startSimulation(currentSpeed)
+                    }
+                    val response = newFixedLengthResponse(Response.Status.OK, "application/json", """{"status":"ok","message":"모의주행 시작"}""")
+                    response.addHeader("Access-Control-Allow-Origin", "*")
+                    return response
+                }
+
+                if (session.uri == "/api/simul_stop") {
+                    prefs.edit().putBoolean("SDK_SIMULATION_ENABLED", false).apply()
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        KakaoMapActivity.instance?.stopSimulation()
+                    }
+                    val response = newFixedLengthResponse(Response.Status.OK, "application/json", """{"status":"ok","message":"모의주행 중지"}""")
+                    response.addHeader("Access-Control-Allow-Origin", "*")
+                    return response
+                }
+
+                if (session.uri == "/api/simul_pause") {
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        KakaoMapActivity.instance?.togglePauseSimulation()
+                    }
+                    val response = newFixedLengthResponse(Response.Status.OK, "application/json", """{"status":"ok","message":"모의주행 일시정지/재개"}""")
+                    response.addHeader("Access-Control-Allow-Origin", "*")
+                    return response
+                }
                 
                 val editor = prefs.edit()
+
+                if (params.containsKey("SDK_SIMULATION_ENABLED")) {
+                    val simulEnabled = params["SDK_SIMULATION_ENABLED"]?.firstOrNull() == "true"
+                    editor.putBoolean("SDK_SIMULATION_ENABLED", simulEnabled)
+                }
+                if (params.containsKey("SDK_SIMULATION_SPEED")) {
+                    params["SDK_SIMULATION_SPEED"]?.firstOrNull()?.toIntOrNull()?.let {
+                        editor.putInt("SDK_SIMULATION_SPEED", it.coerceIn(10, 150))
+                    }
+                }
                 
                 if (params.containsKey("TARGET_UDP_IP")) {
                     params["TARGET_UDP_IP"]?.firstOrNull()?.let { editor.putString("TARGET_UDP_IP", it) }
@@ -124,6 +168,9 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                 android.os.Handler(android.os.Looper.getMainLooper()).post {
                     SdiDataRepository.applyThemeMode(context)
                     MapActivity.instance?.applyTmapNightModeSetting()
+                    val isSimul = prefs.getBoolean("SDK_SIMULATION_ENABLED", false)
+                    val simulSpeed = prefs.getInt("SDK_SIMULATION_SPEED", 60)
+                    KakaoMapActivity.instance?.applySimulationMode(isSimul, simulSpeed)
                     if (dpiChanged) {
                         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                             BaseActivity.restartApp(context)
@@ -163,6 +210,8 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val blockSpeedOffset = prefs.getInt("BLOCK_SPEED_OFFSET", 0)
         val blockSpeedFakeDrop = prefs.getInt("BLOCK_SPEED_FAKE_DROP", 10)
         val blockSpeedBoostMode = prefs.getInt("BLOCK_SPEED_BOOST_MODE", 0)
+        val isSimulationEnabled = prefs.getBoolean("SDK_SIMULATION_ENABLED", false)
+        val simulationSpeed = prefs.getInt("SDK_SIMULATION_SPEED", 60)
         
         val appKey = prefs.getString("APP_KEY", "") ?: ""
         val kakaoNativeAppKey = prefs.getString("KAKAO_NATIVE_APP_KEY", "") ?: ""
@@ -179,7 +228,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val deviceId = RemoteLogManager.getDeviceId()
 
         if (session.uri == "/api/settings") {
-            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode", "CUSTOM_DPI_SCALE":$customDpiScale, "FULLSCREEN_MODE":$isFullscreen}"""
+            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "SDK_SIMULATION_ENABLED":$isSimulationEnabled, "SDK_SIMULATION_SPEED":$simulationSpeed, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode", "CUSTOM_DPI_SCALE":$customDpiScale, "FULLSCREEN_MODE":$isFullscreen}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response
@@ -307,6 +356,34 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                                 <label for="themeDay">☀️ 주간 (항상 밝은 지도)</label><br>
                                 <input type="radio" id="themeNight" name="MAP_THEME_MODE" value="night" ${if(mapThemeMode == "night") "checked" else ""}>
                                 <label for="themeNight">🌙 야간 (항상 어두운 다크 지도)</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="background-color: #f3e5f5; padding: 18px; border-radius: 10px; border: 1px solid #ce93d8;">
+                            <label style="color: #6a1b9a; font-size: 1.1em; display: flex; align-items: center; justify-content: space-between;">
+                                <span>🚗 KNSDK 모의주행 테스트 (실내용)</span>
+                                <span style="font-size: 0.85em; font-weight: normal; color: #8e24aa;">신호등 / TBT / 차선 검증</span>
+                            </label>
+                            <div class="hint" style="color: #4a148c; margin-bottom: 12px;">
+                                실제 주행 없이 실내에서 경로를 따라 가상 주행하며 신호등 오버레이, TBT 가이던스, 단속카메라, UDP 패킷 전송을 그대로 테스트할 수 있습니다.
+                            </div>
+
+                            <label>모의주행 모드</label>
+                            <div class="radio-group" style="margin-bottom: 12px;">
+                                <input type="radio" id="simulOn" name="SDK_SIMULATION_ENABLED" value="true" ${if(isSimulationEnabled) "checked" else ""}>
+                                <label for="simulOn" style="font-weight: bold; color: #6a1b9a;">켜기 (가상 주행)</label>
+                                <input type="radio" id="simulOff" name="SDK_SIMULATION_ENABLED" value="false" ${if(!isSimulationEnabled) "checked" else ""}>
+                                <label for="simulOff" style="color: #555;">끄기 (실제 GPS 주행)</label>
+                            </div>
+
+                            <label for="simulSpeed">모의주행 최고 속도 (km/h)</label>
+                            <input type="number" id="simulSpeed" name="SDK_SIMULATION_SPEED" value="$simulationSpeed" min="10" max="150" style="margin-bottom: 8px;">
+                            <div class="hint" style="margin-bottom: 14px;">권장: 40 ~ 80 km/h (교차로 신호등 진입 및 정지 테스트에 적합)</div>
+
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <button type="button" style="flex: 1; padding: 12px; background-color: #7b1fa2; font-size: 14px; margin-top: 0;" onclick="var sp=document.getElementById('simulSpeed').value; fetch('/api/simul_start?speed='+sp,{method:'POST'}).then(r=>r.json()).then(d=>alert('🚀 모의주행을 시작했습니다! (현재 경로 또는 최근 목적지)'))">🚀 즉시 시작</button>
+                                <button type="button" style="flex: 1; padding: 12px; background-color: #ab47bc; font-size: 14px; margin-top: 0;" onclick="fetch('/api/simul_pause',{method:'POST'}).then(r=>r.json()).then(d=>alert('⏸️ 일시정지 / 재개되었습니다.'))">⏸️ 일시정지/재개</button>
+                                <button type="button" style="flex: 1; padding: 12px; background-color: #757575; font-size: 14px; margin-top: 0;" onclick="fetch('/api/simul_stop',{method:'POST'}).then(r=>r.json()).then(d=>alert('🛑 모의주행이 중지되었습니다.'))">🛑 중지 (GPS 복귀)</button>
                             </div>
                         </div>
 
