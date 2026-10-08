@@ -86,6 +86,16 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                         editor.putInt("SDK_SIMULATION_SPEED", it.coerceIn(10, 150))
                     }
                 }
+                if (params.containsKey("CITS_PUBLIC_ENABLED")) {
+                    val citsEnabled = params["CITS_PUBLIC_ENABLED"]?.firstOrNull() == "true"
+                    editor.putBoolean("CITS_PUBLIC_ENABLED", citsEnabled)
+                }
+                if (params.containsKey("CITS_PUBLIC_API_KEY")) {
+                    params["CITS_PUBLIC_API_KEY"]?.firstOrNull()?.let { editor.putString("CITS_PUBLIC_API_KEY", it.trim()) }
+                }
+                if (params.containsKey("CITS_PUBLIC_STDG_CD")) {
+                    params["CITS_PUBLIC_STDG_CD"]?.firstOrNull()?.let { editor.putString("CITS_PUBLIC_STDG_CD", it.trim()) }
+                }
                 
                 if (params.containsKey("TARGET_UDP_IP")) {
                     params["TARGET_UDP_IP"]?.firstOrNull()?.let { editor.putString("TARGET_UDP_IP", it) }
@@ -171,6 +181,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                     val isSimul = prefs.getBoolean("SDK_SIMULATION_ENABLED", false)
                     val simulSpeed = prefs.getInt("SDK_SIMULATION_SPEED", 60)
                     KakaoMapActivity.instance?.applySimulationMode(isSimul, simulSpeed)
+                    PublicCitsManager.reloadConfig()
                     if (dpiChanged) {
                         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                             BaseActivity.restartApp(context)
@@ -212,6 +223,9 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val blockSpeedBoostMode = prefs.getInt("BLOCK_SPEED_BOOST_MODE", 0)
         val isSimulationEnabled = prefs.getBoolean("SDK_SIMULATION_ENABLED", false)
         val simulationSpeed = prefs.getInt("SDK_SIMULATION_SPEED", 60)
+        val citsPublicEnabled = prefs.getBoolean("CITS_PUBLIC_ENABLED", false)
+        val citsPublicApiKey = prefs.getString("CITS_PUBLIC_API_KEY", "") ?: ""
+        val citsPublicStdgCd = prefs.getString("CITS_PUBLIC_STDG_CD", "1100000000") ?: "1100000000"
         
         val appKey = prefs.getString("APP_KEY", "") ?: ""
         val kakaoNativeAppKey = prefs.getString("KAKAO_NATIVE_APP_KEY", "") ?: ""
@@ -228,7 +242,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val deviceId = RemoteLogManager.getDeviceId()
 
         if (session.uri == "/api/settings") {
-            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "SDK_SIMULATION_ENABLED":$isSimulationEnabled, "SDK_SIMULATION_SPEED":$simulationSpeed, "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode", "CUSTOM_DPI_SCALE":$customDpiScale, "FULLSCREEN_MODE":$isFullscreen}"""
+            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "SDK_SIMULATION_ENABLED":$isSimulationEnabled, "SDK_SIMULATION_SPEED":$simulationSpeed, "CITS_PUBLIC_ENABLED":$citsPublicEnabled, "CITS_PUBLIC_API_KEY":"$citsPublicApiKey", "CITS_PUBLIC_STDG_CD":"$citsPublicStdgCd", "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode", "CUSTOM_DPI_SCALE":$customDpiScale, "FULLSCREEN_MODE":$isFullscreen}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response
@@ -385,6 +399,32 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                                 <button type="button" style="flex: 1; padding: 12px; background-color: #ab47bc; font-size: 14px; margin-top: 0;" onclick="fetch('/api/simul_pause',{method:'POST'}).then(r=>r.json()).then(d=>alert('⏸️ 일시정지 / 재개되었습니다.'))">⏸️ 일시정지/재개</button>
                                 <button type="button" style="flex: 1; padding: 12px; background-color: #757575; font-size: 14px; margin-top: 0;" onclick="fetch('/api/simul_stop',{method:'POST'}).then(r=>r.json()).then(d=>alert('🛑 모의주행이 중지되었습니다.'))">🛑 중지 (GPS 복귀)</button>
                             </div>
+                        </div>
+
+                        <div class="form-group" style="background-color: #e8f5e9; padding: 18px; border-radius: 10px; border: 1px solid #a5d6a7;">
+                            <label style="color: #2e7d32; font-size: 1.1em; display: flex; align-items: center; justify-content: space-between;">
+                                <span>🚦 공공 C-ITS 실시간 교통신호등 연동</span>
+                                <span style="font-size: 0.85em; font-weight: normal; color: #388e3c;">공공데이터포털</span>
+                            </label>
+                            <div class="hint" style="color: #1b5e20; margin-bottom: 12px;">
+                                행정안전부 한국지역정보개발원_(전국 통합데이터) 교통안전 신호등 실시간 정보 API를 연동하여 교차로 전방 실시간 신호(색상/잔여시간)를 수신하고 HUD 및 카카오 지도에 신호등 마커를 표시합니다.
+                            </div>
+
+                            <label>공공 C-ITS 연동</label>
+                            <div class="radio-group" style="margin-bottom: 12px;">
+                                <input type="radio" id="citsOn" name="CITS_PUBLIC_ENABLED" value="true" ${if(citsPublicEnabled) "checked" else ""}>
+                                <label for="citsOn" style="font-weight: bold; color: #2e7d32;">켜기 (실시간 신호 연동)</label>
+                                <input type="radio" id="citsOff" name="CITS_PUBLIC_ENABLED" value="false" ${if(!citsPublicEnabled) "checked" else ""}>
+                                <label for="citsOff" style="color: #555;">끄기</label>
+                            </div>
+
+                            <label for="citsKey">공공데이터포털 일반 인증키 (ServiceKey)</label>
+                            <input type="text" id="citsKey" name="CITS_PUBLIC_API_KEY" value="$citsPublicApiKey" placeholder="발급받은 공공데이터포털 인증키 붙여넣기" style="margin-bottom: 8px;">
+                            <div class="hint" style="margin-bottom: 12px;">공공데이터포털 '교통안전 신호등 실시간 정보' API 일반 인증키(Encoding 또는 Decoding 키)</div>
+
+                            <label for="citsStdg">지자체 법정동코드</label>
+                            <input type="text" id="citsStdg" name="CITS_PUBLIC_STDG_CD" value="$citsPublicStdgCd" placeholder="1100000000" style="margin-bottom: 8px;">
+                            <div class="hint">기본값: 서울특별시 1100000000 (부산: 2600000000, 대구: 2700000000, 경기: 4100000000 등 행정표준코드)</div>
                         </div>
 
                         <button type="submit">설정 저장</button>

@@ -442,6 +442,7 @@ class MapActivity : BaseActivity() {
         sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
         VoiceDuckingManager.init(this)
         startUdpSenderService()
+        PublicCitsManager.init(this)
 
         hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this, hudBinding, this)

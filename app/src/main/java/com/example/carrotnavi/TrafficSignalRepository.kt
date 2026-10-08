@@ -10,7 +10,10 @@ data class TrafficSignalData(
     val isGreen: Boolean,
     val isLeft: Boolean,
     val remainTime: Int,
-    val distance: Int = 0
+    val distance: Int = 0,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val intersectionName: String? = null
 )
 
 object TrafficSignalRepository {
@@ -37,8 +40,23 @@ object TrafficSignalRepository {
         remainTime: Int,
         distance: Int = 0
     ) {
+        updateSignal(isVisible, isRed, isYellow, isGreen, isLeft, remainTime, distance, null, null, null)
+    }
+
+    fun updateSignal(
+        isVisible: Boolean,
+        isRed: Boolean,
+        isYellow: Boolean,
+        isGreen: Boolean,
+        isLeft: Boolean,
+        remainTime: Int,
+        distance: Int = 0,
+        latitude: Double? = null,
+        longitude: Double? = null,
+        intersectionName: String? = null
+    ) {
         if (isTestMode) return
-        applySignal(isVisible, isRed, isYellow, isGreen, isLeft, remainTime, distance)
+        applySignal(isVisible, isRed, isYellow, isGreen, isLeft, remainTime, distance, latitude, longitude, intersectionName)
     }
 
     private fun applySignal(
@@ -48,7 +66,10 @@ object TrafficSignalRepository {
         isGreen: Boolean,
         isLeft: Boolean,
         remainTime: Int,
-        distance: Int
+        distance: Int,
+        latitude: Double? = null,
+        longitude: Double? = null,
+        intersectionName: String? = null
     ) {
         val shouldShow = isVisible && (isRed || isYellow || isGreen || isLeft || remainTime > 0)
         if (!shouldShow) {
@@ -66,7 +87,10 @@ object TrafficSignalRepository {
                 isGreen = isGreen,
                 isLeft = isLeft,
                 remainTime = remainTime,
-                distance = distance
+                distance = distance,
+                latitude = latitude,
+                longitude = longitude,
+                intersectionName = intersectionName
             )
         )
     }
