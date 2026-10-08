@@ -316,9 +316,7 @@ class KakaoMapActivity : BaseActivity(),
             }
         } else if (key == "SDK_SIMULATION_SPEED") {
             val speed = sharedPreferences.getInt("SDK_SIMULATION_SPEED", 60)
-            try {
-                com.kakaomobility.knsdk.KNSDK.sharedSimulGuidance()?.setSimulationSpeed(speed)
-            } catch (e: Exception) {}
+            safeGetSimulGuidance()?.setSimulationSpeed(speed)
         }
     }
     companion object {
@@ -343,6 +341,52 @@ class KakaoMapActivity : BaseActivity(),
                 android.util.Log.i("CarrotNavi", "[SIMUL] KNSDK routeSimul enabled (speed=$speed, s=true)")
             } catch (e: Exception) {
                 android.util.Log.e("CarrotNavi", "[SIMUL] Failed to enable route simul via reflection", e)
+            }
+        }
+
+        fun getOrCreateSimulGuidance(application: android.app.Application): com.kakaomobility.knsdk.guidance.knguidance.KNSimulGuidance? {
+            try {
+                try {
+                    val simul = com.kakaomobility.knsdk.KNSDK.sharedSimulGuidance()
+                    if (simul != null) return simul
+                } catch (e: Exception) {
+                    android.util.Log.w("CarrotNavi", "[SIMUL] sharedSimulGuidance() threw exception: ${e.message}")
+                }
+
+                // If b in KNGuidanceManager was null because KNDriveGuidance wasn't in Init state,
+                // instantiate and inject KNSimulGuidance directly!
+                val baseClass = com.kakaomobility.knsdk.KNBaseSDK::class.java
+                val fieldL = baseClass.getDeclaredField("l")
+                fieldL.isAccessible = true
+                val guidanceManager = fieldL.get(com.kakaomobility.knsdk.KNSDK)
+                if (guidanceManager != null) {
+                    val fieldB = guidanceManager.javaClass.getDeclaredField("b")
+                    fieldB.isAccessible = true
+                    var simul = fieldB.get(guidanceManager) as? com.kakaomobility.knsdk.guidance.knguidance.KNSimulGuidance
+                    if (simul == null) {
+                        simul = com.kakaomobility.knsdk.guidance.knguidance.KNSimulGuidance(application)
+                        fieldB.set(guidanceManager, simul)
+                        android.util.Log.i("CarrotNavi", "[SIMUL] Successfully instantiated and attached new KNSimulGuidance")
+                    }
+                    return simul
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("CarrotNavi", "[SIMUL] Failed in getOrCreateSimulGuidance", e)
+            }
+            return null
+        }
+
+        fun safeGetSimulGuidance(): com.kakaomobility.knsdk.guidance.knguidance.KNSimulGuidance? {
+            return try {
+                val baseClass = com.kakaomobility.knsdk.KNBaseSDK::class.java
+                val fieldL = baseClass.getDeclaredField("l")
+                fieldL.isAccessible = true
+                val guidanceManager = fieldL.get(com.kakaomobility.knsdk.KNSDK) ?: return null
+                val fieldB = guidanceManager.javaClass.getDeclaredField("b")
+                fieldB.isAccessible = true
+                fieldB.get(guidanceManager) as? com.kakaomobility.knsdk.guidance.knguidance.KNSimulGuidance
+            } catch (e: Exception) {
+                null
             }
         }
 
@@ -2092,7 +2136,7 @@ class KakaoMapActivity : BaseActivity(),
                 com.kakaomobility.knsdk.KNSDK.sharedGuidance()?.stop()
             } catch (e: Exception) {}
             enableRouteSimulation(simulSpeed, true)
-            val simulGuidance = com.kakaomobility.knsdk.KNSDK.sharedSimulGuidance()
+            val simulGuidance = getOrCreateSimulGuidance(application)
             if (simulGuidance != null) {
                 binding.naviView.initWithGuidance(
                     simulGuidance,
@@ -2106,7 +2150,7 @@ class KakaoMapActivity : BaseActivity(),
             }
         } else {
             try {
-                com.kakaomobility.knsdk.KNSDK.sharedSimulGuidance()?.stop()
+                safeGetSimulGuidance()?.stop()
                 com.kakaomobility.knsdk.KNSDK.removeSharedSimulGuidance()
             } catch (e: Exception) {}
             disableRouteSimulation()
@@ -2237,7 +2281,7 @@ class KakaoMapActivity : BaseActivity(),
             KNSDK.sharedGuidance()?.stop()
         }
         try {
-            KNSDK.sharedSimulGuidance()?.stop()
+            safeGetSimulGuidance()?.stop()
             KNSDK.removeSharedSimulGuidance()
             disableRouteSimulation()
         } catch (e: Exception) {}
@@ -2252,7 +2296,7 @@ class KakaoMapActivity : BaseActivity(),
                 Log.i("CarrotNavi", "[SIMUL] 실시간 모의주행 모드 전환: isSimul=$isSimul, speed=$speed")
                 executeGuidanceWithTrip(lastGuideDoc!!, lastGuideTrip!!, lastGuideOption!!)
             } else if (isSimul) {
-                KNSDK.sharedSimulGuidance()?.setSimulationSpeed(speed)
+                safeGetSimulGuidance()?.setSimulationSpeed(speed)
             }
         }
     }
@@ -2279,7 +2323,7 @@ class KakaoMapActivity : BaseActivity(),
         runOnUiThread {
             sharedPref.edit().putBoolean("SDK_SIMULATION_ENABLED", false).apply()
             try {
-                KNSDK.sharedSimulGuidance()?.stop()
+                safeGetSimulGuidance()?.stop()
                 KNSDK.removeSharedSimulGuidance()
             } catch (e: Exception) {}
             disableRouteSimulation()
@@ -2294,7 +2338,7 @@ class KakaoMapActivity : BaseActivity(),
 
     fun togglePauseSimulation() {
         runOnUiThread {
-            val simul = KNSDK.sharedSimulGuidance()
+            val simul = safeGetSimulGuidance()
             if (simul != null) {
                 if (isSimulPaused) {
                     simul.resumeSimul()
@@ -2314,7 +2358,7 @@ class KakaoMapActivity : BaseActivity(),
     fun setSimulationSpeed(speed: Int) {
         runOnUiThread {
             sharedPref.edit().putInt("SDK_SIMULATION_SPEED", speed).apply()
-            KNSDK.sharedSimulGuidance()?.setSimulationSpeed(speed)
+            safeGetSimulGuidance()?.setSimulationSpeed(speed)
         }
     }
 
