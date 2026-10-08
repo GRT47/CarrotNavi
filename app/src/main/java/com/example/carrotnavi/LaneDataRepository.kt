@@ -6,6 +6,22 @@ import androidx.lifecycle.MutableLiveData
 object LaneDataRepository {
     private val _observableLaneGuide = MutableLiveData<LaneGuideData?>()
     val observableLaneGuide: LiveData<LaneGuideData?> get() = _observableLaneGuide
+    private var isTestMode = false
+
+    fun startTestMode(durationMs: Long = 10000) {
+        isTestMode = true
+        applyLaneData(
+            bLane = true,
+            laneCount = 4,
+            laneDist = 300,
+            turnInfo = intArrayOf(12, 3, 3, 13),
+            available = intArrayOf(0, 1, 1, 0)
+        )
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            isTestMode = false
+            clear()
+        }, durationMs)
+    }
 
     /**
      * Tmap RGData 또는 ObservableLaneData로부터 추출한 차선 정보 업데이트
@@ -18,7 +34,27 @@ object LaneDataRepository {
         available: IntArray?,
         etcInfo: IntArray? = null
     ) {
-        if (!bLane || laneCount <= 0 || turnInfo == null || turnInfo.isEmpty()) {
+        if (isTestMode) return
+        applyLaneData(bLane, laneCount, laneDist, turnInfo, available, etcInfo)
+    }
+
+    private fun applyLaneData(
+        bLane: Boolean,
+        laneCount: Int,
+        laneDist: Int,
+        turnInfo: IntArray?,
+        available: IntArray?,
+        etcInfo: IntArray? = null
+    ) {
+        val hasTurnInfo = turnInfo != null && turnInfo.isNotEmpty() && turnInfo.any { it > 0 }
+        val shouldShow = (bLane || (laneDist in 1..800)) && laneCount >= 2 && hasTurnInfo
+
+        android.util.Log.e(
+            "LaneDataRepository",
+            "updateLaneData: bLane=$bLane, dist=$laneDist, count=$laneCount, shouldShow=$shouldShow, turnInfo=${turnInfo?.contentToString()}"
+        )
+
+        if (!shouldShow) {
             if (_observableLaneGuide.value?.isVisible == true) {
                 _observableLaneGuide.postValue(
                     _observableLaneGuide.value?.copy(isVisible = false)

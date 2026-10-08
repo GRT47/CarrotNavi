@@ -1341,11 +1341,20 @@ class HudOverlayManager(
         LaneDataRepository.observableLaneGuide.observe(lifecycleOwner, Observer { data ->
             updateLaneGuideUI(data)
         })
+
+        // 테스트 편의: 우측 상단 상태 영역 롱클릭 시 모의 4차선 가이드 10초간 미리보기 표출
+        binding.llTopUiGroup?.setOnLongClickListener {
+            android.widget.Toast.makeText(activity, "차선 가이드 오버레이 미리보기 (10초)", android.widget.Toast.LENGTH_SHORT).show()
+            LaneDataRepository.startTestMode(10000)
+            true
+        }
     }
 
     private fun updateLaneGuideUI(data: LaneGuideData?) {
         val overlay = binding.cvLaneGuideOverlay ?: return
         val container = binding.llLaneContainer ?: return
+
+        android.util.Log.e("HudOverlayManager", "updateLaneGuideUI: isOverlayVisible=$isOverlayVisible, isVisible=${data?.isVisible}, lanes=${data?.lanes?.size}, dist=${data?.distance}")
 
         if (!isOverlayVisible || data == null || !data.isVisible || data.lanes.isEmpty()) {
             if (overlay.visibility == View.VISIBLE) {

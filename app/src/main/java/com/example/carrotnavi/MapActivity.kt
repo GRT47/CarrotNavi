@@ -1750,13 +1750,14 @@ class MapActivity : BaseActivity() {
                             val laneAvailableInfo = dataClass.getMethod("getLaneAvailableInfo").invoke(laneData) as? IntArray
                             val laneEtcInfo = dataClass.getMethod("getLaneEtcInfo").invoke(laneData) as? IntArray
 
+                            android.util.Log.e("MapActivity", "ObservableLaneData: showLane=$showLane, count=$laneCount, dist=$laneDist, turn=${laneTurnInfo?.contentToString()}")
                             LaneDataRepository.updateLaneData(showLane, laneCount, laneDist, laneTurnInfo, laneAvailableInfo, laneEtcInfo)
                         } catch (e: Exception) {
                             Log.e("MapActivity", "Error parsing ObservableLaneData: ${e.message}")
                         }
                     }
                 }
-                Log.d("MapActivity", "Successfully registered observableLaneData observer")
+                Log.e("MapActivity", "Successfully registered observableLaneData observer")
             }
         } catch (e: Exception) {
             Log.e("MapActivity", "Failed to observe lane data via SDKManager: ${e.message}")

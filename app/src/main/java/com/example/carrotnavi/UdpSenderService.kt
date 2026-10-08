@@ -746,7 +746,9 @@ class UdpSenderService : Service() {
             val etcInfo = nLaneEtcInfoField?.get(rgData) as? IntArray
 
             LaneDataRepository.updateLaneData(bLane, laneCount, laneDist, turnInfo, available, etcInfo)
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            android.util.Log.e("UdpSenderService", "Error in updateLaneInfoFromEngine: ${e.message}", e)
+        }
     }
 }
 
