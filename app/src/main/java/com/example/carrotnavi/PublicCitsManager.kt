@@ -108,28 +108,46 @@ object PublicCitsManager {
 
                 // API 키 인코딩 정리 (공공데이터포털 serviceKey는 이미 인코딩되어 있거나 디코딩된 상태가 섞여있음)
                 val cleanKey = sanitizeApiKey(apiKey)
-                val url = "$BASE_URL/crsrd_map_info?serviceKey=$cleanKey&pageNo=1&numOfRows=3000&type=json&stdgCd=$stdgCd"
+                val allIntersections = mutableListOf<Intersection>()
+                var page = 1
+                var totalPages = 1
+                val pageSize = 1000
 
-                Log.d(TAG, "Fetching intersection map from API: stdgCd=$stdgCd")
-                val request = Request.Builder()
-                    .url(url)
-                    .addHeader("Accept", "application/json")
-                    .build()
+                do {
+                    val stdgParam = if (stdgCd.isNotEmpty()) "&stdgCd=$stdgCd" else ""
+                    val url = "$BASE_URL/crsrd_map_info?serviceKey=$cleanKey&pageNo=$page&numOfRows=$pageSize&type=json$stdgParam"
 
-                val response = httpClient.newCall(request).execute()
-                val body = response.body?.string()
+                    Log.d(TAG, "Fetching intersection map page $page: stdgCd=$stdgCd")
+                    val request = Request.Builder()
+                        .url(url)
+                        .addHeader("Accept", "application/json")
+                        .build()
 
-                if (response.isSuccessful && !body.isNullOrEmpty()) {
-                    val count = parseIntersectionMapJson(body)
-                    if (count > 0) {
-                        isMapLoaded = true
-                        saveToCache(body)
-                        Log.d(TAG, "Successfully loaded and cached $count intersections from API.")
+                    val response = httpClient.newCall(request).execute()
+                    val body = response.body?.string()
+
+                    if (response.isSuccessful && !body.isNullOrEmpty()) {
+                        val (pageItems, total) = parseIntersectionMapPage(body)
+                        allIntersections.addAll(pageItems)
+                        if (total > 0) {
+                            totalPages = ((total - 1) / pageSize) + 1
+                        }
+                        Log.d(TAG, "Page $page loaded ${pageItems.size} items (total $total)")
+                        page++
                     } else {
-                        Log.w(TAG, "No intersections found in API response: ${body.take(200)}")
+                        Log.w(TAG, "Failed to fetch crsrd_map_info page $page: code=${response.code}")
+                        break
                     }
+                } while (page <= totalPages && page <= 5)
+
+                if (allIntersections.isNotEmpty()) {
+                    intersections.clear()
+                    intersections.addAll(allIntersections)
+                    isMapLoaded = true
+                    saveToCacheJson(allIntersections)
+                    Log.d(TAG, "Successfully loaded and cached ${allIntersections.size} intersections from API.")
                 } else {
-                    Log.w(TAG, "Failed to fetch crsrd_map_info: code=${response.code}")
+                    Log.w(TAG, "No intersections found from API.")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading intersection map: ${e.message}", e)
@@ -139,12 +157,14 @@ object PublicCitsManager {
         }
     }
 
-    private fun parseIntersectionMapJson(jsonStr: String): Int {
+    private fun parseIntersectionMapPage(jsonStr: String): Pair<List<Intersection>, Int> {
         val list = mutableListOf<Intersection>()
+        var totalCount = 0
         try {
             val root = JSONObject(jsonStr)
-            val body = root.optJSONObject("body") ?: return 0
-            val itemsObj = body.optJSONObject("items") ?: return 0
+            val body = root.optJSONObject("body") ?: return Pair(list, 0)
+            totalCount = body.optInt("totalCount", 0)
+            val itemsObj = body.optJSONObject("items") ?: return Pair(list, totalCount)
 
             val itemArr = when {
                 itemsObj.has("item") -> {
@@ -171,22 +191,27 @@ object PublicCitsManager {
                     list.add(Intersection(id, name, lat, lon, sCd))
                 }
             }
-
-            if (list.isNotEmpty()) {
-                intersections.clear()
-                intersections.addAll(list)
-            }
         } catch (e: Exception) {
-            Log.e(TAG, "parseIntersectionMapJson error: ${e.message}", e)
+            Log.e(TAG, "parseIntersectionMapPage error: ${e.message}", e)
         }
-        return list.size
+        return Pair(list, totalCount)
     }
 
-    private fun saveToCache(rawJson: String) {
+    private fun saveToCacheJson(list: List<Intersection>) {
         val context = appContext ?: return
         try {
+            val array = JSONArray()
+            for (item in list) {
+                val obj = JSONObject()
+                obj.put("crsrdId", item.id)
+                obj.put("crsrdNm", item.name)
+                obj.put("lat", item.lat)
+                obj.put("lon", item.lon)
+                obj.put("stdgCd", item.stdgCd)
+                array.put(obj)
+            }
             context.openFileOutput("cits_intersections.json", Context.MODE_PRIVATE).use {
-                it.write(rawJson.toByteArray(Charsets.UTF_8))
+                it.write(array.toString().toByteArray(Charsets.UTF_8))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error saving cache: ${e.message}")
@@ -199,7 +224,27 @@ object PublicCitsManager {
             val file = context.getFileStreamPath("cits_intersections.json")
             if (file.exists() && file.length() > 0) {
                 val jsonStr = context.openFileInput("cits_intersections.json").bufferedReader().use { it.readText() }
-                return parseIntersectionMapJson(jsonStr)
+                if (jsonStr.startsWith("[")) {
+                    val arr = JSONArray(jsonStr)
+                    val list = mutableListOf<Intersection>()
+                    for (i in 0 until arr.length()) {
+                        val obj = arr.getJSONObject(i)
+                        list.add(
+                            Intersection(
+                                id = obj.getString("crsrdId"),
+                                name = obj.optString("crsrdNm", ""),
+                                lat = obj.getDouble("lat"),
+                                lon = obj.getDouble("lon"),
+                                stdgCd = obj.optString("stdgCd", "")
+                            )
+                        )
+                    }
+                    if (list.isNotEmpty()) {
+                        intersections.clear()
+                        intersections.addAll(list)
+                        return list.size
+                    }
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error loading cache: ${e.message}")
@@ -289,7 +334,8 @@ object PublicCitsManager {
         scope.launch {
             try {
                 val cleanKey = sanitizeApiKey(apiKey)
-                val url = "$BASE_URL/tl_drct_info?serviceKey=$cleanKey&pageNo=1&numOfRows=100&type=json&stdgCd=$stdgCd"
+                val stdgParam = if (stdgCd.isNotEmpty()) "&stdgCd=$stdgCd" else ""
+                val url = "$BASE_URL/tl_drct_info?serviceKey=$cleanKey&pageNo=1&numOfRows=1000&type=json$stdgParam"
 
                 val request = Request.Builder()
                     .url(url)
@@ -318,6 +364,14 @@ object PublicCitsManager {
     ) {
         try {
             val root = JSONObject(jsonStr)
+            val header = root.optJSONObject("header")
+            val resultCode = header?.optString("resultCode", "") ?: ""
+            if (resultCode != "K0") {
+                val resultMsg = header?.optString("resultMsg", "") ?: ""
+                Log.d(TAG, "tl_drct_info result: $resultCode ($resultMsg) for stdgCd=$stdgCd")
+                return
+            }
+
             val body = root.optJSONObject("body") ?: return
             val itemsObj = body.optJSONObject("items") ?: return
 
