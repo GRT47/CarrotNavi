@@ -172,6 +172,7 @@ class KakaoMapActivity : BaseActivity(),
                     apply()
                 }
                 RouteInfoRepository.updateRouteInfo("", 0, 0, "tmap")
+                TrafficSignalRepository.clear()
                 KNSDK.sharedGuidance()?.stop()
                 if (!isFinishing) finish()
             }
@@ -1854,6 +1855,89 @@ class KakaoMapActivity : BaseActivity(),
     }
     override fun didUpdateCitsGuide(guidance: KNGuidance, citsGuide: com.kakaomobility.knsdk.guidance.knguidance.citsguide.KNGuide_Cits) {
         if(::naviView.isInitialized) naviView.didUpdateCitsGuide(guidance, citsGuide)
+
+        try {
+            val citsList = citsGuide.citsList
+            if (citsList.isNullOrEmpty()) {
+                TrafficSignalRepository.clear()
+                return
+            }
+
+            var foundSignal = false
+            val currentLoc = guidance.locationGuide?.location
+
+            for (cits in citsList) {
+                if (cits is com.kakaomobility.knsdk.guidance.knguidance.citsguide.objects.KNCits_TrafSignal) {
+                    val spats = cits.spats
+                    if (!spats.isNullOrEmpty()) {
+                        var isRed = false
+                        var isYellow = false
+                        var isGreen = false
+                        var isLeft = false
+                        var remainTime = 0
+
+                        for (spat in spats) {
+                            val state = spat.state
+                            val type = spat.type
+
+                            val spatIsRed = (state == com.kakaomobility.knsdk.guidance.knguidance.citsguide.objects.KNCitsTrafSignalSpatState.KNCitsTrafSignalSpatState_Red ||
+                                             state == com.kakaomobility.knsdk.guidance.knguidance.citsguide.objects.KNCitsTrafSignalSpatState.KNCitsTrafSignalSpatState_FlashingRed)
+                            val spatIsYellow = (state == com.kakaomobility.knsdk.guidance.knguidance.citsguide.objects.KNCitsTrafSignalSpatState.KNCitsTrafSignalSpatState_Yellow ||
+                                                state == com.kakaomobility.knsdk.guidance.knguidance.citsguide.objects.KNCitsTrafSignalSpatState.KNCitsTrafSignalSpatState_FlashingYellow)
+                            val spatIsGreen = (state == com.kakaomobility.knsdk.guidance.knguidance.citsguide.objects.KNCitsTrafSignalSpatState.KNCitsTrafSignalSpatState_Green ||
+                                               state == com.kakaomobility.knsdk.guidance.knguidance.citsguide.objects.KNCitsTrafSignalSpatState.KNCitsTrafSignalSpatState_FlashingGreen)
+
+                            if (type == com.kakaomobility.knsdk.guidance.knguidance.citsguide.objects.KNCitsTrafSignalSpatType.KNCitsTrafSignalSpatType_Left) {
+                                if (spatIsGreen) isLeft = true
+                                if (spatIsRed && !isRed) isRed = true
+                                if (spatIsYellow && !isYellow) isYellow = true
+                            } else {
+                                if (spatIsRed) isRed = true
+                                if (spatIsYellow) isYellow = true
+                                if (spatIsGreen) isGreen = true
+                            }
+
+                            if (spat.remainTime > 0) {
+                                if (remainTime == 0 || spat.remainTime < remainTime) {
+                                    remainTime = spat.remainTime
+                                }
+                            }
+                        }
+
+                        // 전방 신호등까지 거리 계산 (현재 위치로부터의 거리)
+                        val distToSignal = try {
+                            if (currentLoc != null && cits.location != null) {
+                                val d = currentLoc.distToLocation(cits.location)
+                                if (d > 0) d else 0
+                            } else {
+                                0
+                            }
+                        } catch (e: Exception) {
+                            0
+                        }
+
+                        android.util.Log.d("KakaoMapActivity", "Kakao C-ITS Signal: isRed=$isRed, isYellow=$isYellow, isGreen=$isGreen, isLeft=$isLeft, remainTime=$remainTime, dist=${distToSignal}m")
+                        TrafficSignalRepository.updateSignal(
+                            isVisible = true,
+                            isRed = isRed,
+                            isYellow = isYellow,
+                            isGreen = isGreen,
+                            isLeft = isLeft,
+                            remainTime = remainTime,
+                            distance = distToSignal
+                        )
+                        foundSignal = true
+                        break
+                    }
+                }
+            }
+
+            if (!foundSignal) {
+                TrafficSignalRepository.clear()
+            }
+        } catch (e: Exception) {
+            Log.e("KakaoMapActivity", "Error parsing Kakao C-ITS: ${e.message}", e)
+        }
     }
 
     
@@ -2038,6 +2122,7 @@ class KakaoMapActivity : BaseActivity(),
         sharedPref.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         sharedPref.edit().putString("ACTIVE_NAVI", "tmap").apply()
         if (::hudOverlayManager.isInitialized) hudOverlayManager.onDestroy()
+        TrafficSignalRepository.clear()
         if (::locationManager.isInitialized) locationManager.removeUpdates(this)
         
         previewTimer?.cancel()

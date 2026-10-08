@@ -790,6 +790,18 @@
                         android:background="@drawable/shape_circle_dark" />
                 </LinearLayout>
 
+                <!-- 전방 신호등 거리 -->
+                <TextView
+                    android:id="@+id/tvSignalDist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="150m"
+                    android:textColor="#A0AEC0"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="6dp"
+                    android:visibility="gone" />
+
                 <!-- 신호 잔여 시간 카운트다운 -->
                 <TextView
                     android:id="@+id/tvSignalRemainTime"

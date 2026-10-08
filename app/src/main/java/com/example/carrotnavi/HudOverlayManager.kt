@@ -1397,7 +1397,9 @@ class HudOverlayManager(
         binding.vSignalRed?.setBackgroundResource(
             if (data.isRed) R.drawable.shape_circle_red else R.drawable.shape_circle_dark
         )
-        binding.vSignalYellow?.setBackgroundResource(R.drawable.shape_circle_dark)
+        binding.vSignalYellow?.setBackgroundResource(
+            if (data.isYellow) R.drawable.shape_circle_yellow else R.drawable.shape_circle_dark
+        )
 
         binding.ivSignalLeft?.let { iv ->
             if (data.isLeft) {
@@ -1413,6 +1415,16 @@ class HudOverlayManager(
             if (data.isGreen) R.drawable.shape_circle_green else R.drawable.shape_circle_dark
         )
 
+        // 전방 신호등 거리 표시
+        binding.tvSignalDist?.let { tvDist ->
+            if (data.distance > 0) {
+                tvDist.text = "${data.distance}m"
+                tvDist.visibility = View.VISIBLE
+            } else {
+                tvDist.visibility = View.GONE
+            }
+        }
+
         // 신호 잔여 시간 카운트다운
         if (data.remainTime > 0) {
             binding.tvSignalRemainTime?.text = "${data.remainTime}s"
@@ -1421,6 +1433,8 @@ class HudOverlayManager(
                 binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#FF3B30"))
             } else if (data.isGreen || data.isLeft) {
                 binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#4CD964"))
+            } else if (data.isYellow) {
+                binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#FFCC00"))
             } else {
                 binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#FFCC00"))
             }
