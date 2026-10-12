@@ -429,12 +429,16 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                             <label>연동 데이터 소스 (모드)</label>
                             <div class="radio-group" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px;">
                                 <div style="display: flex; align-items: center;">
+                                    <input type="radio" id="modeAuto" name="CITS_MODE" value="AUTO" ${if(citsMode == "AUTO") "checked" else ""}>
+                                    <label for="modeAuto" style="font-weight: bold; color: #1b5e20; margin-left: 6px;">🔄 자동 하이브리드 (도커 중계서버 우선 매칭 + 지자체 자동 전환)</label>
+                                </div>
+                                <div style="display: flex; align-items: center;">
                                     <input type="radio" id="modeProxy" name="CITS_MODE" value="UTIC_PROXY" ${if(citsMode == "UTIC_PROXY") "checked" else ""}>
-                                    <label for="modeProxy" style="font-weight: bold; color: #1b5e20; margin-left: 6px;">🌐 경찰청 UTIC 중계서버 (권장 - 대전, 대구, 경기, 인천 등 6,389개 교차로)</label>
+                                    <label for="modeProxy" style="color: #333; margin-left: 6px;">🌐 경찰청 UTIC 중계서버 전용 (대전, 대구, 인천 등)</label>
                                 </div>
                                 <div style="display: flex; align-items: center;">
                                     <input type="radio" id="modePublic" name="CITS_MODE" value="PUBLIC_API" ${if(citsMode == "PUBLIC_API") "checked" else ""}>
-                                    <label for="modePublic" style="color: #333; margin-left: 6px;">🏛️ 공공데이터포털 RTI API 직접 연동 (서울, 부산 등 지자체별)</label>
+                                    <label for="modePublic" style="color: #333; margin-left: 6px;">🏛️ 공공데이터포털 RTI API 직접 연동 (서울 등)</label>
                                 </div>
                             </div>
 

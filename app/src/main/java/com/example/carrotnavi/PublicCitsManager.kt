@@ -27,7 +27,7 @@ import kotlin.math.*
 object PublicCitsManager {
     private const val TAG = "PublicCitsManager"
     private const val RTI_BASE_URL = "https://apis.data.go.kr/B551982/rti"
-    const val DEFAULT_PROXY_URL = "https://comma-nav-server.leegrt.org"
+    const val DEFAULT_PROXY_URL = "http://192.168.1.5:5050"
 
     const val MODE_AUTO = "AUTO"
     const val MODE_UTIC_PROXY = "UTIC_PROXY"
