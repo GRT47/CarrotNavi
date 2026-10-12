@@ -3,9 +3,12 @@ import sqlite3
 import time
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template, Response
+from cits_utic import cits_bp, init_cits_db
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.register_blueprint(cits_bp)
+init_cits_db()
 
 if not os.path.exists('data'):
     os.makedirs('data')
