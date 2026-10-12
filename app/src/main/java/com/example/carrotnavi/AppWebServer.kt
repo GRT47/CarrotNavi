@@ -90,6 +90,12 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
                     val citsEnabled = params["CITS_PUBLIC_ENABLED"]?.firstOrNull() == "true"
                     editor.putBoolean("CITS_PUBLIC_ENABLED", citsEnabled)
                 }
+                if (params.containsKey("CITS_MODE")) {
+                    params["CITS_MODE"]?.firstOrNull()?.let { editor.putString("CITS_MODE", it.trim()) }
+                }
+                if (params.containsKey("CITS_PROXY_URL")) {
+                    params["CITS_PROXY_URL"]?.firstOrNull()?.let { editor.putString("CITS_PROXY_URL", it.trim()) }
+                }
                 if (params.containsKey("CITS_PUBLIC_API_KEY")) {
                     params["CITS_PUBLIC_API_KEY"]?.firstOrNull()?.let { editor.putString("CITS_PUBLIC_API_KEY", it.trim()) }
                 }
@@ -224,6 +230,8 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val isSimulationEnabled = prefs.getBoolean("SDK_SIMULATION_ENABLED", false)
         val simulationSpeed = prefs.getInt("SDK_SIMULATION_SPEED", 60)
         val citsPublicEnabled = prefs.getBoolean("CITS_PUBLIC_ENABLED", false)
+        val citsMode = prefs.getString("CITS_MODE", PublicCitsManager.MODE_UTIC_PROXY) ?: PublicCitsManager.MODE_UTIC_PROXY
+        val citsProxyUrl = prefs.getString("CITS_PROXY_URL", PublicCitsManager.DEFAULT_PROXY_URL) ?: PublicCitsManager.DEFAULT_PROXY_URL
         val citsPublicApiKey = prefs.getString("CITS_PUBLIC_API_KEY", "") ?: ""
         val citsPublicStdgCd = prefs.getString("CITS_PUBLIC_STDG_CD", "1100000000") ?: "1100000000"
         
@@ -242,7 +250,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val deviceId = RemoteLogManager.getDeviceId()
 
         if (session.uri == "/api/settings") {
-            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "SDK_SIMULATION_ENABLED":$isSimulationEnabled, "SDK_SIMULATION_SPEED":$simulationSpeed, "CITS_PUBLIC_ENABLED":$citsPublicEnabled, "CITS_PUBLIC_API_KEY":"$citsPublicApiKey", "CITS_PUBLIC_STDG_CD":"$citsPublicStdgCd", "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode", "CUSTOM_DPI_SCALE":$customDpiScale, "FULLSCREEN_MODE":$isFullscreen}"""
+            val json = """{"TARGET_UDP_IP":"$targetIp", "TARGET_UDP_PORT":$targetPort, "DEBUG_OVERLAY_VISIBLE":$isDebugOverlayVisible, "BLOCK_SPEED_ENABLED":$blockSpeedEnabled, "BLOCK_SPEED_OFFSET":$blockSpeedOffset, "BLOCK_SPEED_FAKE_DROP":$blockSpeedFakeDrop, "BLOCK_SPEED_BOOST_MODE":$blockSpeedBoostMode, "SDK_SIMULATION_ENABLED":$isSimulationEnabled, "SDK_SIMULATION_SPEED":$simulationSpeed, "CITS_PUBLIC_ENABLED":$citsPublicEnabled, "CITS_MODE":"$citsMode", "CITS_PROXY_URL":"$citsProxyUrl", "CITS_PUBLIC_API_KEY":"$citsPublicApiKey", "CITS_PUBLIC_STDG_CD":"$citsPublicStdgCd", "APP_KEY":"$appKey", "KAKAO_NATIVE_APP_KEY":"$kakaoNativeAppKey", "KAKAO_REST_API_KEY":"$kakaoRestApiKey", "USE_KM_DISTANCE_FORMAT":$distanceFormatKm, "MEDIA_BG_STYLE":"$mediaBgStyle", "SHOW_ALBUM_ART_WITH_EQ":$showAlbumArtWithEq, "MEDIA_SPLIT_RATIO_F":$mediaSplitRatioF, "MAP_THEME_MODE":"$mapThemeMode", "CUSTOM_DPI_SCALE":$customDpiScale, "FULLSCREEN_MODE":$isFullscreen}"""
             val response = newFixedLengthResponse(Response.Status.OK, "application/json", json)
             response.addHeader("Access-Control-Allow-Origin", "*")
             return response
@@ -403,28 +411,47 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
 
                         <div class="form-group" style="background-color: #e8f5e9; padding: 18px; border-radius: 10px; border: 1px solid #a5d6a7;">
                             <label style="color: #2e7d32; font-size: 1.1em; display: flex; align-items: center; justify-content: space-between;">
-                                <span>🚦 공공 C-ITS 실시간 교통신호등 연동</span>
-                                <span style="font-size: 0.85em; font-weight: normal; color: #388e3c;">공공데이터포털</span>
+                                <span>🚦 실시간 C-ITS 교통신호등 연동</span>
+                                <span style="font-size: 0.85em; font-weight: normal; color: #388e3c;">경찰청 TSI-Hub & 공공데이터</span>
                             </label>
                             <div class="hint" style="color: #1b5e20; margin-bottom: 12px;">
-                                행정안전부 한국지역정보개발원_(전국 통합데이터) 교통안전 신호등 실시간 정보 API를 연동하여 교차로 전방 실시간 신호(색상/잔여시간)를 수신하고 HUD 및 카카오 지도에 신호등 마커를 표시합니다.
+                                교차로 전방의 실시간 신호등 상태(🔴/🟢/🟡/⬅️) 및 잔여시간을 수신하여 HUD 및 지도에 신호등 마커로 실시간 표출합니다.
                             </div>
 
-                            <label>공공 C-ITS 연동</label>
-                            <div class="radio-group" style="margin-bottom: 12px;">
+                            <label>C-ITS 신호 연동 활성화</label>
+                            <div class="radio-group" style="margin-bottom: 14px;">
                                 <input type="radio" id="citsOn" name="CITS_PUBLIC_ENABLED" value="true" ${if(citsPublicEnabled) "checked" else ""}>
                                 <label for="citsOn" style="font-weight: bold; color: #2e7d32;">켜기 (실시간 신호 연동)</label>
                                 <input type="radio" id="citsOff" name="CITS_PUBLIC_ENABLED" value="false" ${if(!citsPublicEnabled) "checked" else ""}>
                                 <label for="citsOff" style="color: #555;">끄기</label>
                             </div>
 
-                            <label for="citsKey">공공데이터포털 일반 인증키 (ServiceKey)</label>
-                            <input type="text" id="citsKey" name="CITS_PUBLIC_API_KEY" value="$citsPublicApiKey" placeholder="발급받은 공공데이터포털 인증키 붙여넣기" style="margin-bottom: 8px;">
-                            <div class="hint" style="margin-bottom: 12px;">공공데이터포털 '교통안전 신호등 실시간 정보' API 일반 인증키(Encoding 또는 Decoding 키)</div>
+                            <label>연동 데이터 소스 (모드)</label>
+                            <div class="radio-group" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; align-items: center;">
+                                    <input type="radio" id="modeProxy" name="CITS_MODE" value="UTIC_PROXY" ${if(citsMode == "UTIC_PROXY") "checked" else ""}>
+                                    <label for="modeProxy" style="font-weight: bold; color: #1b5e20; margin-left: 6px;">🌐 경찰청 UTIC 중계서버 (권장 - 대전, 대구, 경기, 인천 등 6,389개 교차로)</label>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <input type="radio" id="modePublic" name="CITS_MODE" value="PUBLIC_API" ${if(citsMode == "PUBLIC_API") "checked" else ""}>
+                                    <label for="modePublic" style="color: #333; margin-left: 6px;">🏛️ 공공데이터포털 RTI API 직접 연동 (서울, 부산 등 지자체별)</label>
+                                </div>
+                            </div>
 
-                            <label for="citsStdg">지자체 법정동코드</label>
-                            <input type="text" id="citsStdg" name="CITS_PUBLIC_STDG_CD" value="$citsPublicStdgCd" placeholder="1100000000" style="margin-bottom: 8px;">
-                            <div class="hint">기본값: 서울특별시 1100000000 (부산: 2600000000, 대구: 2700000000, 경기: 4100000000 등 행정표준코드)</div>
+                            <div style="background: rgba(255,255,255,0.85); padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #c8e6c9;">
+                                <label for="citsProxyUrl" style="font-weight: bold; color: #2e7d32; font-size: 0.95em;">🌐 도커 중계서버 URL</label>
+                                <input type="text" id="citsProxyUrl" name="CITS_PROXY_URL" value="$citsProxyUrl" placeholder="https://comma-nav-server.leegrt.org" style="margin-bottom: 4px;">
+                                <div class="hint" style="font-size: 0.8em; color: #555;">CarrotNavi 도커 중계서버 (TSI-Hub TOD 자동 계산 및 초경량 신호 API 제공)</div>
+                            </div>
+
+                            <div style="background: rgba(255,255,255,0.85); padding: 12px; border-radius: 8px; margin-bottom: 6px; border: 1px solid #c8e6c9;">
+                                <label for="citsKey" style="font-weight: bold; color: #2e7d32; font-size: 0.95em;">🏛️ 공공데이터포털 일반 인증키 (ServiceKey)</label>
+                                <input type="text" id="citsKey" name="CITS_PUBLIC_API_KEY" value="$citsPublicApiKey" placeholder="발급받은 공공데이터포털 인증키 붙여넣기" style="margin-bottom: 6px;">
+
+                                <label for="citsStdg" style="font-weight: bold; color: #2e7d32; font-size: 0.95em; margin-top: 6px;">지자체 법정동코드</label>
+                                <input type="text" id="citsStdg" name="CITS_PUBLIC_STDG_CD" value="$citsPublicStdgCd" placeholder="1100000000" style="margin-bottom: 4px;">
+                                <div class="hint" style="font-size: 0.8em; color: #555;">서울: 1100000000, 부산: 2600000000, 경기: 4100000000 등 (공공데이터포털 모드 사용 시)</div>
+                            </div>
                         </div>
 
                         <button type="submit">설정 저장</button>
