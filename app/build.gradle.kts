@@ -5,6 +5,17 @@ plugins {
   id("com.example.carrotnavi.audiofocus")
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(FileInputStream(localPropertiesFile))
+    }
+}
+val citsAuthSecret: String = localProperties.getProperty("cits.auth.secret") ?: ""
+
 android {
     namespace = "com.example.carrotnavi"
     compileSdk = 36
@@ -12,8 +23,10 @@ android {
         applicationId = "com.example.carrotnavi"
         minSdk = 26
         targetSdk = 36
-        versionCode = 73
-        versionName = "2.3.2"
+        versionCode = 75
+        versionName = "2.3.4"
+
+        buildConfigField("String", "CITS_AUTH_SECRET", "\"$citsAuthSecret\"")
     }
 
     buildTypes {

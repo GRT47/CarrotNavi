@@ -16,6 +16,8 @@ import java.net.URLEncoder
 import java.util.Calendar
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 import kotlin.math.*
 
 /**
@@ -27,7 +29,7 @@ import kotlin.math.*
 object PublicCitsManager {
     private const val TAG = "PublicCitsManager"
     private const val RTI_BASE_URL = "https://apis.data.go.kr/B551982/rti"
-    const val DEFAULT_PROXY_URL = "http://192.168.1.5:5050"
+    const val DEFAULT_PROXY_URL = "https://carrot-cits-server.leegrt.org"
 
     const val MODE_AUTO = "AUTO"
     const val MODE_UTIC_PROXY = "UTIC_PROXY"
@@ -157,22 +159,38 @@ object PublicCitsManager {
         scope.launch {
             try {
                 val base = proxyUrl.trimEnd('/')
-                val url = "$base/api/cits/nearby_signal?lat=$lat&lon=$lon&heading=$heading&max_dist=500"
-                val request = Request.Builder()
+                val path = "/api/cits/nearby_signal"
+                val url = "$base$path?lat=$lat&lon=$lon&heading=$heading&max_dist=500"
+
+                val timestamp = System.currentTimeMillis() / 1000
+                val message = "$timestamp:$path"
+                val secret = BuildConfig.CITS_AUTH_SECRET
+                val signature = if (secret.isNotEmpty()) generateHmacSha256(secret, message) else ""
+
+                val requestBuilder = Request.Builder()
                     .url(url)
                     .addHeader("Accept", "application/json")
-                    .build()
+                    .addHeader("X-Cits-Timestamp", timestamp.toString())
 
+                if (signature.isNotEmpty()) {
+                    requestBuilder.addHeader("X-Cits-Signature", signature)
+                }
+
+                val request = requestBuilder.build()
                 val response = httpClient.newCall(request).execute()
                 val body = response.body?.string()
 
+                Log.d(TAG, "Proxy response: code=${response.code}, url=$url")
                 if (response.isSuccessful && !body.isNullOrEmpty()) {
                     val root = JSONObject(body)
                     val matched = root.optBoolean("matched", false)
+                    Log.d(TAG, "Proxy matched=$matched, body=$body")
                     if (matched) {
                         parseProxySignalJson(root)
                         return@launch
                     }
+                } else {
+                    Log.w(TAG, "Proxy response not successful: code=${response.code}, body=$body")
                 }
             } catch (e: Exception) {
                 Log.w(TAG, "Proxy fetch failed, fallback to public map: ${e.message}")
@@ -202,6 +220,7 @@ object PublicCitsManager {
             val isLeft = sigObj.optBoolean("is_left", false)
             val remainSec = sigObj.optInt("remain_seconds", 0)
 
+            Log.d(TAG, "🟢 Matched proxy intersection: $interName ($interId), dist=${distance}m, remain=${remainSec}s, isGreen=$isGreen, isRed=$isRed")
             currentTargetIntersection = Intersection(interId, interName, interLat, interLon, "")
 
             mainHandler.post {
@@ -221,6 +240,19 @@ object PublicCitsManager {
             }
         } catch (e: Exception) {
             Log.e(TAG, "parseProxySignalJson error: ${e.message}", e)
+        }
+    }
+
+    private fun generateHmacSha256(secret: String, message: String): String {
+        return try {
+            val mac = Mac.getInstance("HmacSHA256")
+            val keySpec = SecretKeySpec(secret.toByteArray(Charsets.UTF_8), "HmacSHA256")
+            mac.init(keySpec)
+            val bytes = mac.doFinal(message.toByteArray(Charsets.UTF_8))
+            bytes.joinToString("") { "%02x".format(it) }
+        } catch (e: Exception) {
+            Log.e(TAG, "HMAC generation failed: ${e.message}")
+            ""
         }
     }
 
