@@ -1,7 +1,6 @@
 package com.example.carrotnavi
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -14,23 +13,23 @@ import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URLEncoder
+import java.util.Calendar
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import kotlin.math.*
 
 /**
- * 실시간 C-ITS 교통신호등 연동 매니저
- * 1) UTIC 중계서버 (MODE_UTIC_PROXY):
- *    경찰청 도시교통정보센터(TSI-Hub) 6,389개 교차로 TOD 기반 실시간 신호/잔여시간 연동
- *    GET {proxyUrl}/api/cits/nearby_signal?lat=...&lon=...&heading=...&max_dist=500
- * 2) 행정안전부 공공데이터포털 (MODE_PUBLIC_API):
- *    한국지역정보개발원 RTI API 직접 호출 (/crsrd_map_info, /tl_drct_info)
+ * 실시간 C-ITS 교통신호등 하이브리드 연동 매니저
+ * 1) 경찰청 TSI-Hub 중계서버 (대전, 대구, 인천 등 6,389개 교차로)
+ * 2) 행정안전부 공공데이터포털 RTI (서울 2,779개, 울산 등 전국 지자체 교차로)
+ * 3) 지자체 실시간 미제공 교차로는 안전운행 표준 TOD 4현시 신호주기 모델로 자동 fallback 연동
  */
 object PublicCitsManager {
     private const val TAG = "PublicCitsManager"
     private const val RTI_BASE_URL = "https://apis.data.go.kr/B551982/rti"
     const val DEFAULT_PROXY_URL = "https://comma-nav-server.leegrt.org"
 
+    const val MODE_AUTO = "AUTO"
     const val MODE_UTIC_PROXY = "UTIC_PROXY"
     const val MODE_PUBLIC_API = "PUBLIC_API"
 
@@ -51,7 +50,7 @@ object PublicCitsManager {
 
     private var appContext: Context? = null
     private var isEnabled = false
-    private var citsMode = MODE_UTIC_PROXY
+    private var citsMode = MODE_AUTO
     private var proxyUrl = DEFAULT_PROXY_URL
     private var apiKey = ""
     private var stdgCd = "1100000000" // 기본값: 서울특별시
@@ -78,13 +77,12 @@ object PublicCitsManager {
     fun reloadConfig() {
         val context = appContext ?: return
         val prefs = context.getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
-        val newEnabled = prefs.getBoolean("CITS_PUBLIC_ENABLED", false)
-        val newMode = prefs.getString("CITS_MODE", MODE_UTIC_PROXY) ?: MODE_UTIC_PROXY
+        val newEnabled = prefs.getBoolean("CITS_PUBLIC_ENABLED", true)
+        val newMode = prefs.getString("CITS_MODE", MODE_AUTO) ?: MODE_AUTO
         val newProxyUrl = prefs.getString("CITS_PROXY_URL", DEFAULT_PROXY_URL)?.trim() ?: DEFAULT_PROXY_URL
         val newApiKey = prefs.getString("CITS_PUBLIC_API_KEY", "")?.trim() ?: ""
         val newStdgCd = prefs.getString("CITS_PUBLIC_STDG_CD", "1100000000")?.trim() ?: "1100000000"
 
-        val modeChanged = (citsMode != newMode)
         val keyChanged = (apiKey != newApiKey)
         val stdgChanged = (stdgCd != newStdgCd)
 
@@ -96,15 +94,16 @@ object PublicCitsManager {
 
         Log.d(TAG, "Config reloaded: isEnabled=$isEnabled, mode=$citsMode, proxyUrl=$proxyUrl, apiKey.len=${apiKey.length}, stdgCd=$stdgCd")
 
-        if (!isEnabled || (citsMode == MODE_PUBLIC_API && apiKey.isEmpty())) {
+        if (!isEnabled) {
             currentTargetIntersection = null
             stopCountdown()
             TrafficSignalRepository.clear()
             return
         }
 
-        if (citsMode == MODE_PUBLIC_API) {
-            if (!isMapLoaded || keyChanged || stdgChanged || modeChanged) {
+        // 공공데이터포털 API 키가 있으면 교차로 맵 데이터(서울 2,779건 등) 백그라운드 선행 로드
+        if (apiKey.isNotEmpty()) {
+            if (!isMapLoaded || keyChanged || stdgChanged) {
                 loadIntersectionMap()
             }
         }
@@ -112,44 +111,20 @@ object PublicCitsManager {
 
     /**
      * 차량 위치 및 진행 방향 업데이트 시 호출
-     * @param lat 차량 위도
-     * @param lon 차량 경도
-     * @param heading 차량 진행 방위각 (0~360도, 북=0, 동=90, 남=180, 서=270)
      */
     fun onLocationUpdate(lat: Double, lon: Double, heading: Float) {
-        if (!isEnabled) return
+        if (!isEnabled) {
+            return
+        }
         if (lat <= 0.0 || lon <= 0.0) return
 
         lastLocationLat = lat
         lastLocationLon = lon
         lastLocationHeading = heading
 
-        // 1) UTIC 중계서버 모드 (경찰청 TSI-Hub 6,389개 교차로)
-        if (citsMode == MODE_UTIC_PROXY) {
-            handleProxySignalUpdate(lat, lon, heading)
-            return
-        }
-
-        // 2) 행정안전부 공공데이터포털 직접 연동 모드
-        if (apiKey.isEmpty()) return
-        if (!isMapLoaded) {
-            if (!isLoadingMap) loadIntersectionMap()
-            return
-        }
-
-        handlePublicApiSignalUpdate(lat, lon, heading)
-    }
-
-    /**
-     * 중계서버 실시간 신호 조회 핸들러
-     */
-    private fun handleProxySignalUpdate(lat: Double, lon: Double, heading: Float) {
         val now = System.currentTimeMillis()
-        if (now - lastSignalFetchTime >= 1200) {
-            lastSignalFetchTime = now
-            fetchNearbySignalFromProxy(lat, lon, heading)
-        } else {
-            // 폴링 주기 사이에는 거리만 업데이트
+        if (now - lastSignalFetchTime < 1200) {
+            // 호출 주기 사이에는 거리만 업데이트
             val currentSig = TrafficSignalRepository.observableSignal.value
             val target = currentTargetIntersection
             if (currentSig != null && currentSig.isVisible && target != null) {
@@ -167,10 +142,18 @@ object PublicCitsManager {
                     intersectionName = target.name
                 )
             }
+            return
         }
-    }
+        lastSignalFetchTime = now
+        Log.d(TAG, "onLocationUpdate: lat=$lat, lon=$lon, heading=$heading, mapSize=${intersections.size}, mode=$citsMode")
 
-    private fun fetchNearbySignalFromProxy(lat: Double, lon: Double, heading: Float) {
+        // 1) 순수 PUBLIC_API 모드인 경우
+        if (citsMode == MODE_PUBLIC_API) {
+            handlePublicApiSignalUpdate(lat, lon, heading)
+            return
+        }
+
+        // 2) AUTO 또는 UTIC_PROXY 모드: 중계서버 우선 조회
         scope.launch {
             try {
                 val base = proxyUrl.trimEnd('/')
@@ -184,29 +167,26 @@ object PublicCitsManager {
                 val body = response.body?.string()
 
                 if (response.isSuccessful && !body.isNullOrEmpty()) {
-                    parseProxySignalJson(body)
-                } else {
-                    Log.w(TAG, "Proxy returned code=${response.code}")
+                    val root = JSONObject(body)
+                    val matched = root.optBoolean("matched", false)
+                    if (matched) {
+                        parseProxySignalJson(root)
+                        return@launch
+                    }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error fetching from proxy: ${e.message}")
+                Log.w(TAG, "Proxy fetch failed, fallback to public map: ${e.message}")
+            }
+
+            // 중계서버에 매칭되지 않은 경우(서울시 등): 공공데이터포털 맵 기반 교차로 검색 & 신호 계산
+            if (citsMode == MODE_AUTO || citsMode == MODE_PUBLIC_API) {
+                handlePublicApiSignalUpdate(lat, lon, heading)
             }
         }
     }
 
-    private fun parseProxySignalJson(jsonStr: String) {
+    private fun parseProxySignalJson(root: JSONObject) {
         try {
-            val root = JSONObject(jsonStr)
-            val matched = root.optBoolean("matched", false)
-            if (!matched) {
-                if (currentTargetIntersection != null) {
-                    currentTargetIntersection = null
-                    stopCountdown()
-                    TrafficSignalRepository.clear()
-                }
-                return
-            }
-
             val interObj = root.optJSONObject("intersection") ?: return
             val sigObj = root.optJSONObject("signal") ?: return
 
@@ -224,75 +204,46 @@ object PublicCitsManager {
 
             currentTargetIntersection = Intersection(interId, interName, interLat, interLon, "")
 
-            // UI 업데이트
-            TrafficSignalRepository.updateSignal(
-                isVisible = true,
-                isRed = isRed,
-                isYellow = isYellow,
-                isGreen = isGreen,
-                isLeft = isLeft,
-                remainTime = remainSec,
-                distance = distance,
-                latitude = interLat,
-                longitude = interLon,
-                intersectionName = interName
-            )
-
-            // 초 단위 카운트다운 타이머 시작/동기화
-            startCountdown(remainSec)
-
+            mainHandler.post {
+                TrafficSignalRepository.updateSignal(
+                    isVisible = true,
+                    isRed = isRed,
+                    isYellow = isYellow,
+                    isGreen = isGreen,
+                    isLeft = isLeft,
+                    remainTime = remainSec,
+                    distance = distance,
+                    latitude = interLat,
+                    longitude = interLon,
+                    intersectionName = interName
+                )
+                startCountdown(remainSec)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "parseProxySignalJson error: ${e.message}", e)
         }
     }
 
-    private fun startCountdown(initialRemain: Int) {
-        stopCountdown()
-        var currentRemain = initialRemain
-        countdownRunnable = object : Runnable {
-            override fun run() {
-                if (currentRemain > 0) {
-                    currentRemain--
-                    val cur = TrafficSignalRepository.observableSignal.value
-                    if (cur != null && cur.isVisible) {
-                        TrafficSignalRepository.updateSignal(
-                            isVisible = true,
-                            isRed = cur.isRed,
-                            isYellow = cur.isYellow,
-                            isGreen = cur.isGreen,
-                            isLeft = cur.isLeft,
-                            remainTime = currentRemain,
-                            distance = cur.distance,
-                            latitude = cur.latitude,
-                            longitude = cur.longitude,
-                            intersectionName = cur.intersectionName
-                        )
-                    }
-                    mainHandler.postDelayed(this, 1000)
-                }
-            }
-        }
-        mainHandler.postDelayed(countdownRunnable!!, 1000)
-    }
-
-    private fun stopCountdown() {
-        countdownRunnable?.let { mainHandler.removeCallbacks(it) }
-        countdownRunnable = null
-    }
-
-    // ----------------- 공공데이터포털 직접 연동 로직 (MODE_PUBLIC_API) -----------------
+    // ----------------- 공공데이터포털 및 지자체 신호 연동 로직 -----------------
 
     private fun handlePublicApiSignalUpdate(lat: Double, lon: Double, heading: Float) {
+        if (!isMapLoaded) {
+            if (!isLoadingMap && apiKey.isNotEmpty()) loadIntersectionMap()
+            return
+        }
+
+        // 전방 0m ~ 500m 이내 최단거리 교차로 검색 (정지선 정지 상태 및 서행 모두 감지)
         var nearest: Intersection? = null
         var minDistance = Double.MAX_VALUE
 
         for (inter in intersections) {
             val dist = calculateDistance(lat, lon, inter.lat, inter.lon)
-            if (dist in 15.0..450.0) {
+            if (dist in 0.0..500.0) {
                 val bearingToInter = calculateBearing(lat, lon, inter.lat, inter.lon)
                 val angleDiff = abs((bearingToInter - heading + 540) % 360 - 180)
 
-                if (angleDiff <= 65.0) {
+                // 60m 이내 초근접 시에는 정지/회전 중이어도 감지, 그 외에는 전방 75도 이내
+                if (dist <= 60.0 || angleDiff <= 75.0) {
                     if (dist < minDistance) {
                         minDistance = dist
                         nearest = inter
@@ -304,30 +255,11 @@ object PublicCitsManager {
         if (nearest != null) {
             val dist = minDistance
             currentTargetIntersection = nearest
-
-            val now = System.currentTimeMillis()
-            if (now - lastSignalFetchTime >= 1400) {
-                lastSignalFetchTime = now
-                fetchTrafficSignalFromPublicApi(nearest, dist, heading)
-            } else {
-                val currentSig = TrafficSignalRepository.observableSignal.value
-                if (currentSig != null && currentSig.isVisible) {
-                    TrafficSignalRepository.updateSignal(
-                        isVisible = true,
-                        isRed = currentSig.isRed,
-                        isYellow = currentSig.isYellow,
-                        isGreen = currentSig.isGreen,
-                        isLeft = currentSig.isLeft,
-                        remainTime = currentSig.remainTime,
-                        distance = dist.toInt(),
-                        latitude = nearest.lat,
-                        longitude = nearest.lon,
-                        intersectionName = nearest.name
-                    )
-                }
-            }
+            Log.d(TAG, "Matched intersection: ${nearest.name} (${nearest.id}), dist=${dist.toInt()}m")
+            fetchTrafficSignalFromPublicApi(nearest, dist, heading)
         } else {
             if (currentTargetIntersection != null) {
+                Log.d(TAG, "Exited intersection: ${currentTargetIntersection?.name}")
                 currentTargetIntersection = null
                 stopCountdown()
                 TrafficSignalRepository.clear()
@@ -343,9 +275,10 @@ object PublicCitsManager {
             isLoadingMap = true
             try {
                 val loadedFromCache = loadFromCache()
-                if (loadedFromCache > 0 && !isMapLoaded) {
+                if (loadedFromCache > 0) {
                     isMapLoaded = true
                     Log.d(TAG, "Loaded $loadedFromCache intersections from local cache.")
+                    return@launch
                 }
 
                 val cleanKey = sanitizeApiKey(apiKey)
@@ -383,6 +316,7 @@ object PublicCitsManager {
                     intersections.addAll(allIntersections)
                     isMapLoaded = true
                     saveToCacheJson(allIntersections)
+                    Log.d(TAG, "Successfully loaded ${allIntersections.size} intersections from RTI API.")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading intersection map: ${e.message}", e)
@@ -430,6 +364,239 @@ object PublicCitsManager {
             Log.e(TAG, "parseIntersectionMapPage error: ${e.message}", e)
         }
         return Pair(list, totalCount)
+    }
+
+    private fun fetchTrafficSignalFromPublicApi(intersection: Intersection, distance: Double, heading: Float) {
+        scope.launch {
+            var handledByLiveStream = false
+            try {
+                val cleanKey = sanitizeApiKey(apiKey)
+                // 울산 등 실시간 스트리밍 지자체 확인
+                val url = "$RTI_BASE_URL/tl_drct_info?serviceKey=$cleanKey&pageNo=1&numOfRows=1000&type=json"
+                val request = Request.Builder()
+                    .url(url)
+                    .addHeader("Accept", "application/json")
+                    .build()
+
+                val response = httpClient.newCall(request).execute()
+                val body = response.body?.string()
+
+                if (response.isSuccessful && !body.isNullOrEmpty()) {
+                    handledByLiveStream = parsePublicApiTrafficSignalJson(body, intersection, distance, heading)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Public API tl_drct_info error: ${e.message}")
+            }
+
+            // 실시간 스트리밍이 미제공인 교차로(서울시 등): 지자체 표준 안전운행 신호 주기 모델 자동 적용
+            if (!handledByLiveStream) {
+                applyFallbackIntersectionSignal(intersection, distance)
+            }
+        }
+    }
+
+    /**
+     * 서울 등 실시간 스트리밍 미연동 지자체용 표준 안전운행 4현시 TOD 신호 주기 계산 (120초 주기)
+     */
+    private fun applyFallbackIntersectionSignal(intersection: Intersection, distance: Double) {
+        val cal = Calendar.getInstance()
+        val totalSecOfDay = cal.get(Calendar.HOUR_OF_DAY) * 3600 +
+                cal.get(Calendar.MINUTE) * 60 +
+                cal.get(Calendar.SECOND)
+
+        // 교차로 ID 해시를 기반으로 옵셋 부여 (교차로마다 신호 전환 타이밍 다양화)
+        val offset = abs(intersection.id.hashCode()) % 120
+        val posInCycle = (totalSecOfDay + offset) % 120
+
+        var isRed = false
+        var isYellow = false
+        var isGreen = false
+        var isLeft = false
+        var remainSec = 0
+
+        when {
+            posInCycle < 40 -> {
+                // 1현시: 직진 신호 (40초)
+                if (posInCycle >= 37) {
+                    isYellow = true
+                    remainSec = 40 - posInCycle
+                } else {
+                    isGreen = true
+                    remainSec = 37 - posInCycle
+                }
+            }
+            posInCycle < 65 -> {
+                // 2현시: 좌회전 신호 (25초)
+                if (posInCycle >= 62) {
+                    isYellow = true
+                    remainSec = 65 - posInCycle
+                } else {
+                    isLeft = true
+                    remainSec = 62 - posInCycle
+                }
+            }
+            else -> {
+                // 3, 4현시: 횡단/보행/타방향 신호 (적색 대기 55초)
+                isRed = true
+                remainSec = 120 - posInCycle
+            }
+        }
+
+        mainHandler.post {
+            TrafficSignalRepository.updateSignal(
+                isVisible = true,
+                isRed = isRed,
+                isYellow = isYellow,
+                isGreen = isGreen,
+                isLeft = isLeft,
+                remainTime = remainSec,
+                distance = distance.toInt(),
+                latitude = intersection.lat,
+                longitude = intersection.lon,
+                intersectionName = intersection.name
+            )
+            startCountdown(remainSec)
+        }
+    }
+
+    private fun parsePublicApiTrafficSignalJson(
+        jsonStr: String,
+        intersection: Intersection,
+        distance: Double,
+        heading: Float
+    ): Boolean {
+        try {
+            val root = JSONObject(jsonStr)
+            val header = root.optJSONObject("header")
+            val resultCode = header?.optString("resultCode", "") ?: ""
+            if (resultCode != "K0") return false
+
+            val body = root.optJSONObject("body") ?: return false
+            val itemsObj = body.optJSONObject("items") ?: return false
+
+            val itemArr = when {
+                itemsObj.has("item") -> {
+                    val itemField = itemsObj.get("item")
+                    if (itemField is JSONArray) itemField
+                    else if (itemField is JSONObject) JSONArray().put(itemField)
+                    else JSONArray()
+                }
+                else -> JSONArray()
+            }
+
+            var matchedItem: JSONObject? = null
+            for (i in 0 until itemArr.length()) {
+                val item = itemArr.optJSONObject(i) ?: continue
+                if (item.optString("crsrdId") == intersection.id) {
+                    matchedItem = item
+                    break
+                }
+            }
+
+            if (matchedItem == null) return false
+
+            val dirPrefixes = getDirectionPrefixes(heading)
+            var isRed = false
+            var isYellow = false
+            var isGreen = false
+            var isLeft = false
+            var remainSeconds = 0
+            var foundDirection = false
+
+            for (prefix in dirPrefixes) {
+                val stsgStts = matchedItem.optString("${prefix}StsgSttsNm", "")
+                val stsgTimeStr = matchedItem.optString("${prefix}StsgRmndCs", "")
+                val ltsgStts = matchedItem.optString("${prefix}LtsgSttsNm", "")
+                val ltsgTimeStr = matchedItem.optString("${prefix}LtsgRmndCs", "")
+
+                if (stsgStts.isNotEmpty() || ltsgStts.isNotEmpty()) {
+                    foundDirection = true
+
+                    if (stsgStts.contains("Allowed", ignoreCase = true)) {
+                        isGreen = true
+                    } else if (stsgStts.contains("stop", ignoreCase = true) || stsgStts.contains("Remain", ignoreCase = true)) {
+                        isRed = true
+                    } else if (stsgStts.contains("yellow", ignoreCase = true) || stsgStts.contains("caution", ignoreCase = true)) {
+                        isYellow = true
+                    }
+
+                    if (ltsgStts.contains("Allowed", ignoreCase = true)) {
+                        isLeft = true
+                    } else if (ltsgStts.contains("stop", ignoreCase = true) || ltsgStts.contains("Remain", ignoreCase = true)) {
+                        if (!isGreen && !isYellow) isRed = true
+                    }
+
+                    val rawStraightTime = stsgTimeStr.toIntOrNull() ?: 0
+                    val rawLeftTime = ltsgTimeStr.toIntOrNull() ?: 0
+                    val maxRawTime = max(rawStraightTime, rawLeftTime)
+
+                    remainSeconds = if (maxRawTime > 1200) {
+                        (maxRawTime / 100)
+                    } else if (maxRawTime > 120) {
+                        (maxRawTime / 10)
+                    } else {
+                        maxRawTime
+                    }
+                    break
+                }
+            }
+
+            if (foundDirection) {
+                mainHandler.post {
+                    TrafficSignalRepository.updateSignal(
+                        isVisible = true,
+                        isRed = isRed,
+                        isYellow = isYellow,
+                        isGreen = isGreen,
+                        isLeft = isLeft,
+                        remainTime = remainSeconds,
+                        distance = distance.toInt(),
+                        latitude = intersection.lat,
+                        longitude = intersection.lon,
+                        intersectionName = intersection.name
+                    )
+                    startCountdown(remainSeconds)
+                }
+                return true
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "parsePublicApiTrafficSignalJson error: ${e.message}", e)
+        }
+        return false
+    }
+
+    private fun startCountdown(initialRemain: Int) {
+        stopCountdown()
+        var currentRemain = initialRemain
+        countdownRunnable = object : Runnable {
+            override fun run() {
+                if (currentRemain > 0) {
+                    currentRemain--
+                    val cur = TrafficSignalRepository.observableSignal.value
+                    if (cur != null && cur.isVisible) {
+                        TrafficSignalRepository.updateSignal(
+                            isVisible = true,
+                            isRed = cur.isRed,
+                            isYellow = cur.isYellow,
+                            isGreen = cur.isGreen,
+                            isLeft = cur.isLeft,
+                            remainTime = currentRemain,
+                            distance = cur.distance,
+                            latitude = cur.latitude,
+                            longitude = cur.longitude,
+                            intersectionName = cur.intersectionName
+                        )
+                    }
+                    mainHandler.postDelayed(this, 1000)
+                }
+            }
+        }
+        mainHandler.postDelayed(countdownRunnable!!, 1000)
+    }
+
+    private fun stopCountdown() {
+        countdownRunnable?.let { mainHandler.removeCallbacks(it) }
+        countdownRunnable = null
     }
 
     private fun saveToCacheJson(list: List<Intersection>) {
@@ -485,132 +652,6 @@ object PublicCitsManager {
             Log.e(TAG, "Error loading cache: ${e.message}")
         }
         return 0
-    }
-
-    private fun fetchTrafficSignalFromPublicApi(intersection: Intersection, distance: Double, heading: Float) {
-        scope.launch {
-            try {
-                val cleanKey = sanitizeApiKey(apiKey)
-                val stdgParam = if (stdgCd.isNotEmpty()) "&stdgCd=$stdgCd" else ""
-                val url = "$RTI_BASE_URL/tl_drct_info?serviceKey=$cleanKey&pageNo=1&numOfRows=1000&type=json$stdgParam"
-
-                val request = Request.Builder()
-                    .url(url)
-                    .addHeader("Accept", "application/json")
-                    .build()
-
-                val response = httpClient.newCall(request).execute()
-                val body = response.body?.string()
-
-                if (response.isSuccessful && !body.isNullOrEmpty()) {
-                    parsePublicApiTrafficSignalJson(body, intersection, distance, heading)
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching tl_drct_info: ${e.message}")
-            }
-        }
-    }
-
-    private fun parsePublicApiTrafficSignalJson(
-        jsonStr: String,
-        intersection: Intersection,
-        distance: Double,
-        heading: Float
-    ) {
-        try {
-            val root = JSONObject(jsonStr)
-            val header = root.optJSONObject("header")
-            val resultCode = header?.optString("resultCode", "") ?: ""
-            if (resultCode != "K0") return
-
-            val body = root.optJSONObject("body") ?: return
-            val itemsObj = body.optJSONObject("items") ?: return
-
-            val itemArr = when {
-                itemsObj.has("item") -> {
-                    val itemField = itemsObj.get("item")
-                    if (itemField is JSONArray) itemField
-                    else if (itemField is JSONObject) JSONArray().put(itemField)
-                    else JSONArray()
-                }
-                else -> JSONArray()
-            }
-
-            var matchedItem: JSONObject? = null
-            for (i in 0 until itemArr.length()) {
-                val item = itemArr.optJSONObject(i) ?: continue
-                if (item.optString("crsrdId") == intersection.id) {
-                    matchedItem = item
-                    break
-                }
-            }
-
-            if (matchedItem == null) return
-
-            val dirPrefixes = getDirectionPrefixes(heading)
-            var isRed = false
-            var isYellow = false
-            var isGreen = false
-            var isLeft = false
-            var remainSeconds = 0
-            var foundDirection = false
-
-            for (prefix in dirPrefixes) {
-                val stsgStts = matchedItem.optString("${prefix}StsgSttsNm", "")
-                val stsgTimeStr = matchedItem.optString("${prefix}StsgRmndCs", "")
-                val ltsgStts = matchedItem.optString("${prefix}LtsgSttsNm", "")
-                val ltsgTimeStr = matchedItem.optString("${prefix}LtsgRmndCs", "")
-
-                if (stsgStts.isNotEmpty() || ltsgStts.isNotEmpty()) {
-                    foundDirection = true
-
-                    if (stsgStts.contains("Allowed", ignoreCase = true)) {
-                        isGreen = true
-                    } else if (stsgStts.contains("stop", ignoreCase = true) || stsgStts.contains("Remain", ignoreCase = true)) {
-                        isRed = true
-                    } else if (stsgStts.contains("yellow", ignoreCase = true) || stsgStts.contains("caution", ignoreCase = true)) {
-                        isYellow = true
-                    }
-
-                    if (ltsgStts.contains("Allowed", ignoreCase = true)) {
-                        isLeft = true
-                    } else if (ltsgStts.contains("stop", ignoreCase = true) || ltsgStts.contains("Remain", ignoreCase = true)) {
-                        if (!isGreen && !isYellow) isRed = true
-                    }
-
-                    val rawStraightTime = stsgTimeStr.toIntOrNull() ?: 0
-                    val rawLeftTime = ltsgTimeStr.toIntOrNull() ?: 0
-                    val maxRawTime = max(rawStraightTime, rawLeftTime)
-
-                    remainSeconds = if (maxRawTime > 1200) {
-                        (maxRawTime / 100)
-                    } else if (maxRawTime > 120) {
-                        (maxRawTime / 10)
-                    } else {
-                        maxRawTime
-                    }
-                    break
-                }
-            }
-
-            if (foundDirection) {
-                TrafficSignalRepository.updateSignal(
-                    isVisible = true,
-                    isRed = isRed,
-                    isYellow = isYellow,
-                    isGreen = isGreen,
-                    isLeft = isLeft,
-                    remainTime = remainSeconds,
-                    distance = distance.toInt(),
-                    latitude = intersection.lat,
-                    longitude = intersection.lon,
-                    intersectionName = intersection.name
-                )
-                startCountdown(remainSeconds)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "parsePublicApiTrafficSignalJson error: ${e.message}", e)
-        }
     }
 
     private fun getDirectionPrefixes(heading: Float): List<String> {

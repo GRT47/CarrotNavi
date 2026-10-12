@@ -51,6 +51,8 @@ class MapActivity : BaseActivity() {
     private var lastCameraSignX = -1f
     private var lastCameraSignY = -1f
     private var splitHandleManager: SplitHandleManager? = null
+    private var citsLocationManager: android.location.LocationManager? = null
+    private var citsLocationListener: android.location.LocationListener? = null
     
     private val mediaProgressHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val mediaProgressRunnable = object : Runnable {
@@ -943,8 +945,42 @@ class MapActivity : BaseActivity() {
                         }
                     }
                 }, android.os.Handler(android.os.Looper.getMainLooper()))
+
+                citsLocationManager = locationManager
+                citsLocationListener = android.location.LocationListener { location ->
+                    if (location != null && location.latitude > 0.0 && location.longitude > 0.0) {
+                        PublicCitsManager.onLocationUpdate(
+                            location.latitude,
+                            location.longitude,
+                            location.bearing
+                        )
+                    }
+                }
+                citsLocationListener?.let { listener ->
+                    locationManager.requestLocationUpdates(
+                        android.location.LocationManager.GPS_PROVIDER,
+                        1000L,
+                        0f,
+                        listener,
+                        android.os.Looper.getMainLooper()
+                    )
+                    locationManager.requestLocationUpdates(
+                        android.location.LocationManager.NETWORK_PROVIDER,
+                        1000L,
+                        0f,
+                        listener,
+                        android.os.Looper.getMainLooper()
+                    )
+                    // 즉시 마지막 위치 기반 초기화
+                    val lastGps = locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER)
+                    val lastNet = locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER)
+                    val best = lastGps ?: lastNet
+                    if (best != null && best.latitude > 0.0 && best.longitude > 0.0) {
+                        PublicCitsManager.onLocationUpdate(best.latitude, best.longitude, best.bearing)
+                    }
+                }
             } catch (e: SecurityException) {
-                Log.e("MapActivity", "GPS Permission Error")
+                Log.e("MapActivity", "GPS Permission Error: ${e.message}")
             }
         }
     }
@@ -1043,6 +1079,9 @@ class MapActivity : BaseActivity() {
         if (::hudOverlayManager.isInitialized) {
             hudOverlayManager.onDestroy()
         }
+        try {
+            citsLocationListener?.let { citsLocationManager?.removeUpdates(it) }
+        } catch (e: Exception) {}
         TrafficSignalRepository.clear()
         val sharedPref = getSharedPreferences("CarrotNaviPrefs", Context.MODE_PRIVATE)
         sharedPref.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
