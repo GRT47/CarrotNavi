@@ -53,8 +53,8 @@ android {
         applicationId = "com.example.carrotnavi"
         minSdk = 26
         targetSdk = 36
-        versionCode = 75
-        versionName = "2.3.4"
+        versionCode = 76
+        versionName = "2.5.0"
         buildConfigField("String", "CITS_MASKED_KEY", "\"${buildCitsMaskedKeyHex()}\"")
     }
 
