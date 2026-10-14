@@ -563,74 +563,10 @@ object PublicCitsManager {
                 Log.w(TAG, "Public API tl_drct_info error: ${e.message}")
             }
 
-            // 실시간 스트리밍이 미제공인 교차로(서울시 등): 지자체 표준 안전운행 신호 주기 모델 자동 적용
+            // 실시간 신호 데이터가 없는 교차로는 가상(120초) 신호를 띄우지 않고 즉시 클리어하여 오안내 방지
             if (!handledByLiveStream) {
-                applyFallbackIntersectionSignal(intersection, distance)
+                clearCurrentTarget()
             }
-        }
-    }
-
-    /**
-     * 서울 등 실시간 스트리밍 미연동 지자체용 표준 안전운행 4현시 TOD 신호 주기 계산 (120초 주기)
-     */
-    private fun applyFallbackIntersectionSignal(intersection: Intersection, distance: Double) {
-        val cal = Calendar.getInstance()
-        val totalSecOfDay = cal.get(Calendar.HOUR_OF_DAY) * 3600 +
-                cal.get(Calendar.MINUTE) * 60 +
-                cal.get(Calendar.SECOND)
-
-        // 교차로 ID 해시를 기반으로 옵셋 부여 (교차로마다 신호 전환 타이밍 다양화)
-        val offset = abs(intersection.id.hashCode()) % 120
-        val posInCycle = (totalSecOfDay + offset) % 120
-
-        var isRed = false
-        var isYellow = false
-        var isGreen = false
-        var isLeft = false
-        var remainSec = 0
-
-        when {
-            posInCycle < 40 -> {
-                // 1현시: 직진 신호 (40초)
-                if (posInCycle >= 37) {
-                    isYellow = true
-                    remainSec = 40 - posInCycle
-                } else {
-                    isGreen = true
-                    remainSec = 37 - posInCycle
-                }
-            }
-            posInCycle < 65 -> {
-                // 2현시: 좌회전 신호 (25초)
-                if (posInCycle >= 62) {
-                    isYellow = true
-                    remainSec = 65 - posInCycle
-                } else {
-                    isLeft = true
-                    remainSec = 62 - posInCycle
-                }
-            }
-            else -> {
-                // 3, 4현시: 횡단/보행/타방향 신호 (적색 대기 55초)
-                isRed = true
-                remainSec = 120 - posInCycle
-            }
-        }
-
-        mainHandler.post {
-            TrafficSignalRepository.updateSignal(
-                isVisible = true,
-                isRed = isRed,
-                isYellow = isYellow,
-                isGreen = isGreen,
-                isLeft = isLeft,
-                remainTime = remainSec,
-                distance = distance.toInt(),
-                latitude = intersection.lat,
-                longitude = intersection.lon,
-                intersectionName = intersection.name
-            )
-            startCountdown(remainSec)
         }
     }
 
