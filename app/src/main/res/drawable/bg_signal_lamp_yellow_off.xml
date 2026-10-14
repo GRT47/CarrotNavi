@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Socket Bezel -->
+    <item android:left="1.5dp" android:top="1.5dp" android:right="1.5dp" android:bottom="1.5dp">
+        <shape android:shape="oval">
+            <solid android:color="#090C10" />
+            <stroke android:width="0.8dp" android:color="#2A3242" />
+        </shape>
+    </item>
+    <!-- Unlit Dim Yellow Lens -->
+    <item android:left="3dp" android:top="3dp" android:right="3dp" android:bottom="3dp">
+        <shape android:shape="oval">
+            <solid android:color="#282315" />
+        </shape>
+    </item>
+</layer-list>
+

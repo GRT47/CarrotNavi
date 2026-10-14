@@ -445,6 +445,9 @@ class MapActivity : BaseActivity() {
         VoiceDuckingManager.init(this)
         startUdpSenderService()
         PublicCitsManager.init(this)
+        TrafficSignalRepository.observableSignal.observe(this) { signalData ->
+            updateTrafficSignalMapMarker(signalData)
+        }
 
         hudBinding = com.example.carrotnavi.databinding.LayoutHudOverlaysBinding.bind(binding.root)
         hudOverlayManager = HudOverlayManager(this, hudBinding, this)
@@ -947,12 +950,22 @@ class MapActivity : BaseActivity() {
                 }, android.os.Handler(android.os.Looper.getMainLooper()))
 
                 citsLocationManager = locationManager
+                var lastGpsFixMs = 0L
                 citsLocationListener = android.location.LocationListener { location ->
+                    if (!isResumedState) return@LocationListener
                     if (location != null && location.latitude > 0.0 && location.longitude > 0.0) {
+                        val nowMs = System.currentTimeMillis()
+                        if (location.provider == android.location.LocationManager.GPS_PROVIDER) {
+                            lastGpsFixMs = nowMs
+                        } else if (nowMs - lastGpsFixMs < 8000L) {
+                            // 최근 GPS 수신이 정상일 때는 오차가 큰 NETWORK_PROVIDER 위치 무시
+                            return@LocationListener
+                        }
+                        val heading = if (location.hasBearing()) location.bearing else -1f
                         PublicCitsManager.onLocationUpdate(
                             location.latitude,
                             location.longitude,
-                            location.bearing
+                            heading
                         )
                     }
                 }
@@ -976,7 +989,8 @@ class MapActivity : BaseActivity() {
                     val lastNet = locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER)
                     val best = lastGps ?: lastNet
                     if (best != null && best.latitude > 0.0 && best.longitude > 0.0) {
-                        PublicCitsManager.onLocationUpdate(best.latitude, best.longitude, best.bearing)
+                        val initHeading = if (best.hasBearing()) best.bearing else -1f
+                        PublicCitsManager.onLocationUpdate(best.latitude, best.longitude, initHeading)
                     }
                 }
             } catch (e: SecurityException) {
@@ -1821,11 +1835,15 @@ class MapActivity : BaseActivity() {
                         val isLeft = dataClass.getMethod("isLeftLightOn").invoke(signalData) as? Boolean ?: false
                         val remainTime = dataClass.getMethod("getRemainTime").invoke(signalData) as? Int ?: 0
 
-                        TrafficSignalRepository.updateSignal(isVisible, isRed, isGreen, isLeft, remainTime)
+                        if (isVisible) {
+                            TrafficSignalRepository.updateSignal(isVisible, isRed, isGreen, isLeft, remainTime)
+                        } else if (!PublicCitsManager.isPublicCitsActive()) {
+                            TrafficSignalRepository.clear()
+                        }
                     } catch (e: Exception) {
                         Log.e("MapActivity", "Error parsing ObservableTrafficSignalData: ${e.message}")
                     }
-                } else {
+                } else if (!PublicCitsManager.isPublicCitsActive()) {
                     TrafficSignalRepository.clear()
                 }
             }
@@ -1833,5 +1851,293 @@ class MapActivity : BaseActivity() {
         } catch (e: Exception) {
             Log.e("MapActivity", "Failed to observe traffic signal data: ${e.message}")
         }
+    }
+
+    private var tmapTrafficSignalMarker: Any? = null
+    private var lastTmapSignalMarkerKey: String? = null
+
+    private fun findVsmMapView(view: android.view.View?): android.view.View? {
+        if (view == null) return null
+        val isVsm = try {
+            Class.forName("com.skt.tmap.vsm.map.VSMMapView").isInstance(view)
+        } catch (e: Exception) {
+            val clsName = view.javaClass.name
+            clsName.contains("VsmSdkMapView") || clsName.contains("VSMMapView")
+        }
+        if (isVsm) return view
+        if (view is android.view.ViewGroup) {
+            for (i in 0 until view.childCount) {
+                val found = findVsmMapView(view.getChildAt(i))
+                if (found != null) return found
+            }
+        }
+        return null
+    }
+
+    private fun updateTrafficSignalMapMarker(data: TrafficSignalData?) {
+        runOnUiThread {
+            if (!::binding.isInitialized) return@runOnUiThread
+            val vsmMapView = findVsmMapView(navigationFragment?.view ?: binding.root) ?: return@runOnUiThread
+            try {
+                val mapEngine = vsmMapView.javaClass.getMethod("mapEngine").invoke(vsmMapView) ?: return@runOnUiThread
+                val markerManager = mapEngine.javaClass.getMethod("getMarkerManager").invoke(mapEngine) ?: return@runOnUiThread
+
+                val lat = data?.latitude
+                val lon = data?.longitude
+                val markerId = "CARROT_CITS_SIGNAL_MARKER"
+
+                if (data == null || !data.isVisible || lat == null || lon == null || lat <= 0.0 || lon <= 0.0) {
+                    if (tmapTrafficSignalMarker != null) {
+                        try {
+                            markerManager.javaClass.getMethod("removeMarker", String::class.java)
+                                .invoke(markerManager, markerId)
+                        } catch (e: Exception) {}
+                        tmapTrafficSignalMarker = null
+                        lastTmapSignalMarkerKey = null
+                    }
+                    return@runOnUiThread
+                }
+
+                val existingInManager = try {
+                    markerManager.javaClass.getMethod("getMarker", String::class.java)
+                        .invoke(markerManager, markerId)
+                } catch (e: Exception) {
+                    null
+                }
+
+                val stateKey = "${lat}_${lon}_${data.isRed}_${data.isYellow}_${data.isLeft}_${data.isGreen}"
+                if (tmapTrafficSignalMarker != null && existingInManager != null && stateKey == lastTmapSignalMarkerKey) {
+                    return@runOnUiThread
+                }
+                lastTmapSignalMarkerKey = stateKey
+
+                val vsmMapPointClass = Class.forName("com.skt.tmap.vsm.data.VSMMapPoint")
+                val mapPoint = vsmMapPointClass
+                    .getConstructor(Double::class.javaPrimitiveType, Double::class.javaPrimitiveType)
+                    .newInstance(lon, lat)
+
+                val bitmap = createTrafficSignalMarkerBitmap(data)
+                val markerImageClass = Class.forName("com.skt.tmap.vsm.map.marker.MarkerImage")
+                val markerImage = markerImageClass
+                    .getMethod("fromBitmap", android.graphics.Bitmap::class.java)
+                    .invoke(null, bitmap)
+
+                val markerPointClass = Class.forName("com.skt.tmap.vsm.map.marker.VSMMarkerPoint")
+                val markerBaseClass = Class.forName("com.skt.tmap.vsm.map.marker.VSMMarkerBase")
+                val density = resources.displayMetrics.density
+                val totalWidthDp = bitmap.width / density
+                val totalHeightDp = bitmap.height / density
+
+                if (tmapTrafficSignalMarker == null || existingInManager == null) {
+                    val marker = markerPointClass.getConstructor(String::class.java)
+                        .newInstance(markerId)
+                    markerPointClass.getMethod("setPosition", vsmMapPointClass).invoke(marker, mapPoint)
+                    markerPointClass.getMethod("setIcon", markerImageClass).invoke(marker, markerImage)
+                    markerPointClass.getMethod("setIconSize", Float::class.javaPrimitiveType, Float::class.javaPrimitiveType)
+                        .invoke(marker, totalWidthDp, totalHeightDp)
+                    markerPointClass.getMethod("setIconAnchor", Float::class.javaPrimitiveType, Float::class.javaPrimitiveType)
+                        .invoke(marker, 0.5f, 1.0f)
+                    markerPointClass.getMethod("setOverlapTestEnabled", Boolean::class.javaPrimitiveType)
+                        .invoke(marker, false)
+                    markerBaseClass.getMethod("setShowPriority", Float::class.javaPrimitiveType)
+                        .invoke(marker, 9999f)
+                    markerBaseClass.getMethod("setTouchable", Boolean::class.javaPrimitiveType)
+                        .invoke(marker, false)
+                    markerBaseClass.getMethod("setRenderOrder", Int::class.javaPrimitiveType)
+                        .invoke(marker, 8) // RENDERING_ORDER_AFTER_POINT_MARKER
+
+                    try {
+                        markerManager.javaClass.getMethod("removeMarker", String::class.java)
+                            .invoke(markerManager, markerId)
+                    } catch (e: Exception) {}
+                    markerManager.javaClass.getMethod("addMarker", markerBaseClass)
+                        .invoke(markerManager, marker)
+                    tmapTrafficSignalMarker = marker
+                } else {
+                    markerPointClass.getMethod("setPosition", vsmMapPointClass)
+                        .invoke(tmapTrafficSignalMarker, mapPoint)
+                    markerPointClass.getMethod("setIcon", markerImageClass)
+                        .invoke(tmapTrafficSignalMarker, markerImage)
+                    markerPointClass.getMethod("setIconSize", Float::class.javaPrimitiveType, Float::class.javaPrimitiveType)
+                        .invoke(tmapTrafficSignalMarker, totalWidthDp, totalHeightDp)
+                }
+            } catch (e: Exception) {
+                Log.e("MapActivity", "Error updating Tmap traffic signal marker: ${e.message}")
+            }
+        }
+    }
+
+    private fun createTrafficSignalMarkerBitmap(data: TrafficSignalData): android.graphics.Bitmap {
+        val density = resources.displayMetrics.density
+        val badgeWidthDp = 64f
+        val badgeHeightDp = 22f
+        val cornerRadiusDp = 11f
+        val pointerWidthDp = 8f
+        val pointerHeightDp = 5f
+        val shadowPaddingDp = 3f
+
+        val width = ((badgeWidthDp + shadowPaddingDp * 2) * density).toInt()
+        val height = ((badgeHeightDp + pointerHeightDp + shadowPaddingDp * 2) * density).toInt()
+
+        val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(bitmap)
+
+        val left = shadowPaddingDp * density
+        val top = shadowPaddingDp * density
+        val right = left + badgeWidthDp * density
+        val bottom = top + badgeHeightDp * density
+        val cx = (left + right) / 2f
+        val cy = (top + bottom) / 2f
+        val pointerH = pointerHeightDp * density
+        val pointerHalfW = (pointerWidthDp * density) / 2f
+        val cornerRadius = cornerRadiusDp * density
+
+        // 1. 외곽 그림자
+        val shadowPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#55000000")
+            style = android.graphics.Paint.Style.FILL
+        }
+        val shadowRect = android.graphics.RectF(left, top + 1.5f * density, right, bottom + 1.5f * density)
+        canvas.drawRoundRect(shadowRect, cornerRadius, cornerRadius, shadowPaint)
+
+        val shadowPath = android.graphics.Path().apply {
+            moveTo(cx - pointerHalfW, bottom + 1.5f * density)
+            lineTo(cx, bottom + pointerH + 1.5f * density)
+            lineTo(cx + pointerHalfW, bottom + 1.5f * density)
+            close()
+        }
+        canvas.drawPath(shadowPath, shadowPaint)
+
+        // 2. 4구 신호등 하우징 본체 (다크 메탈릭 그라데이션)
+        val bodyPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            shader = android.graphics.LinearGradient(
+                cx, top, cx, bottom + pointerH,
+                android.graphics.Color.parseColor("#222834"),
+                android.graphics.Color.parseColor("#10141C"),
+                android.graphics.Shader.TileMode.CLAMP
+            )
+            style = android.graphics.Paint.Style.FILL
+        }
+        val badgeRect = android.graphics.RectF(left, top, right, bottom)
+        canvas.drawRoundRect(badgeRect, cornerRadius, cornerRadius, bodyPaint)
+
+        val pointerPath = android.graphics.Path().apply {
+            moveTo(cx - pointerHalfW, bottom - 1f)
+            lineTo(cx, bottom + pointerH)
+            lineTo(cx + pointerHalfW, bottom - 1f)
+            close()
+        }
+        canvas.drawPath(pointerPath, bodyPaint)
+
+        // 3. 신호등 하우징 테두리 (점등된 신호 색상 은은한 강조 또는 실버 화이트)
+        val borderColor = when {
+            data.isRed -> android.graphics.Color.parseColor("#E0FF5252")
+            data.isGreen || data.isLeft -> android.graphics.Color.parseColor("#E04CD964")
+            data.isYellow -> android.graphics.Color.parseColor("#E0FFCC00")
+            else -> android.graphics.Color.parseColor("#CCE2E8F0")
+        }
+        val strokePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = borderColor
+            style = android.graphics.Paint.Style.STROKE
+            strokeWidth = 1.3f * density
+        }
+        canvas.drawRoundRect(badgeRect, cornerRadius, cornerRadius, strokePaint)
+
+        // 4. 4구 렌즈 소켓 (적색 / 황색 / 좌회전 / 녹색)
+        val lampRadius = 5.0f * density
+        val socketRadius = 5.7f * density
+        val lampSpacing = 3.6f * density
+        val totalLampsWidth = lampRadius * 8f + lampSpacing * 3f
+        val startCx = cx - totalLampsWidth / 2f + lampRadius
+        val stepX = lampRadius * 2f + lampSpacing
+
+        val socketBgPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#090C10")
+            style = android.graphics.Paint.Style.FILL
+        }
+        val socketRimPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#2D3545")
+            style = android.graphics.Paint.Style.STROKE
+            strokeWidth = 0.8f * density
+        }
+        val lampPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            style = android.graphics.Paint.Style.FILL
+        }
+
+        for (i in 0..3) {
+            val lcx = startCx + i * stepX
+            canvas.drawCircle(lcx, cy, socketRadius, socketBgPaint)
+            canvas.drawCircle(lcx, cy, socketRadius, socketRimPaint)
+
+            when (i) {
+                0 -> { // 적색 (Red)
+                    if (data.isRed) {
+                        lampPaint.color = android.graphics.Color.parseColor("#55FF3B30")
+                        canvas.drawCircle(lcx, cy, lampRadius * 1.32f, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#FF3B30")
+                        canvas.drawCircle(lcx, cy, lampRadius, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#FF9E99")
+                        canvas.drawCircle(lcx - 1.3f * density, cy - 1.3f * density, 1.4f * density, lampPaint)
+                    } else {
+                        lampPaint.color = android.graphics.Color.parseColor("#2A181A")
+                        canvas.drawCircle(lcx, cy, lampRadius * 0.92f, lampPaint)
+                    }
+                }
+                1 -> { // 황색 (Yellow)
+                    if (data.isYellow) {
+                        lampPaint.color = android.graphics.Color.parseColor("#55FFCC00")
+                        canvas.drawCircle(lcx, cy, lampRadius * 1.32f, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#FFCC00")
+                        canvas.drawCircle(lcx, cy, lampRadius, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#FFF59D")
+                        canvas.drawCircle(lcx - 1.3f * density, cy - 1.3f * density, 1.4f * density, lampPaint)
+                    } else {
+                        lampPaint.color = android.graphics.Color.parseColor("#2A2516")
+                        canvas.drawCircle(lcx, cy, lampRadius * 0.92f, lampPaint)
+                    }
+                }
+                2 -> { // 좌회전 (Left Arrow)
+                    if (data.isLeft) {
+                        lampPaint.color = android.graphics.Color.parseColor("#454CD964")
+                        canvas.drawCircle(lcx, cy, lampRadius * 1.32f, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#0E291A")
+                        canvas.drawCircle(lcx, cy, lampRadius, lampPaint)
+                    } else {
+                        lampPaint.color = android.graphics.Color.parseColor("#161D24")
+                        canvas.drawCircle(lcx, cy, lampRadius * 0.92f, lampPaint)
+                    }
+                    val arrowPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                        color = if (data.isLeft) android.graphics.Color.parseColor("#4CD964") else android.graphics.Color.parseColor("#384152")
+                        style = android.graphics.Paint.Style.STROKE
+                        strokeWidth = 1.7f * density
+                        strokeCap = android.graphics.Paint.Cap.ROUND
+                        strokeJoin = android.graphics.Paint.Join.ROUND
+                    }
+                    val arrowPath = android.graphics.Path().apply {
+                        moveTo(lcx + 2.7f * density, cy)
+                        lineTo(lcx - 2.7f * density, cy)
+                        moveTo(lcx - 0.3f * density, cy - 2.4f * density)
+                        lineTo(lcx - 2.9f * density, cy)
+                        lineTo(lcx - 0.3f * density, cy + 2.4f * density)
+                    }
+                    canvas.drawPath(arrowPath, arrowPaint)
+                }
+                3 -> { // 녹색 (Green)
+                    if (data.isGreen) {
+                        lampPaint.color = android.graphics.Color.parseColor("#554CD964")
+                        canvas.drawCircle(lcx, cy, lampRadius * 1.32f, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#4CD964")
+                        canvas.drawCircle(lcx, cy, lampRadius, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#B9F6CA")
+                        canvas.drawCircle(lcx - 1.3f * density, cy - 1.3f * density, 1.4f * density, lampPaint)
+                    } else {
+                        lampPaint.color = android.graphics.Color.parseColor("#15261D")
+                        canvas.drawCircle(lcx, cy, lampRadius * 0.92f, lampPaint)
+                    }
+                }
+            }
+        }
+
+        return bitmap
     }
 }

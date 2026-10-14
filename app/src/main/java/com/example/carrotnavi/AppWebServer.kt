@@ -229,8 +229,8 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
         val blockSpeedBoostMode = prefs.getInt("BLOCK_SPEED_BOOST_MODE", 0)
         val isSimulationEnabled = prefs.getBoolean("SDK_SIMULATION_ENABLED", false)
         val simulationSpeed = prefs.getInt("SDK_SIMULATION_SPEED", 60)
-        val citsPublicEnabled = prefs.getBoolean("CITS_PUBLIC_ENABLED", false)
-        val citsMode = prefs.getString("CITS_MODE", PublicCitsManager.MODE_UTIC_PROXY) ?: PublicCitsManager.MODE_UTIC_PROXY
+        val citsPublicEnabled = prefs.getBoolean("CITS_PUBLIC_ENABLED", true)
+        val citsMode = prefs.getString("CITS_MODE", PublicCitsManager.MODE_AUTO) ?: PublicCitsManager.MODE_AUTO
         val citsProxyUrl = prefs.getString("CITS_PROXY_URL", PublicCitsManager.DEFAULT_PROXY_URL) ?: PublicCitsManager.DEFAULT_PROXY_URL
         val citsPublicApiKey = prefs.getString("CITS_PUBLIC_API_KEY", "") ?: ""
         val citsPublicStdgCd = prefs.getString("CITS_PUBLIC_STDG_CD", "1100000000") ?: "1100000000"
@@ -444,7 +444,7 @@ class AppWebServer(private val context: Context, port: Int = 8080) : NanoHTTPD(p
 
                             <div style="background: rgba(255,255,255,0.85); padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #c8e6c9;">
                                 <label for="citsProxyUrl" style="font-weight: bold; color: #2e7d32; font-size: 0.95em;">🌐 도커 중계서버 URL</label>
-                                <input type="text" id="citsProxyUrl" name="CITS_PROXY_URL" value="$citsProxyUrl" placeholder="https://comma-nav-server.leegrt.org" style="margin-bottom: 4px;">
+                                <input type="text" id="citsProxyUrl" name="CITS_PROXY_URL" value="$citsProxyUrl" placeholder="https://carrot-cits-server.leegrt.org" style="margin-bottom: 4px;">
                                 <div class="hint" style="font-size: 0.8em; color: #555;">CarrotNavi 도커 중계서버 (TSI-Hub TOD 자동 계산 및 초경량 신호 API 제공)</div>
                             </div>
 

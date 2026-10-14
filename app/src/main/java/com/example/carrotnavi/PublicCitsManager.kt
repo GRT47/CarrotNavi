@@ -61,15 +61,20 @@ object PublicCitsManager {
     @Volatile private var isMapLoaded = false
     @Volatile private var isLoadingMap = false
 
-    private var currentTargetIntersection: Intersection? = null
+    @Volatile private var currentTargetIntersection: Intersection? = null
     private var lastSignalFetchTime = 0L
     private var lastLocationLat = 0.0
     private var lastLocationLon = 0.0
-    private var lastLocationHeading = 0f
+    private var lastLocationHeading = -1f
+    private var lastValidHeading = -1f
 
     // 1초 단위 잔여시간 카운트다운 타이머
     private val mainHandler = Handler(Looper.getMainLooper())
     private var countdownRunnable: Runnable? = null
+
+    fun isPublicCitsActive(): Boolean {
+        return isEnabled && currentTargetIntersection != null
+    }
 
     fun init(context: Context) {
         appContext = context.applicationContext
@@ -97,9 +102,7 @@ object PublicCitsManager {
         Log.d(TAG, "Config reloaded: isEnabled=$isEnabled, mode=$citsMode, proxyUrl=$proxyUrl, apiKey.len=${apiKey.length}, stdgCd=$stdgCd")
 
         if (!isEnabled) {
-            currentTargetIntersection = null
-            stopCountdown()
-            TrafficSignalRepository.clear()
+            clearCurrentTarget()
             return
         }
 
@@ -111,8 +114,21 @@ object PublicCitsManager {
         }
     }
 
+    private fun clearCurrentTarget() {
+        val prevTarget = currentTargetIntersection
+        currentTargetIntersection = null
+        mainHandler.post {
+            stopCountdown()
+            if (prevTarget != null || TrafficSignalRepository.observableSignal.value != null) {
+                Log.d(TAG, "Cleared C-ITS signal (exited intersection: ${prevTarget?.name})")
+                TrafficSignalRepository.clear()
+            }
+        }
+    }
+
     /**
      * 차량 위치 및 진행 방향 업데이트 시 호출
+     * @param heading 진행 각도 (0~360). 방향 정보가 없거나 정차 중일 때는 음수(-1f) 전달 가능.
      */
     fun onLocationUpdate(lat: Double, lon: Double, heading: Float) {
         if (!isEnabled) {
@@ -123,57 +139,80 @@ object PublicCitsManager {
         lastLocationLat = lat
         lastLocationLon = lon
         lastLocationHeading = heading
+        if (heading >= 0f) {
+            lastValidHeading = heading
+        }
+        val effectiveHeading = if (heading >= 0f) heading else lastValidHeading
 
         val now = System.currentTimeMillis()
         if (now - lastSignalFetchTime < 1200) {
-            // 호출 주기 사이에는 거리만 업데이트
+            // 호출 주기 사이에는 거리만 업데이트 (단, 550m 초과 시 즉시 재조회 허용)
             val currentSig = TrafficSignalRepository.observableSignal.value
             val target = currentTargetIntersection
             if (currentSig != null && currentSig.isVisible && target != null) {
                 val d = calculateDistance(lat, lon, target.lat, target.lon).toInt()
-                TrafficSignalRepository.updateSignal(
-                    isVisible = true,
-                    isRed = currentSig.isRed,
-                    isYellow = currentSig.isYellow,
-                    isGreen = currentSig.isGreen,
-                    isLeft = currentSig.isLeft,
-                    remainTime = currentSig.remainTime,
-                    distance = d,
-                    latitude = target.lat,
-                    longitude = target.lon,
-                    intersectionName = target.name
-                )
+                if (d <= 550) {
+                    TrafficSignalRepository.updateSignal(
+                        isVisible = true,
+                        isRed = currentSig.isRed,
+                        isYellow = currentSig.isYellow,
+                        isGreen = currentSig.isGreen,
+                        isLeft = currentSig.isLeft,
+                        remainTime = currentSig.remainTime,
+                        distance = d,
+                        latitude = target.lat,
+                        longitude = target.lon,
+                        intersectionName = target.name
+                    )
+                    return
+                }
+            } else {
+                return
             }
-            return
         }
         lastSignalFetchTime = now
-        Log.d(TAG, "onLocationUpdate: lat=$lat, lon=$lon, heading=$heading, mapSize=${intersections.size}, mode=$citsMode")
+        Log.d(TAG, "onLocationUpdate: lat=$lat, lon=$lon, heading=$effectiveHeading (raw=$heading), mapSize=${intersections.size}, mode=$citsMode")
 
         // 1) 순수 PUBLIC_API 모드인 경우
         if (citsMode == MODE_PUBLIC_API) {
-            handlePublicApiSignalUpdate(lat, lon, heading)
+            handlePublicApiSignalUpdate(lat, lon, effectiveHeading)
             return
         }
 
         // 2) AUTO 또는 UTIC_PROXY 모드: 중계서버 우선 조회
         scope.launch {
+            var proxyRespondedUnmatched = false
             try {
                 val base = proxyUrl.trimEnd('/')
                 val path = "/api/cits/nearby_signal"
-                val url = "$base$path?lat=$lat&lon=$lon&heading=$heading&max_dist=500"
+                val headingParam = if (effectiveHeading >= 0f) "&heading=$effectiveHeading" else ""
+                val url = "$base$path?lat=$lat&lon=$lon$headingParam&max_dist=500"
 
                 val timestamp = System.currentTimeMillis() / 1000
-                val message = "$timestamp:$path"
-                val secret = BuildConfig.CITS_AUTH_SECRET
-                val signature = if (secret.isNotEmpty()) generateHmacSha256(secret, message) else ""
+                val ctx = appContext
+                val secret = if (ctx != null) getRuntimeAuthSecret(ctx) else ""
+                val certSha256 = if (ctx != null) getApkSigningCertSha256(ctx) else ""
+                val deviceId = if (ctx != null) getDeviceHash(ctx) else "unknown"
+                val latRounded = String.format(java.util.Locale.US, "%.4f", lat)
+                val lonRounded = String.format(java.util.Locale.US, "%.4f", lon)
+
+                val baseMessage = "$timestamp:$path"
+                val payloadMessage = "$timestamp:$path:$latRounded:$lonRounded:$deviceId:$certSha256"
+                val signature = if (secret.isNotEmpty()) generateHmacSha256(secret, baseMessage) else ""
+                val payloadSig = if (secret.isNotEmpty()) generateHmacSha256(secret, payloadMessage) else ""
 
                 val requestBuilder = Request.Builder()
                     .url(url)
                     .addHeader("Accept", "application/json")
+                    .addHeader("User-Agent", "CarrotNavi/${BuildConfig.VERSION_NAME} (Android; CITS-Client/2.0)")
                     .addHeader("X-Cits-Timestamp", timestamp.toString())
+                    .addHeader("X-Cits-Device-Id", deviceId)
 
                 if (signature.isNotEmpty()) {
                     requestBuilder.addHeader("X-Cits-Signature", signature)
+                }
+                if (payloadSig.isNotEmpty()) {
+                    requestBuilder.addHeader("X-Cits-Payload-Sig", payloadSig)
                 }
 
                 val request = requestBuilder.build()
@@ -188,6 +227,8 @@ object PublicCitsManager {
                     if (matched) {
                         parseProxySignalJson(root)
                         return@launch
+                    } else {
+                        proxyRespondedUnmatched = true
                     }
                 } else {
                     Log.w(TAG, "Proxy response not successful: code=${response.code}, body=$body")
@@ -196,9 +237,22 @@ object PublicCitsManager {
                 Log.w(TAG, "Proxy fetch failed, fallback to public map: ${e.message}")
             }
 
-            // 중계서버에 매칭되지 않은 경우(서울시 등): 공공데이터포털 맵 기반 교차로 검색 & 신호 계산
+            // 중계서버만 사용하는 모드에서 매칭되지 않았거나, 기존 타겟에서 550m 이상 벗어난 경우 신호등 클리어
+            if (citsMode == MODE_UTIC_PROXY) {
+                if (proxyRespondedUnmatched) {
+                    clearCurrentTarget()
+                } else {
+                    val target = currentTargetIntersection
+                    if (target != null && calculateDistance(lat, lon, target.lat, target.lon) > 550.0) {
+                        clearCurrentTarget()
+                    }
+                }
+                return@launch
+            }
+
+            // 중계서버에 매칭되지 않은 경우(AUTO 모드): 공공데이터포털 맵 기반 교차로 검색 & 신호 계산
             if (citsMode == MODE_AUTO || citsMode == MODE_PUBLIC_API) {
-                handlePublicApiSignalUpdate(lat, lon, heading)
+                handlePublicApiSignalUpdate(lat, lon, effectiveHeading, proxyRespondedUnmatched)
             }
         }
     }
@@ -243,6 +297,85 @@ object PublicCitsManager {
         }
     }
 
+    @Volatile private var cachedRuntimeSecret: String? = null
+    @Volatile private var cachedApkCertSha256: String? = null
+    @Volatile private var cachedDeviceHash: String? = null
+
+    private fun getApkSigningCertSha256(context: Context): String {
+        cachedApkCertSha256?.let { return it }
+        return try {
+            val pm = context.packageManager
+            val pkg = context.packageName
+            val certBytes = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                val pkgInfo = pm.getPackageInfo(pkg, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES)
+                val signingInfo = pkgInfo.signingInfo
+                if (signingInfo != null) {
+                    if (signingInfo.hasMultipleSigners()) {
+                        signingInfo.apkContentsSigners.firstOrNull()?.toByteArray()
+                    } else {
+                        signingInfo.signingCertificateHistory.firstOrNull()?.toByteArray()
+                    }
+                } else null
+            } else {
+                @Suppress("DEPRECATION")
+                val pkgInfo = pm.getPackageInfo(pkg, android.content.pm.PackageManager.GET_SIGNATURES)
+                @Suppress("DEPRECATION")
+                pkgInfo.signatures?.firstOrNull()?.toByteArray()
+            }
+            if (certBytes != null) {
+                val md = java.security.MessageDigest.getInstance("SHA-256")
+                val digest = md.digest(certBytes)
+                val hex = digest.joinToString("") { "%02x".format(it) }
+                cachedApkCertSha256 = hex
+                hex
+            } else ""
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to read APK signing certificate: ${e.message}")
+            ""
+        }
+    }
+
+    private fun getRuntimeAuthSecret(context: Context): String {
+        cachedRuntimeSecret?.let { return it }
+        return try {
+            val maskedHex = BuildConfig.CITS_MASKED_KEY.trim()
+            if (maskedHex.length != 64) return ""
+            val certSha256 = getApkSigningCertSha256(context)
+            if (certSha256.isEmpty()) return ""
+            val pkg = context.packageName
+            val salt = "CarrotNavi_CITS_v2_KeyMask"
+            val md = java.security.MessageDigest.getInstance("SHA-256")
+            val mask = md.digest("$certSha256:$pkg:$salt".toByteArray(Charsets.UTF_8))
+            val unmasked = ByteArray(32) { i ->
+                val maskedByte = maskedHex.substring(i * 2, i * 2 + 2).toInt(16)
+                (maskedByte xor (mask[i].toInt() and 0xFF)).toByte()
+            }
+            val secretHex = unmasked.joinToString("") { "%02x".format(it) }
+            cachedRuntimeSecret = secretHex
+            secretHex
+        } catch (e: Exception) {
+            Log.e(TAG, "Runtime secret derivation failed: ${e.message}")
+            ""
+        }
+    }
+
+    private fun getDeviceHash(context: Context): String {
+        cachedDeviceHash?.let { return it }
+        return try {
+            val androidId = android.provider.Settings.Secure.getString(
+                context.contentResolver,
+                android.provider.Settings.Secure.ANDROID_ID
+            ) ?: "unknown"
+            val md = java.security.MessageDigest.getInstance("SHA-256")
+            val digest = md.digest("$androidId:${context.packageName}".toByteArray(Charsets.UTF_8))
+            val hash = digest.take(8).joinToString("") { "%02x".format(it) }
+            cachedDeviceHash = hash
+            hash
+        } catch (e: Exception) {
+            "unknown"
+        }
+    }
+
     private fun generateHmacSha256(secret: String, message: String): String {
         return try {
             val mac = Mac.getInstance("HmacSHA256")
@@ -258,9 +391,19 @@ object PublicCitsManager {
 
     // ----------------- 공공데이터포털 및 지자체 신호 연동 로직 -----------------
 
-    private fun handlePublicApiSignalUpdate(lat: Double, lon: Double, heading: Float) {
+    private fun handlePublicApiSignalUpdate(
+        lat: Double,
+        lon: Double,
+        heading: Float,
+        proxyRespondedUnmatched: Boolean = false
+    ) {
         if (!isMapLoaded) {
             if (!isLoadingMap && apiKey.isNotEmpty()) loadIntersectionMap()
+            // 공공데이터 맵이 로드되지 않은 상태에서 중계서버도 매칭 실패(또는 550m 이탈) 시 기존 신호등 즉시 제거
+            val target = currentTargetIntersection
+            if (proxyRespondedUnmatched || (target != null && calculateDistance(lat, lon, target.lat, target.lon) > 550.0)) {
+                clearCurrentTarget()
+            }
             return
         }
 
@@ -271,11 +414,16 @@ object PublicCitsManager {
         for (inter in intersections) {
             val dist = calculateDistance(lat, lon, inter.lat, inter.lon)
             if (dist in 0.0..500.0) {
-                val bearingToInter = calculateBearing(lat, lon, inter.lat, inter.lon)
-                val angleDiff = abs((bearingToInter - heading + 540) % 360 - 180)
+                val isForward = if (heading >= 0f) {
+                    val bearingToInter = calculateBearing(lat, lon, inter.lat, inter.lon)
+                    val angleDiff = abs((bearingToInter - heading + 540) % 360 - 180)
+                    dist <= 60.0 || angleDiff <= 75.0
+                } else {
+                    true
+                }
 
                 // 60m 이내 초근접 시에는 정지/회전 중이어도 감지, 그 외에는 전방 75도 이내
-                if (dist <= 60.0 || angleDiff <= 75.0) {
+                if (isForward) {
                     if (dist < minDistance) {
                         minDistance = dist
                         nearest = inter
@@ -288,14 +436,9 @@ object PublicCitsManager {
             val dist = minDistance
             currentTargetIntersection = nearest
             Log.d(TAG, "Matched intersection: ${nearest.name} (${nearest.id}), dist=${dist.toInt()}m")
-            fetchTrafficSignalFromPublicApi(nearest, dist, heading)
+            fetchTrafficSignalFromPublicApi(nearest, dist, if (heading >= 0f) heading else 0f)
         } else {
-            if (currentTargetIntersection != null) {
-                Log.d(TAG, "Exited intersection: ${currentTargetIntersection?.name}")
-                currentTargetIntersection = null
-                stopCountdown()
-                TrafficSignalRepository.clear()
-            }
+            clearCurrentTarget()
         }
     }
 
@@ -619,7 +762,13 @@ object PublicCitsManager {
                             intersectionName = cur.intersectionName
                         )
                     }
-                    mainHandler.postDelayed(this, 1000)
+                    if (currentRemain > 0) {
+                        mainHandler.postDelayed(this, 1000)
+                    } else if (currentTargetIntersection != null && lastLocationLat > 0.0 && lastLocationLon > 0.0) {
+                        // 정차 중 카운트다운이 0초에 도달하면 즉시 다음 현시 조회
+                        lastSignalFetchTime = 0L
+                        onLocationUpdate(lastLocationLat, lastLocationLon, lastLocationHeading)
+                    }
                 }
             }
         }

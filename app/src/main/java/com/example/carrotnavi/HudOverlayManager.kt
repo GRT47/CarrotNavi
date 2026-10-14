@@ -1055,7 +1055,8 @@ class HudOverlayManager(
             binding.cvTrafficSignalOverlay?.visibility = View.GONE
             binding.cvCompassOverlay?.visibility = View.GONE
         } else {
-            binding.cvCompassOverlay?.visibility = View.VISIBLE
+            // 나침반 오버레이 기능은 유지하되 임시로 화면에서 숨김 처리
+            binding.cvCompassOverlay?.visibility = View.GONE
         }
         onOverlayVisibilityChanged?.invoke()
     }
@@ -1372,7 +1373,8 @@ class HudOverlayManager(
             overlay.visibility = View.GONE
             return
         }
-        overlay.visibility = View.VISIBLE
+        // 나침반 오버레이 데이터 갱신 로직은 유지하되 임시로 비표시(GONE) 유지
+        overlay.visibility = View.GONE
         binding.ivCompassNeedle?.rotation = data.angle.toFloat()
         binding.tvCompassText?.text = "${data.angle}° ${data.directionText}"
     }
@@ -1393,29 +1395,51 @@ class HudOverlayManager(
             return
         }
 
-        // 4구 신호등 LED 점등 상태 반영
+        val density = activity.resources.displayMetrics.density
+
+        // 1. 외곽 캡슐 카드 보더 액센트 반영
+        binding.llTrafficSignalCardInner?.let { inner ->
+            val cardStrokeColor = when {
+                data.isRed -> Color.parseColor("#66FF453A")
+                data.isGreen || data.isLeft -> Color.parseColor("#664CD964")
+                data.isYellow -> Color.parseColor("#66FFD60A")
+                else -> Color.parseColor("#40E2E8F0")
+            }
+            val cardBg = android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(Color.parseColor("#F2141A26"), Color.parseColor("#F2090C13"))
+            ).apply {
+                cornerRadius = 22f * density
+                setStroke((1.2f * density).toInt().coerceAtLeast(1), cardStrokeColor)
+            }
+            inner.background = cardBg
+        }
+
+        // 2. 4구 신호등 LED 점등 상태 반영
         binding.vSignalRed?.setBackgroundResource(
-            if (data.isRed) R.drawable.shape_circle_red else R.drawable.shape_circle_dark
+            if (data.isRed) R.drawable.bg_signal_lamp_red_on else R.drawable.bg_signal_lamp_red_off
         )
         binding.vSignalYellow?.setBackgroundResource(
-            if (data.isYellow) R.drawable.shape_circle_yellow else R.drawable.shape_circle_dark
+            if (data.isYellow) R.drawable.bg_signal_lamp_yellow_on else R.drawable.bg_signal_lamp_yellow_off
         )
 
         binding.ivSignalLeft?.let { iv ->
             if (data.isLeft) {
+                iv.setBackgroundResource(R.drawable.bg_signal_lamp_left_on)
                 iv.alpha = 1.0f
                 iv.setColorFilter(Color.parseColor("#4CD964"))
             } else {
-                iv.alpha = 0.2f
-                iv.setColorFilter(Color.parseColor("#666666"))
+                iv.setBackgroundResource(R.drawable.bg_signal_lamp_left_off)
+                iv.alpha = 0.85f
+                iv.setColorFilter(Color.parseColor("#384152"))
             }
         }
 
         binding.vSignalGreen?.setBackgroundResource(
-            if (data.isGreen) R.drawable.shape_circle_green else R.drawable.shape_circle_dark
+            if (data.isGreen) R.drawable.bg_signal_lamp_green_on else R.drawable.bg_signal_lamp_green_off
         )
 
-        // 전방 신호등 거리 표시
+        // 3. 전방 신호등 거리 표시
         binding.tvSignalDist?.let { tvDist ->
             if (data.distance > 0) {
                 tvDist.text = "${data.distance}m"
@@ -1425,18 +1449,24 @@ class HudOverlayManager(
             }
         }
 
-        // 신호 잔여 시간 카운트다운
+        // 4. 신호 잔여 시간 카운트다운 뱃지
         if (data.remainTime > 0) {
-            binding.tvSignalRemainTime?.text = "${data.remainTime}s"
-            binding.tvSignalRemainTime?.visibility = View.VISIBLE
-            if (data.isRed) {
-                binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#FF3B30"))
-            } else if (data.isGreen || data.isLeft) {
-                binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#4CD964"))
-            } else if (data.isYellow) {
-                binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#FFCC00"))
-            } else {
-                binding.tvSignalRemainTime?.setTextColor(Color.parseColor("#FFCC00"))
+            binding.tvSignalRemainTime?.let { tvTime ->
+                tvTime.text = "${data.remainTime}s"
+                tvTime.visibility = View.VISIBLE
+                val (textColorHex, pillBgHex, pillStrokeHex) = when {
+                    data.isRed -> Triple("#FF5252", "#29FF3B30", "#66FF3B30")
+                    data.isGreen || data.isLeft -> Triple("#4CD964", "#294CD964", "#664CD964")
+                    data.isYellow -> Triple("#FFD60A", "#29FFCC00", "#66FFCC00")
+                    else -> Triple("#FFD60A", "#29FFCC00", "#66FFCC00")
+                }
+                tvTime.setTextColor(Color.parseColor(textColorHex))
+                tvTime.background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                    cornerRadius = 11f * density
+                    setColor(Color.parseColor(pillBgHex))
+                    setStroke((1.0f * density).toInt().coerceAtLeast(1), Color.parseColor(pillStrokeHex))
+                }
             }
         } else {
             binding.tvSignalRemainTime?.visibility = View.GONE

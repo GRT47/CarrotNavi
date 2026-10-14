@@ -7,6 +7,7 @@ plugins {
 
 import java.util.Properties
 import java.io.FileInputStream
+import java.security.MessageDigest
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
@@ -14,7 +15,36 @@ val localProperties = Properties().apply {
         load(FileInputStream(localPropertiesFile))
     }
 }
-val citsAuthSecret: String = localProperties.getProperty("cits.auth.secret") ?: ""
+
+val citsKeyProperties = Properties().apply {
+    val externalKeyFile = rootProject.file("../key/cits_security.properties")
+    if (externalKeyFile.exists()) {
+        load(FileInputStream(externalKeyFile))
+    }
+}
+
+fun buildCitsMaskedKeyHex(): String {
+    val secretHex = (citsKeyProperties.getProperty("CITS_AUTH_SECRET")
+        ?: localProperties.getProperty("CITS_AUTH_SECRET") ?: "").trim().lowercase()
+    val certSha256 = (citsKeyProperties.getProperty("CITS_APK_CERT_SHA256")
+        ?: localProperties.getProperty("CITS_APK_CERT_SHA256") ?: "").trim().lowercase()
+    val pkgName = (citsKeyProperties.getProperty("CITS_PACKAGE_NAME")
+        ?: localProperties.getProperty("CITS_PACKAGE_NAME") ?: "com.example.carrotnavi").trim()
+
+    if (secretHex.length != 64 || certSha256.isEmpty()) return ""
+    return try {
+        val secretBytes = ByteArray(32) { i ->
+            secretHex.substring(i * 2, i * 2 + 2).toInt(16).toByte()
+        }
+        val maskSeed = "$certSha256:$pkgName:CarrotNavi_CITS_v2_KeyMask"
+        val maskBytes = MessageDigest.getInstance("SHA-256").digest(maskSeed.toByteArray(Charsets.UTF_8))
+        secretBytes.indices.joinToString("") { i ->
+            "%02x".format((secretBytes[i].toInt() xor maskBytes[i].toInt()) and 0xFF)
+        }
+    } catch (e: Exception) {
+        ""
+    }
+}
 
 android {
     namespace = "com.example.carrotnavi"
@@ -25,8 +55,7 @@ android {
         targetSdk = 36
         versionCode = 75
         versionName = "2.3.4"
-
-        buildConfigField("String", "CITS_AUTH_SECRET", "\"$citsAuthSecret\"")
+        buildConfigField("String", "CITS_MASKED_KEY", "\"${buildCitsMaskedKeyHex()}\"")
     }
 
     buildTypes {

@@ -688,7 +688,7 @@
         app:cardElevation="6dp"
         android:clickable="true"
         android:focusable="true"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -733,61 +733,66 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="6dp"
-            app:cardCornerRadius="14dp"
-            app:cardBackgroundColor="#EA0A0D14"
-            app:cardElevation="8dp"
+            app:cardCornerRadius="22dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardElevation="10dp"
             android:visibility="gone">
 
             <LinearLayout
+                android:id="@+id/llTrafficSignalCardInner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingHorizontal="12dp"
+                android:background="@drawable/bg_hud_traffic_signal_card"
+                android:paddingStart="8dp"
+                android:paddingEnd="10dp"
                 android:paddingVertical="6dp">
 
                 <!-- 4구 신호등 하우징 -->
                 <LinearLayout
+                    android:id="@+id/llSignalHousing"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:background="#202530"
-                    android:paddingHorizontal="6dp"
-                    android:paddingVertical="4dp"
+                    android:background="@drawable/bg_signal_housing"
+                    android:paddingHorizontal="7dp"
+                    android:paddingVertical="4.5dp"
                     android:gravity="center_vertical"
-                    android:layout_marginEnd="10dp">
+                    android:layout_marginEnd="9dp">
 
                     <!-- 적색 -->
                     <View
                         android:id="@+id/vSignalRed"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:background="@drawable/shape_circle_red"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:background="@drawable/bg_signal_lamp_red_off"
                         android:layout_marginEnd="5dp" />
 
                     <!-- 황색 -->
                     <View
                         android:id="@+id/vSignalYellow"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:background="@drawable/shape_circle_dark"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:background="@drawable/bg_signal_lamp_yellow_off"
                         android:layout_marginEnd="5dp" />
 
                     <!-- 좌회전 -->
                     <ImageView
                         android:id="@+id/ivSignalLeft"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:padding="2.5dp"
+                        android:background="@drawable/bg_signal_lamp_left_off"
                         android:src="@drawable/ic_signal_left"
-                        android:alpha="0.2"
                         android:layout_marginEnd="5dp" />
 
                     <!-- 녹색 -->
                     <View
                         android:id="@+id/vSignalGreen"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:background="@drawable/shape_circle_dark" />
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:background="@drawable/bg_signal_lamp_green_off" />
                 </LinearLayout>
 
                 <!-- 전방 신호등 거리 -->
@@ -796,20 +801,24 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="150m"
-                    android:textColor="#A0AEC0"
-                    android:textSize="13sp"
+                    android:textColor="#CBD5E1"
+                    android:textSize="13.5sp"
                     android:textStyle="bold"
-                    android:layout_marginEnd="6dp"
+                    android:layout_marginEnd="7dp"
                     android:visibility="gone" />
 
-                <!-- 신호 잔여 시간 카운트다운 -->
+                <!-- 신호 잔여 시간 카운트다운 뱃지 -->
                 <TextView
                     android:id="@+id/tvSignalRemainTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="44dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="2dp"
                     android:text="15s"
-                    android:textColor="#FF3B30"
-                    android:textSize="16sp"
+                    android:textColor="#FF453A"
+                    android:textSize="15.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>

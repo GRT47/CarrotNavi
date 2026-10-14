@@ -104,7 +104,8 @@ object TrafficSignalRepository {
             isGreen = false,
             isLeft = false,
             remainTime = 15,
-            distance = 120
+            distance = 120,
+            intersectionName = "시청네거리"
         )
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
             isTestMode = false

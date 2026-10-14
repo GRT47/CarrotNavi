@@ -1907,7 +1907,8 @@ class KakaoMapActivity : BaseActivity(),
         KakaoSdiRepository.updateLocation(speed, roadName, roadLimitSpeed, tbtDist = tbtDist, tbtTurnType = tbtTurnType, tbtText = tbtText, lat = lat, lon = lon)
 
         if (lat != 0.0 && lon != 0.0) {
-            val heading = (locationGuide.gpsMatched?.angle ?: locationGuide.gpsOrigin?.angle ?: 0).toFloat()
+            val rawAngle = locationGuide.gpsMatched?.angle ?: locationGuide.gpsOrigin?.angle ?: -1
+            val heading = if (rawAngle in 0..360) rawAngle.toFloat() else -1f
             PublicCitsManager.onLocationUpdate(lat, lon, heading)
 
             if (lastKnownAddress.isEmpty() || (roadName.isNotEmpty() && roadName != lastKnownRoadName)) {
@@ -1960,7 +1961,9 @@ class KakaoMapActivity : BaseActivity(),
         try {
             val citsList = citsGuide.citsList
             if (citsList.isNullOrEmpty()) {
-                TrafficSignalRepository.clear()
+                if (!PublicCitsManager.isPublicCitsActive()) {
+                    TrafficSignalRepository.clear()
+                }
                 return
             }
 
@@ -2033,7 +2036,7 @@ class KakaoMapActivity : BaseActivity(),
                 }
             }
 
-            if (!foundSignal) {
+            if (!foundSignal && !PublicCitsManager.isPublicCitsActive()) {
                 TrafficSignalRepository.clear()
             }
         } catch (e: Exception) {
@@ -2174,12 +2177,15 @@ class KakaoMapActivity : BaseActivity(),
 
         binding.naviView.mapComponent?.mapView?.removeRoutesAll()
         binding.naviView.mapComponent?.mapView?.removeMarkersAll()
+        trafficSignalMapMarker = null
+        lastKakaoSignalMarkerKey = null
 
         binding.naviView.guideNewDestinations(
             trip,
             option.priority,
             option.avoidOption
         )
+        updateTrafficSignalMapMarker(TrafficSignalRepository.observableSignal.value)
 
         guidance.guideStateDelegate = this@KakaoMapActivity
         guidance.routeGuideDelegate = this@KakaoMapActivity
@@ -2782,6 +2788,8 @@ class KakaoMapActivity : BaseActivity(),
 
         try {
             binding.naviView.mapComponent?.mapView?.removeMarkersAll()
+            trafficSignalMapMarker = null
+            lastKakaoSignalMarkerKey = null
             binding.naviView.mapComponent?.mapView?.removeRoutesAll()
 
             val startPoint = getStartFloatPoint()
@@ -2965,6 +2973,8 @@ class KakaoMapActivity : BaseActivity(),
             wrapMapComponentDelegate()
             binding.naviView.mapComponent?.mapView?.removeRoutesAll()
             binding.naviView.mapComponent?.mapView?.removeMarkersAll()
+            trafficSignalMapMarker = null
+            lastKakaoSignalMarkerKey = null
 
             val routeProps = binding.naviView.mapComponent?.mapView?.routeProperties
                 ?: com.kakaomobility.knsdk.map.knmapview.idl.KNMapRouteProperties()
@@ -3110,8 +3120,11 @@ class KakaoMapActivity : BaseActivity(),
         binding.flPreviewPanel.visibility = android.view.View.GONE
         binding.naviView.mapComponent?.mapView?.removeRoutesAll()
         binding.naviView.mapComponent?.mapView?.removeMarkersAll()
+        trafficSignalMapMarker = null
+        lastKakaoSignalMarkerKey = null
         previewStartFloatPoint = null
         previewDestFloatPoint = null
+        updateTrafficSignalMapMarker(TrafficSignalRepository.observableSignal.value)
         
         savedCameraMode?.let {
             if (::naviView.isInitialized) {
@@ -3299,14 +3312,16 @@ class KakaoMapActivity : BaseActivity(),
         return bitmap
     }
 
+    private var lastKakaoSignalMarkerKey: String? = null
+
     private fun createTrafficSignalMarkerBitmap(data: TrafficSignalData): android.graphics.Bitmap {
         val density = resources.displayMetrics.density
         val badgeWidthDp = 64f
-        val badgeHeightDp = 30f
-        val cornerRadiusDp = 15f
-        val pointerWidthDp = 10f
-        val pointerHeightDp = 6f
-        val shadowPaddingDp = 4f
+        val badgeHeightDp = 22f
+        val cornerRadiusDp = 11f
+        val pointerWidthDp = 8f
+        val pointerHeightDp = 5f
+        val shadowPaddingDp = 3f
 
         val width = ((badgeWidthDp + shadowPaddingDp * 2) * density).toInt()
         val height = ((badgeHeightDp + pointerHeightDp + shadowPaddingDp * 2) * density).toInt()
@@ -3319,109 +3334,163 @@ class KakaoMapActivity : BaseActivity(),
         val right = left + badgeWidthDp * density
         val bottom = top + badgeHeightDp * density
         val cx = (left + right) / 2f
+        val cy = (top + bottom) / 2f
         val pointerH = pointerHeightDp * density
         val pointerHalfW = (pointerWidthDp * density) / 2f
+        val cornerRadius = cornerRadiusDp * density
 
-        // 1. Drop shadow
+        // 1. 외곽 그림자
         val shadowPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-            color = android.graphics.Color.parseColor("#40000000")
+            color = android.graphics.Color.parseColor("#55000000")
             style = android.graphics.Paint.Style.FILL
         }
-        val cornerRadius = cornerRadiusDp * density
-        val shadowRect = android.graphics.RectF(left, top + 2f * density, right, bottom + 2f * density)
+        val shadowRect = android.graphics.RectF(left, top + 1.5f * density, right, bottom + 1.5f * density)
         canvas.drawRoundRect(shadowRect, cornerRadius, cornerRadius, shadowPaint)
 
         val shadowPath = android.graphics.Path().apply {
-            moveTo(cx - pointerHalfW, bottom + 2f * density)
-            lineTo(cx, bottom + pointerH + 2f * density)
-            lineTo(cx + pointerHalfW, bottom + 2f * density)
+            moveTo(cx - pointerHalfW, bottom + 1.5f * density)
+            lineTo(cx, bottom + pointerH + 1.5f * density)
+            lineTo(cx + pointerHalfW, bottom + 1.5f * density)
             close()
         }
         canvas.drawPath(shadowPath, shadowPaint)
 
-        // 2. Badge background color based on signal
-        val startColorHex = when {
-            data.isRed -> "#E53935"
-            data.isGreen -> "#2E7D32"
-            data.isYellow -> "#F57F17"
-            data.isLeft -> "#1976D2"
-            else -> "#37474F"
-        }
-        val endColorHex = when {
-            data.isRed -> "#B71C1C"
-            data.isGreen -> "#1B5E20"
-            data.isYellow -> "#E65100"
-            data.isLeft -> "#0D47A1"
-            else -> "#212121"
-        }
-
-        val badgePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        // 2. 4구 신호등 하우징 본체 (다크 메탈릭 그라데이션)
+        val bodyPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
             shader = android.graphics.LinearGradient(
                 cx, top, cx, bottom + pointerH,
-                android.graphics.Color.parseColor(startColorHex),
-                android.graphics.Color.parseColor(endColorHex),
+                android.graphics.Color.parseColor("#222834"),
+                android.graphics.Color.parseColor("#10141C"),
                 android.graphics.Shader.TileMode.CLAMP
             )
             style = android.graphics.Paint.Style.FILL
         }
         val badgeRect = android.graphics.RectF(left, top, right, bottom)
-        canvas.drawRoundRect(badgeRect, cornerRadius, cornerRadius, badgePaint)
+        canvas.drawRoundRect(badgeRect, cornerRadius, cornerRadius, bodyPaint)
 
-        // Pointer fill
         val pointerPath = android.graphics.Path().apply {
             moveTo(cx - pointerHalfW, bottom - 1f)
             lineTo(cx, bottom + pointerH)
             lineTo(cx + pointerHalfW, bottom - 1f)
             close()
         }
-        canvas.drawPath(pointerPath, badgePaint)
+        canvas.drawPath(pointerPath, bodyPaint)
 
-        // White border
+        // 3. 신호등 하우징 테두리
+        val borderColor = when {
+            data.isRed -> android.graphics.Color.parseColor("#E0FF5252")
+            data.isGreen || data.isLeft -> android.graphics.Color.parseColor("#E04CD964")
+            data.isYellow -> android.graphics.Color.parseColor("#E0FFCC00")
+            else -> android.graphics.Color.parseColor("#CCE2E8F0")
+        }
         val strokePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-            color = android.graphics.Color.WHITE
+            color = borderColor
             style = android.graphics.Paint.Style.STROKE
-            strokeWidth = 1.5f * density
+            strokeWidth = 1.3f * density
         }
         canvas.drawRoundRect(badgeRect, cornerRadius, cornerRadius, strokePaint)
 
-        // Round LED indicator
-        val ledRadius = 5.5f * density
-        val ledCx = left + 13f * density
-        val ledCy = (top + bottom) / 2f
-        val ledPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-            color = when {
-                data.isRed -> android.graphics.Color.parseColor("#FFCDD2")
-                data.isGreen -> android.graphics.Color.parseColor("#C8E6C9")
-                data.isYellow -> android.graphics.Color.parseColor("#FFF9C4")
-                data.isLeft -> android.graphics.Color.parseColor("#BBDEFB")
-                else -> android.graphics.Color.WHITE
-            }
+        // 4. 4구 렌즈 소켓 (적색 / 황색 / 좌회전 / 녹색)
+        val lampRadius = 5.0f * density
+        val socketRadius = 5.7f * density
+        val lampSpacing = 3.6f * density
+        val totalLampsWidth = lampRadius * 8f + lampSpacing * 3f
+        val startCx = cx - totalLampsWidth / 2f + lampRadius
+        val stepX = lampRadius * 2f + lampSpacing
+
+        val socketBgPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#090C10")
             style = android.graphics.Paint.Style.FILL
         }
-        canvas.drawCircle(ledCx, ledCy, ledRadius, ledPaint)
+        val socketRimPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#2D3545")
+            style = android.graphics.Paint.Style.STROKE
+            strokeWidth = 0.8f * density
+        }
+        val lampPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            style = android.graphics.Paint.Style.FILL
+        }
 
-        // Time or arrow text
-        val textPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-            color = android.graphics.Color.WHITE
-            textSize = 13f * density
-            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
-            textAlign = android.graphics.Paint.Align.LEFT
+        for (i in 0..3) {
+            val lcx = startCx + i * stepX
+            canvas.drawCircle(lcx, cy, socketRadius, socketBgPaint)
+            canvas.drawCircle(lcx, cy, socketRadius, socketRimPaint)
+
+            when (i) {
+                0 -> { // 적색 (Red)
+                    if (data.isRed) {
+                        lampPaint.color = android.graphics.Color.parseColor("#55FF3B30")
+                        canvas.drawCircle(lcx, cy, lampRadius * 1.32f, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#FF3B30")
+                        canvas.drawCircle(lcx, cy, lampRadius, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#FF9E99")
+                        canvas.drawCircle(lcx - 1.3f * density, cy - 1.3f * density, 1.4f * density, lampPaint)
+                    } else {
+                        lampPaint.color = android.graphics.Color.parseColor("#2A181A")
+                        canvas.drawCircle(lcx, cy, lampRadius * 0.92f, lampPaint)
+                    }
+                }
+                1 -> { // 황색 (Yellow)
+                    if (data.isYellow) {
+                        lampPaint.color = android.graphics.Color.parseColor("#55FFCC00")
+                        canvas.drawCircle(lcx, cy, lampRadius * 1.32f, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#FFCC00")
+                        canvas.drawCircle(lcx, cy, lampRadius, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#FFF59D")
+                        canvas.drawCircle(lcx - 1.3f * density, cy - 1.3f * density, 1.4f * density, lampPaint)
+                    } else {
+                        lampPaint.color = android.graphics.Color.parseColor("#2A2516")
+                        canvas.drawCircle(lcx, cy, lampRadius * 0.92f, lampPaint)
+                    }
+                }
+                2 -> { // 좌회전 (Left Arrow)
+                    if (data.isLeft) {
+                        lampPaint.color = android.graphics.Color.parseColor("#454CD964")
+                        canvas.drawCircle(lcx, cy, lampRadius * 1.32f, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#0E291A")
+                        canvas.drawCircle(lcx, cy, lampRadius, lampPaint)
+                    } else {
+                        lampPaint.color = android.graphics.Color.parseColor("#161D24")
+                        canvas.drawCircle(lcx, cy, lampRadius * 0.92f, lampPaint)
+                    }
+                    val arrowPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                        color = if (data.isLeft) android.graphics.Color.parseColor("#4CD964") else android.graphics.Color.parseColor("#384152")
+                        style = android.graphics.Paint.Style.STROKE
+                        strokeWidth = 1.7f * density
+                        strokeCap = android.graphics.Paint.Cap.ROUND
+                        strokeJoin = android.graphics.Paint.Join.ROUND
+                    }
+                    val arrowPath = android.graphics.Path().apply {
+                        moveTo(lcx + 2.7f * density, cy)
+                        lineTo(lcx - 2.7f * density, cy)
+                        moveTo(lcx - 0.3f * density, cy - 2.4f * density)
+                        lineTo(lcx - 2.9f * density, cy)
+                        lineTo(lcx - 0.3f * density, cy + 2.4f * density)
+                    }
+                    canvas.drawPath(arrowPath, arrowPaint)
+                }
+                3 -> { // 녹색 (Green)
+                    if (data.isGreen) {
+                        lampPaint.color = android.graphics.Color.parseColor("#554CD964")
+                        canvas.drawCircle(lcx, cy, lampRadius * 1.32f, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#4CD964")
+                        canvas.drawCircle(lcx, cy, lampRadius, lampPaint)
+                        lampPaint.color = android.graphics.Color.parseColor("#B9F6CA")
+                        canvas.drawCircle(lcx - 1.3f * density, cy - 1.3f * density, 1.4f * density, lampPaint)
+                    } else {
+                        lampPaint.color = android.graphics.Color.parseColor("#15261D")
+                        canvas.drawCircle(lcx, cy, lampRadius * 0.92f, lampPaint)
+                    }
+                }
+            }
         }
-        val timeText = if (data.isLeft && !data.isGreen && !data.isRed) {
-            "⬅️ ${if (data.remainTime > 0) "${data.remainTime}s" else ""}".trim()
-        } else {
-            if (data.remainTime > 0) "${data.remainTime}s" else "신호"
-        }
-        val fontMetrics = textPaint.fontMetrics
-        val textY = (top + bottom) / 2f - (fontMetrics.ascent + fontMetrics.descent) / 2f
-        canvas.drawText(timeText, ledCx + ledRadius + 4f * density, textY, textPaint)
 
         return bitmap
     }
 
     private fun updateTrafficSignalMapMarker(data: TrafficSignalData?) {
         runOnUiThread {
-            if (!::binding.isInitialized) return@runOnUiThread
+            if (!::binding.isInitialized || isShowingPreview) return@runOnUiThread
             val mapView = binding.naviView.mapComponent?.mapView ?: return@runOnUiThread
             val lat = data?.latitude
             val lon = data?.longitude
@@ -3432,11 +3501,18 @@ class KakaoMapActivity : BaseActivity(),
                         mapView.removeMarker(it)
                     } catch (e: Exception) {}
                     trafficSignalMapMarker = null
+                    lastKakaoSignalMarkerKey = null
                 }
                 return@runOnUiThread
             }
 
             try {
+                val stateKey = "${lat}_${lon}_${data.isRed}_${data.isYellow}_${data.isLeft}_${data.isGreen}"
+                if (trafficSignalMapMarker != null && stateKey == lastKakaoSignalMarkerKey) {
+                    return@runOnUiThread
+                }
+                lastKakaoSignalMarkerKey = stateKey
+
                 val katec = com.kakaomobility.knsdk.KNSDK.convertWGS84ToKATEC(lon, lat)
                 val floatPoint = com.kakaomobility.knsdk.common.util.FloatPoint(katec.x.toFloat(), katec.y.toFloat())
                 val bitmap = createTrafficSignalMarkerBitmap(data)
@@ -3445,7 +3521,7 @@ class KakaoMapActivity : BaseActivity(),
                 if (trafficSignalMapMarker == null) {
                     val marker = com.kakaomobility.knsdk.map.uicustomsupport.renewal.KNMapMarker(floatPoint).apply {
                         icon = bitmap
-                        pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(18f * density).toInt())
+                        pixelOffset = com.kakaomobility.knsdk.common.util.IntPoint(0, -(15f * density).toInt())
                         priority = 999
                     }
                     trafficSignalMapMarker = marker

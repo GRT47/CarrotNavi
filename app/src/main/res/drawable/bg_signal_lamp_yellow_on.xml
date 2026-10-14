@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Outer Glow -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#4DFFCC00" />
+        </shape>
+    </item>
+    <!-- Socket Bezel -->
+    <item android:left="1.5dp" android:top="1.5dp" android:right="1.5dp" android:bottom="1.5dp">
+        <shape android:shape="oval">
+            <solid android:color="#090C10" />
+            <stroke android:width="0.8dp" android:color="#66FFD740" />
+        </shape>
+    </item>
+    <!-- Lit Yellow Lens -->
+    <item android:left="2.5dp" android:top="2.5dp" android:right="2.5dp" android:bottom="2.5dp">
+        <shape android:shape="oval">
+            <gradient
+                android:angle="315"
+                android:startColor="#FFF176"
+                android:centerColor="#FFCC00"
+                android:endColor="#F59E0B"
+                android:type="linear" />
+        </shape>
+    </item>
+</layer-list>
+
